@@ -3,6 +3,9 @@ language: go
 go: 
   - 1.7
 
+before_script:
+  - go get
+
 script:
   - go vet
   - go test -coverprofile=coverage.txt -covermode=atomic
