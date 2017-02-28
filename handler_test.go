@@ -16,8 +16,10 @@ package main
 
 import (
 	"bytes"
+	"github.com/gorilla/mux"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -48,18 +50,22 @@ func TestHome(t *testing.T) {
 	}
 }
 
-//Verify that home exists and returns the correct status code
-func TestSet(t *testing.T) {
+func TestSystemLifecycle(t *testing.T) {
+	postTestSystem(t)
+	getTestSystem(t)
+	delTestSystem(t)
+}
 
-	var jsonStr = []byte(`{"name":"1234","os":"linux","ip":"1.1.1.1"}`)
-	req, err := http.NewRequest("POST", "/systems/1234", bytes.NewBuffer(jsonStr))
+func postTestSystem(t *testing.T) {
+	var jsonStr = []byte(`{"name":"1234","os":"linux","ip":"1.1.1.1","uuid":"a"}`)
+	req, err := http.NewRequest("POST", "/systems/linux-test", bytes.NewBuffer(jsonStr))
 	req.Header.Set("Content-Type", "application/json")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(postSystem)
+	handler := http.HandlerFunc(PostSystem)
 
 	handler.ServeHTTP(rr, req)
 
@@ -69,4 +75,52 @@ func TestSet(t *testing.T) {
 			status, http.StatusOK)
 	}
 
+	// Check the response body is what we expect.
+	expected := "{\"id\":"
+	if !strings.Contains(rr.Body.String(), expected) {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
+
+}
+
+func getTestSystem(t *testing.T) {
+	req, err := http.NewRequest("GET", "/systems/a", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+
+	m := mux.NewRouter()
+	m.HandleFunc("/systems/{system}", GetSystem)
+	m.ServeHTTP(rr, req)
+
+	// Check the response body is what we expect.
+	expected := "\"ip\":\"1.1.1.1\""
+	if !strings.Contains(rr.Body.String(), expected) {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
+
+}
+
+func delTestSystem(t *testing.T) {
+	req, err := http.NewRequest("DELETE", "/systems/a", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+
+	m := mux.NewRouter()
+	m.HandleFunc("/systems/{system}", DelSystem)
+	m.ServeHTTP(rr, req)
+
+	// Check the response body is what we expect.
+	expected := "Deleting"
+	if !strings.Contains(rr.Body.String(), expected) {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
 }

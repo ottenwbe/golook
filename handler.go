@@ -26,50 +26,68 @@ func home(writer http.ResponseWriter, request *http.Request) {
 }
 
 //todo: return list of files that match the search pattern
-func getFile(writer http.ResponseWriter, request *http.Request) {
+func GetFile(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 	fmt.Fprintln(writer, "List of files that are found for:", params["file"])
 }
 
-func putFile(writer http.ResponseWriter, request *http.Request) {
+func PutFile(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 	fmt.Fprintln(writer, "List of files that are found for:", params["file"])
 }
 
-//todo: return list of files that match the search pattern
-func getSystem(writer http.ResponseWriter, request *http.Request) {
+func GetSystem(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 	fmt.Fprintln(writer, "List of files that are found for:", params["system"])
+	log.Printf("Get (system=%s) from '%d' systems", params["system"], len(s))
+
+	if sys, ok := params["system"]; ok {
+		str, _ := json.Marshal(s[sys]) //TODO: error handling
+		fmt.Fprint(writer, string(str))
+	} else {
+		log.Print("Error: Get system failed")
+		fmt.Fprint(writer, "System not found")
+	}
 }
 
-func delSystem(writer http.ResponseWriter, request *http.Request) {
+func DelSystem(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 	delete(s, params["system"])
 	fmt.Fprintln(writer, "Deleting system:", params["system"])
 }
 
-func postSystem(writer http.ResponseWriter, request *http.Request) {
+func PostSystem(writer http.ResponseWriter, request *http.Request) {
 	if (request != nil) && (request.Body != nil) {
-		var system System
-		err := json.NewDecoder(request.Body).Decode(&system)
-		if err != nil {
-			log.Print("Error: Post system request was error")
-			fmt.Fprint(writer, "Post system request was error")
-		} else {
-			extractSystem(&system, &writer)
-		}
+		tryAddSystem(&writer, request)
 	} else {
 		log.Print("Error: Post system request was empty")
 		fmt.Fprint(writer, "Post system request was empty")
 	}
 }
 
+func tryAddSystem(writer *http.ResponseWriter, request *http.Request) {
+	var system System
+	err := json.NewDecoder(request.Body).Decode(&system)
+	if err != nil {
+		log.Printf("Error: Post system request has errors: %s", err)
+		fmt.Fprint(*writer, "Post system request has errors")
+	} else {
+		extractSystem(&system, writer)
+	}
+}
+
 func extractSystem(system *System, writer *http.ResponseWriter) {
-	newSystem, erruuid := NewUUID()
+	var newSystem string
+	var erruuid error = nil
+	if system.UUID == "" {
+		newSystem, erruuid = NewUUID()
+	} else {
+		newSystem = system.UUID
+	}
 	if erruuid == nil {
 		s[newSystem] = *system
-		log.Printf("Post system request was a success %s", *system)
-		fmt.Fprint(*writer, newSystem)
+		log.Printf("Post system request was a success %s", s[newSystem])
+		fmt.Fprint(*writer, "{\"id\":\"" + newSystem + "\"}")
 	} else {
 		log.Printf("Error: UUID error %s", erruuid)
 		fmt.Fprint(*writer, "UUID error")

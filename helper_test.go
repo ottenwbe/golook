@@ -32,5 +32,4 @@ func TestUniquenessOfUUID(t *testing.T) {
 	if strings.Compare(uuid, uuid2) == 0 {
 		t.Error("UUIDs are equivalent, however, they should be different")
 	}
-
 }
