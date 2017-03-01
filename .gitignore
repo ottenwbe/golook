@@ -1,3 +1,4 @@
 .idea/
-golook.iml
+*.iml
 coverage.txt
+

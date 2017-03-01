@@ -16,8 +16,10 @@ package main
 import "time"
 
 type File struct {
-	Name    string    `json:"name"`
-	Created time.Time `json:"created"`
+	Name     string    `json:"name"`
+	Created  time.Time `json:"created"`
+	Modified time.Time `json:"modified"`
+	Accessed time.Time `json:"accessed"`
 }
 
 type System struct {
@@ -34,3 +36,5 @@ type repository interface {
 	putSystem(system System) error
 	putFile(file File) error
 }
+
+var systemMap = make(map[string]System, 1)

@@ -11,20 +11,12 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package main
+package helper
 
 import (
 	"strings"
 	"testing"
 )
-
-func createAndCheckUUID(t *testing.T) string {
-	uuid, err := NewUUID()
-	if err != nil {
-		t.Errorf("Error during uuid creation: %s", err)
-	}
-	return uuid
-}
 
 func TestUniquenessOfUUID(t *testing.T) {
 	uuid := createAndCheckUUID(t)
@@ -32,4 +24,12 @@ func TestUniquenessOfUUID(t *testing.T) {
 	if strings.Compare(uuid, uuid2) == 0 {
 		t.Error("UUIDs are equivalent, however, they should be different")
 	}
+}
+
+func createAndCheckUUID(t *testing.T) string {
+	uuid, err := NewUUID()
+	if err != nil {
+		t.Errorf("Error during uuid creation: %s", err)
+	}
+	return uuid
 }

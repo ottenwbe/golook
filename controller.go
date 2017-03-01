@@ -16,33 +16,44 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"github.com/gorilla/mux"
+	"github.com/ottenwbe/golook/helper"
 )
 
 func home(writer http.ResponseWriter, request *http.Request) {
 	fmt.Fprint(writer, "{up}")
 }
 
-//todo: return list of files that match the search pattern
 func GetFile(writer http.ResponseWriter, request *http.Request) {
+	params := mux.Vars(request)
+
+	fmt.Fprintln(writer, "List of files that are found for:", params["file"])
+}
+
+func GetSystemFile(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 	fmt.Fprintln(writer, "List of files that are found for:", params["file"])
 }
 
 func PutFile(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
+
+	file := File{}
+
+	append(systemMap[params["system"]].Files, file)
+
 	fmt.Fprintln(writer, "List of files that are found for:", params["file"])
 }
 
 func GetSystem(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 	fmt.Fprintln(writer, "List of files that are found for:", params["system"])
-	log.Printf("Get (system=%s) from '%d' systems", params["system"], len(s))
+	log.Printf("Get (system=%s) from '%d' systems", params["system"], len(systemMap))
 
 	if sys, ok := params["system"]; ok {
-		str, _ := json.Marshal(s[sys]) //TODO: error handling
+		str, _ := json.Marshal(systemMap[sys]) //TODO: error handling
 		fmt.Fprint(writer, string(str))
 	} else {
 		log.Print("Error: Get system failed")
@@ -52,7 +63,7 @@ func GetSystem(writer http.ResponseWriter, request *http.Request) {
 
 func DelSystem(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
-	delete(s, params["system"])
+	delete(systemMap, params["system"])
 	fmt.Fprintln(writer, "Deleting system:", params["system"])
 }
 
@@ -78,18 +89,18 @@ func tryAddSystem(writer *http.ResponseWriter, request *http.Request) {
 
 func extractSystem(system *System, writer *http.ResponseWriter) {
 	var newSystem string
-	var erruuid error = nil
+	var errUuid error = nil
 	if system.UUID == "" {
-		newSystem, erruuid = NewUUID()
+		newSystem, errUuid = helper.NewUUID()
 	} else {
 		newSystem = system.UUID
 	}
-	if erruuid == nil {
-		s[newSystem] = *system
-		log.Printf("Post system request was a success %s", s[newSystem])
+	if errUuid == nil {
+		systemMap[newSystem] = *system
+		log.Printf("Post system request was a success %s", systemMap[newSystem])
 		fmt.Fprint(*writer, "{\"id\":\"" + newSystem + "\"}")
 	} else {
-		log.Printf("Error: UUID error %s", erruuid)
+		log.Printf("Error: UUID error %s", errUuid)
 		fmt.Fprint(*writer, "UUID error")
 	}
 }

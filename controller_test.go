@@ -21,6 +21,11 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"os"
+	"syscall"
+	"time"
+	"log"
+	"encoding/json"
 )
 
 //Verify that home exists and returns the correct status code
@@ -48,6 +53,30 @@ func TestHome(t *testing.T) {
 		t.Errorf("handler returned unexpected body: got %v want %v",
 			rr.Body.String(), expected)
 	}
+}
+
+func TestFileLifecycle(t *testing.T) {
+	postTestSystem(t)
+	getTestSystem(t)
+	delTestSystem(t)
+}
+
+func TestAS(t *testing.T) {
+	postTestSystem(t)
+
+	f := File{}
+	fi, _ := os.Stat("controller.go")
+
+	var stat = fi.Sys().(*syscall.Stat_t)
+	f.Accessed = time.Unix(stat.Atim.Sec, stat.Atim.Nsec)
+	f.Created = time.Unix(stat.Ctim.Sec, stat.Ctim.Nsec)
+	f.Modified = time.Unix(stat.Mtim.Sec, stat.Mtim.Nsec)
+	f.Name = "controller.go"
+
+	test, _ := json.Marshal(f)
+	log.Print(string(test))
+
+	delTestSystem(t)
 }
 
 func TestSystemLifecycle(t *testing.T) {

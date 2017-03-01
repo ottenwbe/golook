@@ -20,13 +20,12 @@ import (
 	"net/http"
 )
 
-var s = make(map[string]System, 1)
-
 func makeServer() {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", home)
 	router.HandleFunc("/files/{file}", GetFile).Methods("GET")
-	router.HandleFunc("/files/{file}", PutFile).Methods("PUT")
+	router.HandleFunc("/systems/{system}/files/{file}", GetSystemFile).Methods("GET")
+	router.HandleFunc("/systems/{system}/files/{file}", PutFile).Methods("PUT")
 	router.HandleFunc("/systems/{system}", GetSystem).Methods("GET")
 	router.HandleFunc("/systems", PostSystem).Methods("POST")
 	router.HandleFunc("/systems/{system}", DelSystem).Methods("DELETE")
