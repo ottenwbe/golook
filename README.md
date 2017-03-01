@@ -1,6 +1,6 @@
 # golook
 
-# WIP ! #
+# WIP. More info is coming soon #
 
 [![Build Status](https://travis-ci.org/ottenwbe/golook.svg?branch=development)](https://travis-ci.org/ottenwbe/golook)
 
