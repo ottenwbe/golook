@@ -16,35 +16,65 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
-	"net/http"
 	"github.com/gorilla/mux"
 	"github.com/ottenwbe/golook/helper"
+	"log"
+	"net/http"
+	"strings"
 )
 
-func home(writer http.ResponseWriter, request *http.Request) {
+func home(writer http.ResponseWriter, _ *http.Request) {
 	fmt.Fprint(writer, "{up}")
 }
 
 func GetFile(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 
-	fmt.Fprintln(writer, "List of files that are found for:", params["file"])
+	var result map[string]*System
+
+	findString := params["file"]
+
+	for sid, system := range systemMap {
+		for _, file := range system.Files {
+			if strings.Contains(file.Name, findString) {
+				if _, ok := result[sid]; !ok {
+					result[sid] = new(System)
+					result[sid].Name = system.Name
+				}
+				result[sid].Files = append(result[sid].Files, file)
+			}
+		}
+	}
+
+	bytes, _ := json.Marshal(systemMap[params["system"]].Files)
+	fmt.Fprintln(writer, string(bytes))
 }
 
 func GetSystemFile(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
-	fmt.Fprintln(writer, "List of files that are found for:", params["file"])
+
+	bytes, _ := json.Marshal(systemMap[params["system"]].Files)
+	fmt.Fprintln(writer, string(bytes))
+}
+
+func PutFiles(writer http.ResponseWriter, request *http.Request) {
+	params := mux.Vars(request)
+
+	var files []File
+	_ = json.NewDecoder(request.Body).Decode(&files)
+	systemMap[params["system"]].Files = files
+
+	fmt.Fprintln(writer, "Accepted")
 }
 
 func PutFile(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 
-	file := File{}
+	var file File
+	_ = json.NewDecoder(request.Body).Decode(&file)
+	systemMap[params["system"]].Files = append(systemMap[params["system"]].Files, file)
 
-	append(systemMap[params["system"]].Files, file)
-
-	fmt.Fprintln(writer, "List of files that are found for:", params["file"])
+	fmt.Fprintln(writer, "Accepted")
 }
 
 func GetSystem(writer http.ResponseWriter, request *http.Request) {
@@ -96,7 +126,7 @@ func extractSystem(system *System, writer *http.ResponseWriter) {
 		newSystem = system.UUID
 	}
 	if errUuid == nil {
-		systemMap[newSystem] = *system
+		systemMap[newSystem] = system
 		log.Printf("Post system request was a success %s", systemMap[newSystem])
 		fmt.Fprint(*writer, "{\"id\":\"" + newSystem + "\"}")
 	} else {

@@ -16,16 +16,16 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"github.com/gorilla/mux"
+	"log"
 	"net/http"
 	"net/http/httptest"
-	"strings"
-	"testing"
 	"os"
+	"strings"
 	"syscall"
+	"testing"
 	"time"
-	"log"
-	"encoding/json"
 )
 
 //Verify that home exists and returns the correct status code
@@ -64,7 +64,7 @@ func TestFileLifecycle(t *testing.T) {
 func TestAS(t *testing.T) {
 	postTestSystem(t)
 
-	f := File{}
+	f := &File{}
 	fi, _ := os.Stat("controller.go")
 
 	var stat = fi.Sys().(*syscall.Stat_t)
@@ -75,6 +75,8 @@ func TestAS(t *testing.T) {
 
 	test, _ := json.Marshal(f)
 	log.Print(string(test))
+
+	//postTestFile(t, f)
 
 	delTestSystem(t)
 }
@@ -151,5 +153,25 @@ func delTestSystem(t *testing.T) {
 	if !strings.Contains(rr.Body.String(), expected) {
 		t.Errorf("handler returned unexpected body: got %v want %v",
 			rr.Body.String(), expected)
+	}
+}
+
+func postTestFile(t *testing.T, f *File) {
+	jsonStr, _ := json.Marshal(f)
+	req, err := http.NewRequest("POST", "/systems/linux-test/files/" + f.Name, bytes.NewBuffer(jsonStr))
+	req.Header.Set("Content-Type", "application/json")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(PutFile)
+
+	handler.ServeHTTP(rr, req)
+
+	// Expect status 200
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
 	}
 }
