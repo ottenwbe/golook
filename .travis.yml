@@ -6,7 +6,7 @@ go:
 before_script:
   - go get ./...  
 script:
-  - go vet
+  - go vet ./... 
   - sh testAllPackages.sh
 
 after_success:
