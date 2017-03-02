@@ -4,8 +4,7 @@ go:
   - 1.7
 
 before_script:
-  - go get
-
+  - go get ./...  
 script:
   - go vet
   - sh testAllPackages.sh
