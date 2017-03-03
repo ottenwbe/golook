@@ -68,13 +68,18 @@ func PutFiles(writer http.ResponseWriter, request *http.Request) {
 }
 
 func PutFile(writer http.ResponseWriter, request *http.Request) {
-	params := mux.Vars(request)
+	params := mux.Vars(request) //params
 
 	var file File
-	_ = json.NewDecoder(request.Body).Decode(&file)
-	systemMap[params["system"]].Files = append(systemMap[params["system"]].Files, file)
-
-	fmt.Fprintln(writer, "Accepted")
+	err := json.NewDecoder(request.Body).Decode(&file)
+	if (err != nil) {
+		log.Printf("Error. File could not be decoded while putting the file to server %s", err)
+	} else if sys, ok := systemMap[params["system"]]; ok {
+		sys.Files = append(sys.Files, file)
+		fmt.Fprintln(writer, "Accepted")
+	} else {
+		log.Printf("Error. System not found: %s", params["system"])
+	}
 }
 
 func GetSystem(writer http.ResponseWriter, request *http.Request) {
@@ -83,7 +88,10 @@ func GetSystem(writer http.ResponseWriter, request *http.Request) {
 	log.Printf("Get (system=%s) from '%d' systems", params["system"], len(systemMap))
 
 	if sys, ok := params["system"]; ok {
-		str, _ := json.Marshal(systemMap[sys]) //TODO: error handling
+		str, marshalError := json.Marshal(systemMap[sys])
+		if marshalError != nil {
+			fmt.Fprint(writer, "Json could not be marshalled")
+		}
 		fmt.Fprint(writer, string(str))
 	} else {
 		log.Print("Error: Get system failed")

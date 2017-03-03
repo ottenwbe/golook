@@ -55,7 +55,7 @@ func TestHome(t *testing.T) {
 	}
 }
 
-func TestFileLifecycle(t *testing.T) {
+func TestSystemLifecycle(t *testing.T) {
 	postTestSystem(t)
 	getTestSystem(t)
 	delTestSystem(t)
@@ -76,29 +76,24 @@ func TestAS(t *testing.T) {
 	test, _ := json.Marshal(f)
 	log.Print(string(test))
 
-	//postTestFile(t, f)
+	postTestFile(t, f)
 
-	delTestSystem(t)
-}
-
-func TestSystemLifecycle(t *testing.T) {
-	postTestSystem(t)
-	getTestSystem(t)
 	delTestSystem(t)
 }
 
 func postTestSystem(t *testing.T) {
 	var jsonStr = []byte(`{"name":"1234","os":"linux","ip":"1.1.1.1","uuid":"a"}`)
-	req, err := http.NewRequest("POST", "/systems/linux-test", bytes.NewBuffer(jsonStr))
+	req, err := http.NewRequest("POST", "/systems/a", bytes.NewBuffer(jsonStr))
 	req.Header.Set("Content-Type", "application/json")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(PostSystem)
 
-	handler.ServeHTTP(rr, req)
+	m := mux.NewRouter()
+	m.HandleFunc("/systems/{system}", PostSystem)
+	m.ServeHTTP(rr, req)
 
 	// Expect status 200
 	if status := rr.Code; status != http.StatusOK {
@@ -112,7 +107,6 @@ func postTestSystem(t *testing.T) {
 		t.Errorf("handler returned unexpected body: got %v want %v",
 			rr.Body.String(), expected)
 	}
-
 }
 
 func getTestSystem(t *testing.T) {
@@ -158,16 +152,16 @@ func delTestSystem(t *testing.T) {
 
 func postTestFile(t *testing.T, f *File) {
 	jsonStr, _ := json.Marshal(f)
-	req, err := http.NewRequest("POST", "/systems/linux-test/files/" + f.Name, bytes.NewBuffer(jsonStr))
+	req, err := http.NewRequest("POST", "/systems/a/files/" + f.Name, bytes.NewBuffer(jsonStr))
 	req.Header.Set("Content-Type", "application/json")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(PutFile)
-
-	handler.ServeHTTP(rr, req)
+	m := mux.NewRouter()
+	m.HandleFunc("/systems/{system}/files/{file}", PutFile)
+	m.ServeHTTP(rr, req)
 
 	// Expect status 200
 	if status := rr.Code; status != http.StatusOK {

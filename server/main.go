@@ -20,7 +20,7 @@ import (
 	"net/http"
 )
 
-func makeServer() {
+func createRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", home)
 	router.HandleFunc("/files/{file}", GetFile).Methods("GET")
@@ -30,7 +30,11 @@ func makeServer() {
 	router.HandleFunc("/systems/{system}", GetSystem).Methods("GET")
 	router.HandleFunc("/systems", PostSystem).Methods("POST")
 	router.HandleFunc("/systems/{system}", DelSystem).Methods("DELETE")
+	return router
+}
 
+func makeServer() {
+	router := createRouter()
 	// start the server and listen on port 8080
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
