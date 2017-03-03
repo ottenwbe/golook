@@ -23,22 +23,22 @@ import (
 func createRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", home)
-	router.HandleFunc("/files/{file}", GetFile).Methods("GET")
-	router.HandleFunc("/systems/{system}/files/{file}", GetSystemFile).Methods("GET")
-	router.HandleFunc("/systems/{system}/files/{file}", PutFile).Methods("PUT")
-	router.HandleFunc("/systems/{system}/files/{file}", PutFiles).Methods("PUT")
-	router.HandleFunc("/systems/{system}", GetSystem).Methods("GET")
-	router.HandleFunc("/systems", PostSystem).Methods("POST")
-	router.HandleFunc("/systems/{system}", DelSystem).Methods("DELETE")
+	router.HandleFunc("/files/{file}", getFile).Methods("GET")
+	router.HandleFunc("/systems/{system}/files/{file}", getSystemFile).Methods("GET")
+	router.HandleFunc("/systems/{system}/files/{file}", putFile).Methods("PUT")
+	router.HandleFunc("/systems/{system}/files/{file}", putFiles).Methods("PUT")
+	router.HandleFunc("/systems/{system}", getSystem).Methods("GET")
+	router.HandleFunc("/systems", postSystem).Methods("POST")
+	router.HandleFunc("/systems/{system}", delSystem).Methods("DELETE")
 	return router
 }
 
-func makeServer() {
+func startServer() {
 	router := createRouter()
 	// start the server and listen on port 8080
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
 
 func main() {
-	makeServer()
+	startServer()
 }

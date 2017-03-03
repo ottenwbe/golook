@@ -2,11 +2,15 @@ language: go
 
 go: 
   - 1.7
+  - tip
 
 before_script:
-  - go get ./...  
+  - go vet ./...
+
+install:
+  - go get ./...
+
 script:
-  - go vet ./... 
   - sh testAllPackages.sh
 
 after_success:

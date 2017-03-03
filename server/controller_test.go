@@ -30,40 +30,42 @@ import (
 
 //Verify that home exists and returns the correct status code
 func TestHome(t *testing.T) {
-
-	req, err := http.NewRequest("GET", "/", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(home)
-
-	handler.ServeHTTP(rr, req)
-
-	// Expect status 200
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
-	}
-
-	// Check the response body is what we expect.
-	expected := `{up}`
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
+	makeTestRequest(
+		t,
+		"GET",
+		"/",
+		"/",
+		home,
+		http.StatusOK,
+		"{up}",
+	)
 }
 
-func TestSystemLifecycle(t *testing.T) {
-	postTestSystem(t)
-	getTestSystem(t)
-	delTestSystem(t)
+func TestSystemLifeCycle(t *testing.T) {
+	const systemName = "testSystem"
+	postTestSystem(t, systemName)
+	getTestSystem(t, systemName)
+	delTestSystem(t, systemName)
 }
 
-func TestAS(t *testing.T) {
-	postTestSystem(t)
+func TestFileLifeCycle(t *testing.T) {
+	const systemName = "testSystem"
+	postTestSystem(t, systemName)
 
+	f := createTestFile()
+	// create file
+	postTestFile(t, f, systemName)
+	// check if file can be retrieved
+	getTestFile(t, systemName, f.Name, f.Name)
+	// delete file
+	postEmptyTestFiles(t, systemName)
+	// check if file has been deleted
+	getTestFile(t, systemName, f.Name, "")
+
+	delTestSystem(t, systemName)
+}
+
+func createTestFile() *File {
 	f := &File{}
 	fi, _ := os.Stat("controller.go")
 
@@ -73,17 +75,12 @@ func TestAS(t *testing.T) {
 	f.Modified = time.Unix(stat.Mtim.Sec, stat.Mtim.Nsec)
 	f.Name = "controller.go"
 
-	test, _ := json.Marshal(f)
-	log.Print(string(test))
-
-	postTestFile(t, f)
-
-	delTestSystem(t)
+	return f
 }
 
-func postTestSystem(t *testing.T) {
-	var jsonStr = []byte(`{"name":"1234","os":"linux","ip":"1.1.1.1","uuid":"a"}`)
-	req, err := http.NewRequest("POST", "/systems/a", bytes.NewBuffer(jsonStr))
+func postTestSystem(t *testing.T, name string) {
+	var jsonStr = []byte(`{"name":"1234","os":"linux","ip":"1.1.1.1","uuid":"` + name + `"}`)
+	req, err := http.NewRequest("POST", "/systems/" + name, bytes.NewBuffer(jsonStr))
 	req.Header.Set("Content-Type", "application/json")
 	if err != nil {
 		t.Fatal(err)
@@ -92,7 +89,7 @@ func postTestSystem(t *testing.T) {
 	rr := httptest.NewRecorder()
 
 	m := mux.NewRouter()
-	m.HandleFunc("/systems/{system}", PostSystem)
+	m.HandleFunc("/systems/{system}", postSystem)
 	m.ServeHTTP(rr, req)
 
 	// Expect status 200
@@ -101,7 +98,7 @@ func postTestSystem(t *testing.T) {
 			status, http.StatusOK)
 	}
 
-	// Check the response body is what we expect.
+	// Check if the response body is what we expect.
 	expected := "{\"id\":"
 	if !strings.Contains(rr.Body.String(), expected) {
 		t.Errorf("handler returned unexpected body: got %v want %v",
@@ -109,50 +106,47 @@ func postTestSystem(t *testing.T) {
 	}
 }
 
-func getTestSystem(t *testing.T) {
-	req, err := http.NewRequest("GET", "/systems/a", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+func getTestSystem(t *testing.T, name string) {
+	makeTestRequest(
+		t,
+		"GET",
+		"/systems/" + name,
+		"/systems/{system}",
+		getSystem,
+		http.StatusOK,
+		"\"ip\":\"1.1.1.1\"",
+	)
+}
 
-	rr := httptest.NewRecorder()
+func delTestSystem(t *testing.T, name string) {
 
-	m := mux.NewRouter()
-	m.HandleFunc("/systems/{system}", GetSystem)
-	m.ServeHTTP(rr, req)
+	makeTestRequest(
+		t,
+		"DELETE",
+		"/systems/" + name,
+		"/systems/{system}",
+		delSystem,
+		http.StatusOK,
+		"Deleting",
+	)
+}
 
-	// Check the response body is what we expect.
-	expected := "\"ip\":\"1.1.1.1\""
-	if !strings.Contains(rr.Body.String(), expected) {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
+func getTestFile(t *testing.T, systemName string, filename string, comparisonFilename string) {
+	makeTestRequest(
+		t,
+		"GET",
+		"/systems/" + systemName + "/files/" + filename,
+		"/systems/{system}/files/{file}",
+		getSystemFile,
+		http.StatusOK,
+		comparisonFilename,
+	)
 
 }
 
-func delTestSystem(t *testing.T) {
-	req, err := http.NewRequest("DELETE", "/systems/a", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	rr := httptest.NewRecorder()
-
-	m := mux.NewRouter()
-	m.HandleFunc("/systems/{system}", DelSystem)
-	m.ServeHTTP(rr, req)
-
-	// Check the response body is what we expect.
-	expected := "Deleting"
-	if !strings.Contains(rr.Body.String(), expected) {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
-}
-
-func postTestFile(t *testing.T, f *File) {
-	jsonStr, _ := json.Marshal(f)
-	req, err := http.NewRequest("POST", "/systems/a/files/" + f.Name, bytes.NewBuffer(jsonStr))
+func postEmptyTestFiles(t *testing.T, systemName string) {
+	jsonStr, _ := json.Marshal("[]")
+	req, err := http.NewRequest("POST", "/systems/" + systemName + "/files", bytes.NewBuffer(jsonStr))
 	req.Header.Set("Content-Type", "application/json")
 	if err != nil {
 		t.Fatal(err)
@@ -160,12 +154,65 @@ func postTestFile(t *testing.T, f *File) {
 
 	rr := httptest.NewRecorder()
 	m := mux.NewRouter()
-	m.HandleFunc("/systems/{system}/files/{file}", PutFile)
+	m.HandleFunc("/systems/{system}/files", putFiles)
 	m.ServeHTTP(rr, req)
 
 	// Expect status 200
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusOK)
+	}
+}
+
+func postTestFile(t *testing.T, f *File, systemName string) {
+	jsonStr, _ := json.Marshal(f)
+	req, err := http.NewRequest("POST", "/systems/" + systemName + "/files/" + f.Name, bytes.NewBuffer(jsonStr))
+	req.Header.Set("Content-Type", "application/json")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	m := mux.NewRouter()
+	m.HandleFunc("/systems/{system}/files/{file}", putFile)
+	m.ServeHTTP(rr, req)
+
+	// Expect status 200
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+}
+
+func makeTestRequest(
+t *testing.T,
+testHTTPMethod string,
+toPath string,
+forPattern string,
+withFunction func(http.ResponseWriter, *http.Request),
+expectedResultStatus int,
+expectedResultString string,
+) {
+	req, err := http.NewRequest(testHTTPMethod, toPath, nil)
+	if err != nil {
+		t.Fatalf("Could not make new test request: %s", err)
+	}
+
+	log.Printf("Make request to: %s %s to test pattern %s", testHTTPMethod, toPath, forPattern)
+
+	rr := httptest.NewRecorder()
+	m := mux.NewRouter()
+	m.HandleFunc(forPattern, withFunction)
+	m.ServeHTTP(rr, req)
+
+	// Expect status
+	if status := rr.Code; status != expectedResultStatus {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, expectedResultStatus)
+	}
+
+	if !strings.Contains(rr.Body.String(), expectedResultString) {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expectedResultString)
 	}
 }

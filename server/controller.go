@@ -27,7 +27,7 @@ func home(writer http.ResponseWriter, _ *http.Request) {
 	fmt.Fprint(writer, "{up}")
 }
 
-func GetFile(writer http.ResponseWriter, request *http.Request) {
+func getFile(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 
 	var result map[string]*System
@@ -50,14 +50,24 @@ func GetFile(writer http.ResponseWriter, request *http.Request) {
 	fmt.Fprintln(writer, string(bytes))
 }
 
-func GetSystemFile(writer http.ResponseWriter, request *http.Request) {
+func getSystemFile(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 
-	bytes, _ := json.Marshal(systemMap[params["system"]].Files)
-	fmt.Fprintln(writer, string(bytes))
+	if sys, ok := systemMap[params["system"]]; ok {
+		bytes, marshallErr := json.Marshal(sys.Files)
+		if marshallErr == nil {
+			fmt.Fprintln(writer, string(bytes))
+		} else {
+			fmt.Fprintln(writer, "File cannot be marshalled")
+			log.Printf("Error marshalling file %s", marshallErr)
+		}
+	} else {
+		fmt.Fprintln(writer, "System to receive file for cannot be found")
+		log.Print("System to receive file for cannot be found")
+	}
 }
 
-func PutFiles(writer http.ResponseWriter, request *http.Request) {
+func putFiles(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 
 	var files []File
@@ -67,12 +77,12 @@ func PutFiles(writer http.ResponseWriter, request *http.Request) {
 	fmt.Fprintln(writer, "Accepted")
 }
 
-func PutFile(writer http.ResponseWriter, request *http.Request) {
+func putFile(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request) //params
 
 	var file File
 	err := json.NewDecoder(request.Body).Decode(&file)
-	if (err != nil) {
+	if err != nil {
 		log.Printf("Error. File could not be decoded while putting the file to server %s", err)
 	} else if sys, ok := systemMap[params["system"]]; ok {
 		sys.Files = append(sys.Files, file)
@@ -82,30 +92,32 @@ func PutFile(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
-func GetSystem(writer http.ResponseWriter, request *http.Request) {
+func getSystem(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
-	fmt.Fprintln(writer, "List of files that are found for:", params["system"])
-	log.Printf("Get (system=%s) from '%d' systems", params["system"], len(systemMap))
 
 	if sys, ok := params["system"]; ok {
+		log.Printf("Find (system=%s) in '%d' systems", params["system"], len(systemMap))
 		str, marshalError := json.Marshal(systemMap[sys])
 		if marshalError != nil {
-			fmt.Fprint(writer, "Json could not be marshalled")
+			log.Print("Json could not be marshalled")
+			fmt.Fprint(writer, "{}")
+		} else {
+			log.Printf("Find (system=%s) was successful: %s", sys, str)
+			fmt.Fprint(writer, string(str))
 		}
-		fmt.Fprint(writer, string(str))
 	} else {
 		log.Print("Error: Get system failed")
 		fmt.Fprint(writer, "System not found")
 	}
 }
 
-func DelSystem(writer http.ResponseWriter, request *http.Request) {
+func delSystem(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 	delete(systemMap, params["system"])
 	fmt.Fprintln(writer, "Deleting system:", params["system"])
 }
 
-func PostSystem(writer http.ResponseWriter, request *http.Request) {
+func postSystem(writer http.ResponseWriter, request *http.Request) {
 	if (request != nil) && (request.Body != nil) {
 		tryAddSystem(&writer, request)
 	} else {
@@ -135,7 +147,7 @@ func extractSystem(system *System, writer *http.ResponseWriter) {
 	}
 	if errUuid == nil {
 		systemMap[newSystem] = system
-		log.Printf("Post system request was a success %s", systemMap[newSystem])
+		log.Printf("Post (system=%s) request was a success %s", newSystem, systemMap[newSystem])
 		fmt.Fprint(*writer, "{\"id\":\"" + newSystem + "\"}")
 	} else {
 		log.Printf("Error: UUID error %s", errUuid)
