@@ -58,11 +58,11 @@ func getSystemFile(writer http.ResponseWriter, request *http.Request) {
 		if marshallErr == nil {
 			fmt.Fprintln(writer, string(bytes))
 		} else {
-			fmt.Fprintln(writer, "File cannot be marshalled")
+			fmt.Fprintln(writer, "{nack}")
 			log.Printf("Error marshalling file %s", marshallErr)
 		}
 	} else {
-		fmt.Fprintln(writer, "System to receive file for cannot be found")
+		fmt.Fprintln(writer, "{nack}")
 		log.Print("System to receive file for cannot be found")
 	}
 }
@@ -83,31 +83,33 @@ func putFile(writer http.ResponseWriter, request *http.Request) {
 	var file File
 	err := json.NewDecoder(request.Body).Decode(&file)
 	if err != nil {
+		fmt.Fprintln(writer, "{nack}")
 		log.Printf("Error. File could not be decoded while putting the file to server %s", err)
 	} else if sys, ok := systemMap[params["system"]]; ok {
 		sys.Files = append(sys.Files, file)
-		fmt.Fprintln(writer, "Accepted")
+		fmt.Fprintln(writer, "{ack}")
 	} else {
-		log.Printf("Error. System not found: %s", params["system"])
+		fmt.Fprintln(writer, "{nack}")
+		log.Printf("Error. System (%s) not found while putting a file information to the server.", params["system"])
 	}
 }
 
 func getSystem(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 
-	if sys, ok := params["system"]; ok {
+	if sys, ok := systemMap[params["system"]]; ok {
 		log.Printf("Find (system=%s) in '%d' systems", params["system"], len(systemMap))
-		str, marshalError := json.Marshal(systemMap[sys])
+		str, marshalError := json.Marshal(sys)
 		if marshalError != nil {
 			log.Print("Json could not be marshalled")
 			fmt.Fprint(writer, "{}")
 		} else {
-			log.Printf("Find (system=%s) was successful: %s", sys, str)
+			log.Printf("Find (system=%s) was successful: %s", params["system"], str)
 			fmt.Fprint(writer, string(str))
 		}
 	} else {
-		log.Print("Error: Get system failed")
-		fmt.Fprint(writer, "System not found")
+		log.Printf("System (%s) not found: Returning empty Json", params["system"])
+		fmt.Fprint(writer, "{}")
 	}
 }
 

@@ -65,6 +65,20 @@ func TestFileLifeCycle(t *testing.T) {
 	delTestSystem(t, systemName)
 }
 
+func TestGetNonExistingSystem(t *testing.T) {
+	const systemName = "testSystem"
+	getNonExistingTestSystem(t, systemName)
+}
+
+func TestGetFileForNonExistingSystem(t *testing.T) {
+	const systemName = "testSystem"
+	getTestFileForNotExistingSystem(t, systemName, "afile.txt")
+}
+
+/////////////////////////
+// Helper Functions
+/////////////////////////
+
 func createTestFile() *File {
 	f := &File{}
 	fi, _ := os.Stat("controller.go")
@@ -118,6 +132,18 @@ func getTestSystem(t *testing.T, name string) {
 	)
 }
 
+func getNonExistingTestSystem(t *testing.T, name string) {
+	makeTestRequest(
+		t,
+		"GET",
+		"/systems/" + name,
+		"/systems/{system}",
+		getSystem,
+		http.StatusOK,
+		"{}",
+	)
+}
+
 func delTestSystem(t *testing.T, name string) {
 
 	makeTestRequest(
@@ -130,6 +156,20 @@ func delTestSystem(t *testing.T, name string) {
 		"Deleting",
 	)
 }
+
+func getTestFileForNotExistingSystem(t *testing.T, systemName string, filename string) {
+	makeTestRequest(
+		t,
+		"GET",
+		"/systems/" + systemName + "/files/" + filename,
+		"/systems/{system}/files/{file}",
+		getSystemFile,
+		http.StatusOK,
+		"{nack}",
+	)
+
+}
+
 
 func getTestFile(t *testing.T, systemName string, filename string, comparisonFilename string) {
 	makeTestRequest(
