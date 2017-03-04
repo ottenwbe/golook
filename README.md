@@ -22,6 +22,7 @@ Search for files in a distributed system via Rest API.
 
 1. Go build the executable
     ```sh
+    
     cd server
     go build ./.. -o bin/server
     ```
