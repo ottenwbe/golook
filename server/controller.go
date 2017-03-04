@@ -15,6 +15,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/ottenwbe/golook/helper"
@@ -83,11 +84,14 @@ func getSystemFile(writer http.ResponseWriter, request *http.Request) {
 func putFiles(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 
-	var files []File
-	_ = json.NewDecoder(request.Body).Decode(&files)
-	systemMap[params[systemPath]].Files = files
-
-	fmt.Fprintln(writer, "Accepted")
+	files := make([]File, 0)
+	err := json.NewDecoder(request.Body).Decode(&files)
+	if err != nil {
+		http.Error(writer, errors.New(nack).Error(), http.StatusBadRequest)
+	} else {
+		systemMap[params[systemPath]].Files = files
+		fmt.Fprintln(writer, ack)
+	}
 }
 
 func putFile(writer http.ResponseWriter, request *http.Request) {
@@ -96,11 +100,11 @@ func putFile(writer http.ResponseWriter, request *http.Request) {
 	var file File
 	err := json.NewDecoder(request.Body).Decode(&file)
 	if err != nil {
-		fmt.Fprintln(writer, nack)
+		http.Error(writer, errors.New(nack).Error(), http.StatusBadRequest)
 		log.Printf("Error. File could not be decoded while putting the file to server %s", err)
 	} else if sys, ok := systemMap[params[systemPath]]; ok {
 		sys.Files = append(sys.Files, file)
-		fmt.Fprintln(writer, "{ack}")
+		fmt.Fprintln(writer, ack)
 	} else {
 		fmt.Fprintln(writer, nack)
 		log.Printf("Error. System (%s) not found while putting a file information to the server.", params[systemPath])
@@ -121,8 +125,8 @@ func getSystem(writer http.ResponseWriter, request *http.Request) {
 			fmt.Fprint(writer, string(str))
 		}
 	} else {
+		http.Error(writer, errors.New("{}").Error(), http.StatusNotFound)
 		log.Printf("System (%s) not found: Returning empty Json", params[systemPath])
-		fmt.Fprint(writer, "{}")
 	}
 }
 
@@ -150,7 +154,7 @@ func tryAddSystem(writer *http.ResponseWriter, request *http.Request) {
 	err := json.NewDecoder(request.Body).Decode(&system)
 	if err != nil {
 		log.Printf("Error: Post system request has errors: %s", err)
-		fmt.Fprint(*writer, "Post system request has errors")
+		fmt.Fprint(*writer, nack)
 	} else {
 		extractSystem(&system, writer)
 	}
@@ -170,6 +174,6 @@ func extractSystem(system *System, writer *http.ResponseWriter) {
 		fmt.Fprint(*writer, "{\"id\":\""+newSystem+"\"}")
 	} else {
 		log.Printf("Error: UUID error %s", errUuid)
-		fmt.Fprint(*writer, "UUID error")
+		fmt.Fprint(*writer, nack)
 	}
 }

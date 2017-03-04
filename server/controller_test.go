@@ -61,7 +61,7 @@ func TestFileLifeCycle(t *testing.T) {
 	// check if file can be retrieved
 	getTestFile(t, systemName, f.Name, f.Name)
 	// delete file
-	putEmptyTestFiles(t, systemName)
+	putEmptyTestFiles(t, systemName, []byte(`[]`))
 	// check if file has been deleted
 	getTestFile(t, systemName, f.Name, "")
 
@@ -73,6 +73,13 @@ func TestGetNonExistingSystem(t *testing.T) {
 
 func TestGetFileForNonExistingSystem(t *testing.T) {
 	getTestFileForNotExistingSystem(t, systemName, "afile.txt")
+}
+
+func TestPutFilesWithWrongJson(t *testing.T) {
+	putTestSystem(t, systemName)
+	defer delTestSystem(t, systemName)
+
+	putFaultyTestFiles(t, systemName, []byte(`[`))
 }
 
 func TestPutFileWithWrongJson(t *testing.T) {
@@ -89,7 +96,7 @@ func TestPutFileWithWrongJson(t *testing.T) {
 		jsonStr,
 		"/systems/{system}/files/{file}",
 		putFile,
-		http.StatusOK,
+		http.StatusBadRequest,
 		nack,
 	)
 }
@@ -152,7 +159,7 @@ func getNonExistingTestSystem(t *testing.T, name string) {
 		nil,
 		"/systems/{system}",
 		getSystem,
-		http.StatusOK,
+		http.StatusNotFound,
 		"{}",
 	)
 }
@@ -197,13 +204,25 @@ func getTestFile(t *testing.T, systemName string, filename string, comparisonFil
 
 }
 
-func putEmptyTestFiles(t *testing.T, systemName string) {
-	jsonStr, _ := json.Marshal("[]")
+func putFaultyTestFiles(t *testing.T, systemName string, files []byte) {
 	makeTestRequest(
 		t,
 		"PUT",
 		"/systems/"+systemName+"/files",
-		jsonStr,
+		files,
+		"/systems/{system}/files",
+		putFiles,
+		http.StatusBadRequest,
+		nack,
+	)
+}
+
+func putEmptyTestFiles(t *testing.T, systemName string, files []byte) {
+	makeTestRequest(
+		t,
+		"PUT",
+		"/systems/"+systemName+"/files",
+		files,
 		"/systems/{system}/files",
 		putFiles,
 		http.StatusOK,
