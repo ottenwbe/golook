@@ -23,8 +23,20 @@ import (
 	"strings"
 )
 
+const (
+	nack = "{nack}"
+	ack  = "{ack}"
+
+	systemPath = "system"
+	filePath   = "file"
+)
+
+/////////////////////////////////////
+// Controllers
+/////////////////////////////////////
+
 func home(writer http.ResponseWriter, _ *http.Request) {
-	fmt.Fprint(writer, "{up}")
+	fmt.Fprint(writer, ack)
 }
 
 func getFile(writer http.ResponseWriter, request *http.Request) {
@@ -32,7 +44,7 @@ func getFile(writer http.ResponseWriter, request *http.Request) {
 
 	var result map[string]*System
 
-	findString := params["file"]
+	findString := params[filePath]
 
 	for sid, system := range systemMap {
 		for _, file := range system.Files {
@@ -46,23 +58,24 @@ func getFile(writer http.ResponseWriter, request *http.Request) {
 		}
 	}
 
-	bytes, _ := json.Marshal(systemMap[params["system"]].Files)
+	//TODO error handling
+	bytes, _ := json.Marshal(systemMap[params[systemPath]].Files)
 	fmt.Fprintln(writer, string(bytes))
 }
 
 func getSystemFile(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 
-	if sys, ok := systemMap[params["system"]]; ok {
+	if sys, ok := systemMap[params[systemPath]]; ok {
 		bytes, marshallErr := json.Marshal(sys.Files)
 		if marshallErr == nil {
 			fmt.Fprintln(writer, string(bytes))
 		} else {
-			fmt.Fprintln(writer, "{nack}")
+			fmt.Fprintln(writer, nack)
 			log.Printf("Error marshalling file %s", marshallErr)
 		}
 	} else {
-		fmt.Fprintln(writer, "{nack}")
+		fmt.Fprintln(writer, nack)
 		log.Print("System to receive file for cannot be found")
 	}
 }
@@ -72,7 +85,7 @@ func putFiles(writer http.ResponseWriter, request *http.Request) {
 
 	var files []File
 	_ = json.NewDecoder(request.Body).Decode(&files)
-	systemMap[params["system"]].Files = files
+	systemMap[params[systemPath]].Files = files
 
 	fmt.Fprintln(writer, "Accepted")
 }
@@ -83,50 +96,54 @@ func putFile(writer http.ResponseWriter, request *http.Request) {
 	var file File
 	err := json.NewDecoder(request.Body).Decode(&file)
 	if err != nil {
-		fmt.Fprintln(writer, "{nack}")
+		fmt.Fprintln(writer, nack)
 		log.Printf("Error. File could not be decoded while putting the file to server %s", err)
-	} else if sys, ok := systemMap[params["system"]]; ok {
+	} else if sys, ok := systemMap[params[systemPath]]; ok {
 		sys.Files = append(sys.Files, file)
 		fmt.Fprintln(writer, "{ack}")
 	} else {
-		fmt.Fprintln(writer, "{nack}")
-		log.Printf("Error. System (%s) not found while putting a file information to the server.", params["system"])
+		fmt.Fprintln(writer, nack)
+		log.Printf("Error. System (%s) not found while putting a file information to the server.", params[systemPath])
 	}
 }
 
 func getSystem(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 
-	if sys, ok := systemMap[params["system"]]; ok {
-		log.Printf("Find (system=%s) in '%d' systems", params["system"], len(systemMap))
+	if sys, ok := systemMap[params[systemPath]]; ok {
+		log.Printf("Find (system=%s) in '%d' systems", params[systemPath], len(systemMap))
 		str, marshalError := json.Marshal(sys)
 		if marshalError != nil {
 			log.Print("Json could not be marshalled")
 			fmt.Fprint(writer, "{}")
 		} else {
-			log.Printf("Find (system=%s) was successful: %s", params["system"], str)
+			log.Printf("Find (system=%s) was successful: %s", params[systemPath], str)
 			fmt.Fprint(writer, string(str))
 		}
 	} else {
-		log.Printf("System (%s) not found: Returning empty Json", params["system"])
+		log.Printf("System (%s) not found: Returning empty Json", params[systemPath])
 		fmt.Fprint(writer, "{}")
 	}
 }
 
 func delSystem(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
-	delete(systemMap, params["system"])
-	fmt.Fprintln(writer, "Deleting system:", params["system"])
+	delete(systemMap, params[systemPath])
+	fmt.Fprintln(writer, "Deleting system:", params[systemPath])
 }
 
-func postSystem(writer http.ResponseWriter, request *http.Request) {
+func putSystem(writer http.ResponseWriter, request *http.Request) {
 	if (request != nil) && (request.Body != nil) {
 		tryAddSystem(&writer, request)
 	} else {
 		log.Print("Error: Post system request was empty")
-		fmt.Fprint(writer, "Post system request was empty")
+		fmt.Fprint(writer, nack)
 	}
 }
+
+/////////////////////////////////////
+// Helpers for controllers
+/////////////////////////////////////
 
 func tryAddSystem(writer *http.ResponseWriter, request *http.Request) {
 	var system System
@@ -150,7 +167,7 @@ func extractSystem(system *System, writer *http.ResponseWriter) {
 	if errUuid == nil {
 		systemMap[newSystem] = system
 		log.Printf("Post (system=%s) request was a success %s", newSystem, systemMap[newSystem])
-		fmt.Fprint(*writer, "{\"id\":\"" + newSystem + "\"}")
+		fmt.Fprint(*writer, "{\"id\":\""+newSystem+"\"}")
 	} else {
 		log.Printf("Error: UUID error %s", errUuid)
 		fmt.Fprint(*writer, "UUID error")

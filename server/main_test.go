@@ -24,9 +24,12 @@ func TestRouterCreation(t *testing.T) {
 		t.Error("Router is nil after creation")
 	}
 
-	/* TODO: check if routes are registered
-	if router.Path() == nil {
+	/* TODO: check if all routes are registered */
+	/*if router.Get("/") == nil {
 		t.Error("Route / does not exists")
-	}
-	*/
+	}*/
 }
+
+//TODO: test registered routes by query
+// 1.) start server (in go routine)
+// 2.) start a "client" (in go routine) testing all routes

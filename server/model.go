@@ -29,12 +29,3 @@ type System struct {
 	UUID  string `json:"uuid"`
 	Files []File `json:"files"`
 }
-
-type repository interface {
-	findFile(fileName string) ([]System, error)
-	get(fileName string, systemName string) (File, error)
-	putSystem(system System) error
-	putFile(file File) error
-}
-
-var systemMap = make(map[string]*System, 1)

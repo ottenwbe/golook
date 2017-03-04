@@ -22,13 +22,13 @@ import (
 
 func createRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/", home)
+	router.HandleFunc("/", home).Methods("GET").Name("/")
 	router.HandleFunc("/files/{file}", getFile).Methods("GET")
 	router.HandleFunc("/systems/{system}/files/{file}", getSystemFile).Methods("GET")
 	router.HandleFunc("/systems/{system}/files/{file}", putFile).Methods("PUT")
 	router.HandleFunc("/systems/{system}/files/{file}", putFiles).Methods("PUT")
 	router.HandleFunc("/systems/{system}", getSystem).Methods("GET")
-	router.HandleFunc("/systems", postSystem).Methods("POST")
+	router.HandleFunc("/systems", putSystem).Methods("PUT")
 	router.HandleFunc("/systems/{system}", delSystem).Methods("DELETE")
 	return router
 }
