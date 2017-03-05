@@ -1,6 +1,9 @@
 .idea/
 *.iml
+projectFilesBackup/
+
 bin/
+
+profile
 coverage.txt
 .cover/
-profile

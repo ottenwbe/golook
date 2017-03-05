@@ -11,21 +11,12 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package server
+package main
 
-import "time"
+import (
+	"github.com/ottenwbe/golook/server"
+)
 
-type File struct {
-	Name     string    `json:"name"`
-	Created  time.Time `json:"created"`
-	Modified time.Time `json:"modified"`
-	Accessed time.Time `json:"accessed"`
-}
-
-type System struct {
-	Name  string `json:"name"`
-	OS    string `json:"os"`
-	IP    string `json:"ip"`
-	UUID  string `json:"uuid"`
-	Files []File `json:"files"`
+func main() {
+	server.StartServer()
 }

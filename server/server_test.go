@@ -11,21 +11,26 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package server
 
-import "time"
+import (
+	"testing"
+)
 
-type File struct {
-	Name     string    `json:"name"`
-	Created  time.Time `json:"created"`
-	Modified time.Time `json:"modified"`
-	Accessed time.Time `json:"accessed"`
+func TestRouterCreation(t *testing.T) {
+	router := createRouter()
+
+	if router == nil {
+		t.Error("Router is nil after creation")
+	}
+
+	/* TODO: check if all routes are registered */
+	/*if router.Get("/") == nil {
+		t.Error("Route / does not exists")
+	}*/
 }
 
-type System struct {
-	Name  string `json:"name"`
-	OS    string `json:"os"`
-	IP    string `json:"ip"`
-	UUID  string `json:"uuid"`
-	Files []File `json:"files"`
-}
+//TODO: test registered routes by query
+// 1.) start server (in go routine)
+// 2.) start a "client" (in go routine) testing all routes

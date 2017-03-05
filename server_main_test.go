@@ -12,24 +12,3 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 package main
-
-import (
-	"testing"
-)
-
-func TestRouterCreation(t *testing.T) {
-	router := createRouter()
-
-	if router == nil {
-		t.Error("Router is nil after creation")
-	}
-
-	/* TODO: check if all routes are registered */
-	/*if router.Get("/") == nil {
-		t.Error("Route / does not exists")
-	}*/
-}
-
-//TODO: test registered routes by query
-// 1.) start server (in go routine)
-// 2.) start a "client" (in go routine) testing all routes

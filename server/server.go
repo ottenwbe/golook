@@ -11,12 +11,11 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package main
+package server
 
 import (
-	"log"
-
 	"github.com/gorilla/mux"
+	"log"
 	"net/http"
 )
 
@@ -33,12 +32,8 @@ func createRouter() *mux.Router {
 	return router
 }
 
-func startServer() {
+func StartServer() {
 	router := createRouter()
 	// start the server and listen on port 8080
 	log.Fatal(http.ListenAndServe(":8080", router))
-}
-
-func main() {
-	startServer()
 }

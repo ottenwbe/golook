@@ -11,7 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package main
+package server
 
 import (
 	"bytes"
@@ -44,6 +44,7 @@ func TestHome(t *testing.T) {
 	)
 }
 
+//Verify that a system can be put to the server, retrieved, and finally be deleted
 func TestSystemLifeCycle(t *testing.T) {
 	putTestSystem(t, systemName)
 	defer delTestSystem(t, systemName)
@@ -51,6 +52,7 @@ func TestSystemLifeCycle(t *testing.T) {
 	getTestSystem(t, systemName)
 }
 
+//Verify that a file can be created, queried, and finally be deleted on a server, iff a system exists
 func TestFileLifeCycle(t *testing.T) {
 	putTestSystem(t, systemName)
 	defer delTestSystem(t, systemName)
