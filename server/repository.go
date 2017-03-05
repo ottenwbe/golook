@@ -20,4 +20,4 @@ type repository interface {
 	putFile(file File) error
 }
 
-var systemMap = make(map[string]*System, 1)
+var systemMap = make(map[string]*System, 0)

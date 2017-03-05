@@ -43,24 +43,12 @@ func home(writer http.ResponseWriter, _ *http.Request) {
 func getFile(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 
-	var result map[string]*System
-
 	findString := params[filePath]
 
-	for sid, system := range systemMap {
-		for _, file := range system.Files {
-			if strings.Contains(file.Name, findString) {
-				if _, ok := result[sid]; !ok {
-					result[sid] = new(System)
-					result[sid].Name = system.Name
-				}
-				result[sid].Files = append(result[sid].Files, file)
-			}
-		}
-	}
+	result := findSystemAndFiles(findString)
 
 	//TODO error handling
-	bytes, _ := json.Marshal(systemMap[params[systemPath]].Files)
+	bytes, _ := json.Marshal(result)
 	fmt.Fprintln(writer, string(bytes))
 }
 
@@ -176,4 +164,23 @@ func extractSystem(system *System, writer *http.ResponseWriter) {
 		log.Printf("Error: UUID error %s", errUuid)
 		fmt.Fprint(*writer, nack)
 	}
+}
+
+func findSystemAndFiles(findString string) map[string]*System {
+	result := make(map[string]*System, 0)
+	for sid, system := range systemMap {
+		//log.Printf("Find %s systemMap %s files %d", findString, sid, len(system.Files) )
+		for _, file := range system.Files {
+			//log.Printf("Find %s systemMap.File %s", findString, file.Name)
+			if strings.Contains(file.Name, findString) {
+				if _, ok := result[sid]; !ok {
+					result[sid] = new(System)
+					result[sid].Name = system.Name
+				}
+				result[sid].Files = append(result[sid].Files, file)
+			}
+		}
+	}
+	//log.Printf("Find %s %d", findString, len(result))
+	return result
 }

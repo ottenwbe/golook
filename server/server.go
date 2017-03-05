@@ -19,6 +19,8 @@ import (
 	"net/http"
 )
 
+var httpServer *http.Server
+
 func createRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", home).Methods("GET").Name("/")
@@ -32,8 +34,13 @@ func createRouter() *mux.Router {
 	return router
 }
 
-func StartServer() {
+func StartServer(address string) {
 	router := createRouter()
-	// start the server and listen on port 8080
-	log.Fatal(http.ListenAndServe(":8080", router))
+	httpServer = &http.Server{Addr: address, Handler: router}
+	// start the httpServer and listen
+	log.Fatal(httpServer.ListenAndServe())
 }
+
+//func StopServer() error {
+//TODO: wait for graceful shutdown in go 1.8
+//}

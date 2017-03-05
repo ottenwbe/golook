@@ -14,9 +14,13 @@
 package main
 
 import (
+	"flag"
 	"github.com/ottenwbe/golook/server"
 )
 
 func main() {
-	server.StartServer()
+	address := flag.String("address", ":8080", "Address on which the server is listening")
+	flag.Parse()
+
+	server.StartServer(*address)
 }

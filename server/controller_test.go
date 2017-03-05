@@ -46,15 +46,21 @@ func TestHome(t *testing.T) {
 
 //Verify that a system can be put to the server, retrieved, and finally be deleted
 func TestSystemLifeCycle(t *testing.T) {
-	putTestSystem(t, systemName)
+	putTestSystem(t, systemName, true)
 	defer delTestSystem(t, systemName)
 
 	getTestSystem(t, systemName)
 }
 
+func TestSystemLifeCycleWithRandomUuid(t *testing.T) {
+	putTestSystem(t, systemName, false)
+	//TODO: cleanup
+	//defer delTestSystem(t, systemName)
+}
+
 //Verify that a file can be created, queried, and finally be deleted on a server, iff a system exists
 func TestFileLifeCycle(t *testing.T) {
-	putTestSystem(t, systemName)
+	putTestSystem(t, systemName, true)
 	defer delTestSystem(t, systemName)
 
 	f := createTestFile()
@@ -78,7 +84,7 @@ func TestGetFileForNonExistingSystem(t *testing.T) {
 }
 
 func TestPutFilesWithWrongJson(t *testing.T) {
-	putTestSystem(t, systemName)
+	putTestSystem(t, systemName, true)
 	defer delTestSystem(t, systemName)
 
 	putFaultyTestFiles(t, systemName, []byte(`[`))
@@ -86,7 +92,7 @@ func TestPutFilesWithWrongJson(t *testing.T) {
 
 func TestPutFileWithWrongJson(t *testing.T) {
 
-	putTestSystem(t, systemName)
+	putTestSystem(t, systemName, true)
 	defer delTestSystem(t, systemName)
 
 	jsonStr := []byte(`{"file":"afile.txt`)
@@ -101,6 +107,18 @@ func TestPutFileWithWrongJson(t *testing.T) {
 		http.StatusBadRequest,
 		nack,
 	)
+}
+
+func TestGetFiles(t *testing.T) {
+	putTestSystem(t, systemName, true)
+	defer delTestSystem(t, systemName)
+
+	f := createTestFile()
+	// create file
+	puttTestFile(t, f, systemName)
+
+	getFiles(t, f.Name, f.Name)
+
 }
 
 /////////////////////////
@@ -125,10 +143,17 @@ func createTestFile() *File {
 	return f
 }
 
-func putTestSystem(t *testing.T, name string) {
-	var jsonStr = []byte(`{"name":"1234","os":"linux","ip":"1.1.1.1","uuid":"` + name + `"}`)
+func putTestSystem(t *testing.T, name string, useNameAsUuid bool) string {
 
-	makeTestRequest(
+	var jsonStr []byte
+
+	if useNameAsUuid {
+		jsonStr = []byte(`{"name":"1234","os":"linux","ip":"1.1.1.1","uuid":"` + name + `"}`)
+	} else {
+		jsonStr = []byte(`{"name":"1234","os":"linux","ip":"1.1.1.1"}`)
+	}
+
+	return makeTestRequest(
 		t,
 		"PUT",
 		"/systems/"+name,
@@ -206,6 +231,20 @@ func getTestFile(t *testing.T, systemName string, filename string, comparisonFil
 
 }
 
+func getFiles(t *testing.T, filename string, comparisonFilename string) {
+	makeTestRequest(
+		t,
+		"GET",
+		"/files/"+filename,
+		nil,
+		"/files/{file}",
+		getFile,
+		http.StatusOK,
+		comparisonFilename,
+	)
+
+}
+
 func putFaultyTestFiles(t *testing.T, systemName string, files []byte) {
 	makeTestRequest(
 		t,
@@ -259,7 +298,7 @@ func makeTestRequest(
 	withFunction func(http.ResponseWriter, *http.Request),
 	expectedResultStatus int,
 	expectedResultString string,
-) {
+) string {
 	req, err := http.NewRequest(testHTTPMethod, toPath, makeBody(withJson))
 	if err != nil {
 		t.Fatalf("Could not make new test request: %s", err)
@@ -283,6 +322,8 @@ func makeTestRequest(
 		t.Errorf("handler returned unexpected body: got %v want %v",
 			rr.Body.String(), expectedResultString)
 	}
+
+	return rr.Body.String()
 }
 
 func makeBody(jsonBody []byte) io.Reader {
