@@ -200,7 +200,7 @@ func delTestSystem(t *testing.T, name string) {
 		"/systems/{system}",
 		delSystem,
 		http.StatusOK,
-		"Deleting",
+		ack,
 	)
 }
 

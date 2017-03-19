@@ -11,14 +11,14 @@ Search for files in a distributed system via Rest API.
 
 ### Prerequisites for both, server and client ###
 
-1. Assumption: go is installed and GOPATH is set.
+1. [Go](https://golang.org/doc/install) is installed and [GOPATH](https://golang.org/doc/code.html) is set.
 
 1. Get dependencies
     ```sh
     go get ./.. 
     ```
 
-### Build the client ###
+### Build the server ###
 
 1. Go build the executable
     ```sh
@@ -27,7 +27,7 @@ Search for files in a distributed system via Rest API.
     go build ./.. -o bin/server
     ```
 
-### Build the server ###
+### Build the client ###
 
 TBD
 

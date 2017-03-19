@@ -13,7 +13,11 @@
 //limitations under the License.
 package server
 
-import "time"
+import (
+	"encoding/json"
+	"io"
+	"time"
+)
 
 type File struct {
 	Name     string    `json:"name"`
@@ -28,4 +32,22 @@ type System struct {
 	IP    string `json:"ip"`
 	UUID  string `json:"uuid"`
 	Files []File `json:"files"`
+}
+
+func DecodeFiles(fileReader io.Reader) ([]File, error) {
+	files := make([]File, 0)
+	err := json.NewDecoder(fileReader).Decode(&files)
+	return files, err
+}
+
+func DecodeFile(fileReader io.Reader) (File, error) {
+	var file File
+	err := json.NewDecoder(fileReader).Decode(&file)
+	return file, err
+}
+
+func DecodeSystem(sysReader io.Reader) (System, error) {
+	var sys System
+	err := json.NewDecoder(sysReader).Decode(&sys)
+	return sys, err
 }
