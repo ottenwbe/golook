@@ -42,6 +42,7 @@ func init() {
 // Handler for Endpoints
 /////////////////////////////////////
 
+// Endpoint: GET /
 func home(writer http.ResponseWriter, _ *http.Request) {
 	returnAck(writer)
 }
@@ -49,21 +50,19 @@ func home(writer http.ResponseWriter, _ *http.Request) {
 // Endpoint: GET /files/{file}
 func getFile(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
-	findString := params[filePath]
+	fileName := params[filePath]
 
-	result := repository.findSystemAndFiles(findString)
+	sysFiles := repository.findSystemAndFiles(fileName)
 
-	//TODO error handling
-	bytes, _ := json.Marshal(result)
-	fmt.Fprintln(writer, string(bytes))
+	MarshalAndWriteResult(writer, sysFiles)
 }
 
 // Endpoint: GET /systems/{system}/files/{file}
 func getSystemFile(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 
-	if sys, ok := repository.getSystem(params[systemPath]); ok {
-		writer = writeFilesOfASystemAsJson(sys, writer)
+	if sys, ok := repository.getSystem(params[systemPath]); ok && sys != nil {
+		MarshalFilesAndWriteResult(writer, sys.Files)
 	} else {
 		fmt.Fprintln(writer, nack)
 		log.Print("System to receive file for cannot be found")
@@ -75,31 +74,33 @@ func putFiles(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 	system := params[systemPath]
 
-	files, err := DecodeFiles(request.Body)
+	files, err := DecodeFiles(request.Body) //TODO: ensure request and bond
 	if err != nil {
 		http.Error(writer, errors.New(nack).Error(), http.StatusBadRequest)
+		log.Printf("Files could not be decoded while putting the file to server %s", err)
 	} else if repository.storeFiles(system, files) {
 		fmt.Fprintln(writer, ack)
 	} else {
 		http.Error(writer, errors.New(nack).Error(), http.StatusNotFound)
+		log.Printf("Files could not be decoded while putting the file to server %s", err)
 	}
 }
 
 // Endpoint: PUT /systems/{system}/files/{file}
 func putFile(writer http.ResponseWriter, request *http.Request) {
-	params := mux.Vars(request) //params
+	params := mux.Vars(request)
 
 	file, err := DecodeFile(request.Body)
 	system := params[systemPath]
 
 	if err != nil {
 		http.Error(writer, errors.New(nack).Error(), http.StatusBadRequest)
-		log.Printf("Error. File could not be decoded while putting the file to server %s", err)
+		log.Printf("File could not be decoded while putting the file to server %s", err)
 	} else if repository.storeFile(system, file) {
 		returnAck(writer)
 	} else {
 		http.Error(writer, errors.New(nack).Error(), http.StatusNotFound)
-		log.Printf("Error. System (%s) not found while putting a file information to the server.", system)
+		log.Printf("System (%s) not found while putting a file information to the server.", system)
 	}
 }
 
@@ -109,13 +110,7 @@ func getSystem(writer http.ResponseWriter, request *http.Request) {
 	system := params[systemPath]
 
 	if sys, ok := repository.getSystem(system); ok {
-		str, marshalError := json.Marshal(sys)
-		if marshalError != nil {
-			http.Error(writer, errors.New("{}").Error(), http.StatusNotFound)
-			log.Print("Json could not be marshalled")
-		} else {
-			fmt.Fprint(writer, string(str))
-		}
+		writer = MarshalSystemAndWritResult(sys, writer)
 	} else {
 		http.Error(writer, errors.New("{}").Error(), http.StatusNotFound)
 		log.Printf("System (%s) not found: Returning empty Json", system)
@@ -129,10 +124,10 @@ func delSystem(writer http.ResponseWriter, request *http.Request) {
 	returnAck(writer)
 }
 
-// Endpoint: PUT /systems/{system}
+// Endpoint: PUT /system
 func putSystem(writer http.ResponseWriter, request *http.Request) {
 	if isValidRequest(request) {
-		tryAddSystem(&writer, request.Body) //TODO: writer should not be handed down in function
+		addSystemAndWriteResult(writer, request.Body) //TODO: writer should not be handed down in function
 	} else {
 		http.Error(writer, errors.New(nack).Error(), http.StatusBadRequest)
 		log.Print("Error: Post system request was empty")
@@ -143,47 +138,66 @@ func putSystem(writer http.ResponseWriter, request *http.Request) {
 // Helpers for controllers
 /////////////////////////////////////
 
-func tryAddSystem(writer *http.ResponseWriter, body io.Reader) {
+func addSystemAndWriteResult(writer http.ResponseWriter, body io.Reader) {
 	system, err := DecodeSystem(body)
 	if err != nil {
-		fmt.Fprint(*writer, nack)
+		fmt.Fprint(writer, nack)
 		log.Printf("Error: Post system request has errors: %s", err)
 	} else {
-		extractSystem(&system, writer)
+		extractSystem(&system, &writer)
 	}
 }
 
 func extractSystem(system *System, writer *http.ResponseWriter) {
-	var newSystem string
+	var systemName string
 	var errUuid error = nil
 	if system.UUID == "" {
-		newSystem, errUuid = helper.NewUUID()
+		systemName, errUuid = helper.NewUUID()
 	} else {
-		newSystem = system.UUID
+		systemName = system.UUID
 	}
 	if errUuid == nil {
-		repository.storeSystem(newSystem, system)
-		fmt.Fprint(*writer, "{\"id\":\""+newSystem+"\"}")
+		repository.storeSystem(systemName, system)
+		fmt.Fprint(*writer, "{\"id\":\""+systemName+"\"}")
 	} else {
+		http.Error(*writer, errors.New(nack).Error(), http.StatusBadRequest)
 		log.Printf("Error: UUID error %s", errUuid)
-		fmt.Fprint(*writer, nack)
 	}
 }
 
-func writeFilesOfASystemAsJson(sys *System, writer http.ResponseWriter) http.ResponseWriter {
-	if bytes, marshallErr := json.Marshal(sys.Files); marshallErr == nil {
-		fmt.Fprintln(writer, string(bytes))
-	} else {
-		fmt.Fprintln(writer, nack)
-		log.Printf("Error marshalling file %s", marshallErr)
-	}
-	return writer
+func isValidRequest(request *http.Request) bool {
+	return (request != nil) && (request.Body != nil)
 }
 
 func returnAck(writer http.ResponseWriter) (int, error) {
 	return fmt.Fprint(writer, ack)
 }
 
-func isValidRequest(request *http.Request) bool {
-	return (request != nil) && (request.Body != nil)
+func MarshalFilesAndWriteResult(writer http.ResponseWriter, files []File) {
+	if result, marshallErr := json.Marshal(files); marshallErr == nil {
+		fmt.Fprintln(writer, string(result))
+	} else {
+		http.Error(writer, errors.New(nack).Error(), http.StatusBadRequest)
+		log.Printf("Error marshalling file %s", marshallErr)
+	}
+}
+
+func MarshalAndWriteResult(writer http.ResponseWriter, sysFiles map[string]*System) {
+	if result, marshallErr := json.Marshal(sysFiles); marshallErr == nil {
+		fmt.Fprintln(writer, string(result))
+	} else {
+		http.Error(writer, errors.New(nack).Error(), http.StatusBadRequest)
+		log.Printf("Error marshalling system/file array: %s", marshallErr)
+	}
+}
+
+func MarshalSystemAndWritResult(sys *System, writer http.ResponseWriter) http.ResponseWriter {
+	str, marshalError := json.Marshal(sys)
+	if marshalError != nil {
+		http.Error(writer, errors.New("{}").Error(), http.StatusNotFound)
+		log.Print("Json could not be marshalled")
+	} else {
+		fmt.Fprint(writer, string(str))
+	}
+	return writer
 }
