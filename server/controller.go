@@ -17,10 +17,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/ottenwbe/golook/helper"
 	"log"
 	"net/http"
+
+	"github.com/gorilla/mux"
+	"github.com/ottenwbe/golook/helper"
+	"io"
 )
 
 const (
@@ -41,7 +43,7 @@ func init() {
 /////////////////////////////////////
 
 func home(writer http.ResponseWriter, _ *http.Request) {
-	fmt.Fprint(writer, ack)
+	returnAck(writer)
 }
 
 // Endpoint: GET /files/{file}
@@ -94,7 +96,7 @@ func putFile(writer http.ResponseWriter, request *http.Request) {
 		http.Error(writer, errors.New(nack).Error(), http.StatusBadRequest)
 		log.Printf("Error. File could not be decoded while putting the file to server %s", err)
 	} else if repository.storeFile(system, file) {
-		fmt.Fprintln(writer, ack)
+		returnAck(writer)
 	} else {
 		http.Error(writer, errors.New(nack).Error(), http.StatusNotFound)
 		log.Printf("Error. System (%s) not found while putting a file information to the server.", system)
@@ -124,13 +126,13 @@ func getSystem(writer http.ResponseWriter, request *http.Request) {
 func delSystem(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 	repository.delSystem(params[systemPath])
-	fmt.Fprintln(writer, ack)
+	returnAck(writer)
 }
 
 // Endpoint: PUT /systems/{system}
 func putSystem(writer http.ResponseWriter, request *http.Request) {
-	if (request != nil) && (request.Body != nil) {
-		tryAddSystem(&writer, request) //TODO: writer should not be handed down in function
+	if isValidRequest(request) {
+		tryAddSystem(&writer, request.Body) //TODO: writer should not be handed down in function
 	} else {
 		http.Error(writer, errors.New(nack).Error(), http.StatusBadRequest)
 		log.Print("Error: Post system request was empty")
@@ -141,11 +143,11 @@ func putSystem(writer http.ResponseWriter, request *http.Request) {
 // Helpers for controllers
 /////////////////////////////////////
 
-func tryAddSystem(writer *http.ResponseWriter, request *http.Request) {
-	system, err := DecodeSystem(request.Body)
+func tryAddSystem(writer *http.ResponseWriter, body io.Reader) {
+	system, err := DecodeSystem(body)
 	if err != nil {
-		log.Printf("Error: Post system request has errors: %s", err)
 		fmt.Fprint(*writer, nack)
+		log.Printf("Error: Post system request has errors: %s", err)
 	} else {
 		extractSystem(&system, writer)
 	}
@@ -176,4 +178,12 @@ func writeFilesOfASystemAsJson(sys *System, writer http.ResponseWriter) http.Res
 		log.Printf("Error marshalling file %s", marshallErr)
 	}
 	return writer
+}
+
+func returnAck(writer http.ResponseWriter) (int, error) {
+	return fmt.Fprint(writer, ack)
+}
+
+func isValidRequest(request *http.Request) bool {
+	return (request != nil) && (request.Body != nil)
 }
