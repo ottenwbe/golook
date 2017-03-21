@@ -113,6 +113,30 @@ func TestMapRepository_DelSystems(t *testing.T) {
 	}
 }
 
+func TestMapRepository_TryStoreInvalidSystem(t *testing.T) {
+	sysName := "testSys"
+	repo := NewRepository()
+	var s *System = nil
+
+	if repo.StoreSystem(sysName, s) {
+		t.Error("Expectation not met that nil system can be stored in MapRepository")
+	}
+}
+
+func TestMapRepository_TryStoreFileOnNonExistingSystem(t *testing.T) {
+	fileName := "f.test"
+	repo := NewRepository()
+	f := newTestFile(fileName)
+
+	if repo.StoreFile("sys", f) {
+		t.Error("Expectation not met that repository does not accept files for non existing systems.")
+	}
+
+	if repo.StoreFiles("sys", []File{f}) {
+		t.Error("Expectation not met that repository does not accept files for non existing systems.")
+	}
+}
+
 func newTestSystem(sysName string) *System {
 	s := &System{
 		Name:  sysName,
