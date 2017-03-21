@@ -1,5 +1,11 @@
-FROM ubuntu:14.04
+# initial draft of docker img for the server
+FROM ubuntu:16.04
 RUN apt -y update
 RUN apt -y install git golang
-
-# RUN git clone
+ENV GOPATH /build/go
+ENV GOLOOK $GOPATH/src/github.com/ottenwbe/golook
+RUN mkdir -p $GOPATH/src
+RUN git clone https://github.com/ottenwbe/golook.git $GOLOOK
+RUN go version
+RUN cd $GOLOOK; go get ./...; go build -o golook_server server_main.go
+RUN mv $GOLOOK/golook_server /usr/local/bin
