@@ -17,6 +17,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/gorilla/mux"
+	. "github.com/ottenwbe/golook/helper"
 	"io"
 	"log"
 	"net/http"
@@ -30,7 +31,7 @@ import (
 
 const systemName = "testSystem"
 
-//Verify that "/" exists and returns the correct status code
+// Verify that "/" exists and returns the correct status code
 func TestHome(t *testing.T) {
 	makeTestRequest(
 		t,
@@ -44,7 +45,7 @@ func TestHome(t *testing.T) {
 	)
 }
 
-//Verify that a system can be put to the server, retrieved, and finally be deleted
+// Verify that a system can be put to the server, retrieved, and finally be deleted
 func TestSystemLifeCycle(t *testing.T) {
 	putTestSystem(t, systemName, true)
 	defer delTestSystem(t, systemName)
@@ -103,7 +104,7 @@ func TestPutFileWithWrongJson(t *testing.T) {
 		"/systems/"+systemName+"/files/afile.txt",
 		jsonStr,
 		"/systems/{system}/files/{file}",
-		putFile,
+		postFile,
 		http.StatusBadRequest,
 		nack,
 	)
@@ -211,8 +212,8 @@ func getTestFileForNotExistingSystem(t *testing.T, systemName string, filename s
 		"/systems/"+systemName+"/files/"+filename,
 		nil,
 		"/systems/{system}/files/{file}",
-		getSystemFile,
-		http.StatusOK,
+		getSystemFiles,
+		http.StatusNotFound,
 		nack,
 	)
 }
@@ -224,7 +225,7 @@ func getTestFile(t *testing.T, systemName string, filename string, comparisonFil
 		"/systems/"+systemName+"/files/"+filename,
 		nil,
 		"/systems/{system}/files/{file}",
-		getSystemFile,
+		getSystemFiles,
 		http.StatusOK,
 		comparisonFilename,
 	)
@@ -279,7 +280,7 @@ func puttTestFile(t *testing.T, f *File, systemName string) {
 		"/systems/"+systemName+"/files/"+f.Name,
 		jsonStr,
 		"/systems/{system}/files/{file}",
-		putFile,
+		postFile,
 		http.StatusOK,
 		"",
 	)

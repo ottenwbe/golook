@@ -5,7 +5,7 @@
 [![Build Status](https://travis-ci.org/ottenwbe/golook.svg?branch=development)](https://travis-ci.org/ottenwbe/golook)
 [![codecov](https://codecov.io/gh/ottenwbe/golook/branch/master/graph/badge.svg)](https://codecov.io/gh/ottenwbe/golook)
 
-Search for files in a distributed system via Rest API.
+Search for files in a distributed system via Rest API. 
 
 ## Build ##
 
@@ -21,8 +21,7 @@ Search for files in a distributed system via Rest API.
 ### Build the server ###
 
 1. Go build the executable
-    ```sh
-    
+    ```bashsh    
     cd server
     go build ./.. -o bin/server
     ```
@@ -31,8 +30,10 @@ Search for files in a distributed system via Rest API.
 
 TBD
 
+## Build ##
+
 ### Execute tests ###
-```sh
+```bash
 ./testAllPackages.sh
 ```
 

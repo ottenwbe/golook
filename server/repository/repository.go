@@ -11,17 +11,17 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package server
+package repositories
 
-import "testing"
+import . "github.com/ottenwbe/golook/helper"
 
-func TestCreateEmptyRepositoryMap(t *testing.T) {
-	repo := NewRepository()
-	if repo == nil {
-		t.Error("Repository was nil, hence it was not created")
-	}
-}
-
-func TestPutSystemToRepository(t *testing.T) {
-
+type Repository interface {
+	StoreSystem(fileName string, system *System) bool
+	GetSystem(systemName string) (*System, bool)
+	DelSystem(systemName string)
+	//findFile(fileName string) ([]System, error)
+	HasFile(fileName string, systemName string) (*File, error)
+	StoreFile(systemName string, file File) bool
+	StoreFiles(systemName string, files []File) bool
+	FindSystemAndFiles(findString string) map[string]*System
 }
