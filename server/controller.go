@@ -186,7 +186,7 @@ func returnAck(writer http.ResponseWriter) (int, error) {
 	return fmt.Fprint(writer, ack)
 }
 
-func marshalFilesAndWriteResult(writer http.ResponseWriter, files []File) {
+func marshalFilesAndWriteResult(writer http.ResponseWriter, files map[string]File) {
 	if result, marshallErr := json.Marshal(files); marshallErr == nil {
 		fmt.Fprintln(writer, string(result))
 	} else {

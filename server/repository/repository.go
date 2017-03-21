@@ -16,11 +16,10 @@ package repositories
 import . "github.com/ottenwbe/golook/helper"
 
 type Repository interface {
-	StoreSystem(fileName string, system *System) bool
+	StoreSystem(systemName string, system *System) bool
 	GetSystem(systemName string) (*System, bool)
 	DelSystem(systemName string)
-	//findFile(fileName string) ([]System, error)
-	HasFile(fileName string, systemName string) (*File, error)
+	HasFile(fileName string, systemName string) (*File, bool)
 	StoreFile(systemName string, file File) bool
 	StoreFiles(systemName string, files []File) bool
 	FindSystemAndFiles(findString string) map[string]*System

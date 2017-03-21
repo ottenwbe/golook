@@ -27,11 +27,11 @@ type File struct {
 }
 
 type System struct {
-	Name  string `json:"name"`
-	OS    string `json:"os"`
-	IP    string `json:"ip"`
-	UUID  string `json:"uuid"`
-	Files []File `json:"files"`
+	Name  string          `json:"name"`
+	OS    string          `json:"os"`
+	IP    string          `json:"ip"`
+	UUID  string          `json:"uuid"`
+	Files map[string]File `json:"files"`
 }
 
 func DecodeFiles(fileReader io.Reader) ([]File, error) {

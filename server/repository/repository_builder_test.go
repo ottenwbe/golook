@@ -21,7 +21,3 @@ func TestCreateEmptyRepositoryMap(t *testing.T) {
 		t.Error("Repository was nil, hence it was not created")
 	}
 }
-
-func TestPutSystemToRepository(t *testing.T) {
-
-}
