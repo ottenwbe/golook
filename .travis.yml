@@ -5,7 +5,7 @@ go:
   - tip
 
 before_script:
-  - go vet ./...
+  - for d in $(go list ./... | grep -v vendor); do go vet $d; done
 
 install:
   - go get ./...

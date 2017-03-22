@@ -18,15 +18,14 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/ottenwbe/golook/client/config"
 	. "github.com/ottenwbe/golook/helper"
 )
-
-var url string
 
 func DoGetSystem(system string) *System {
 	c := &http.Client{}
 
-	response, err := c.Get(fmt.Sprintf("%s/systems/%s", url, system))
+	response, err := c.Get(fmt.Sprintf("%s:%d/systems/%s", config.Host(), config.ServerPort(), system))
 	if err != nil {
 		log.Print(err)
 		return &System{}

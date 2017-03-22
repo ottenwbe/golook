@@ -16,10 +16,10 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	. "github.com/ottenwbe/golook/helper"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	. "github.com/ottenwbe/golook/helper"
 )
 
 const (

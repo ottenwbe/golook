@@ -11,7 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package client
+package config
 
 import (
 	"github.com/spf13/viper"
@@ -24,21 +24,21 @@ func init() {
 	initConfig()
 	initDefaults()
 
-	err := viper.ReadInConfig()          	// Find and read the config file
-	if err != nil {                      	// Handle errors reading the config file
+	err := viper.ReadInConfig() // Find and read the config file
+	if err != nil {             // Handle errors reading the config file
 		log.Printf("Config file could not be found: %s \n", err)
 	}
 }
 
 func initConfig() {
-	wd,err := os.Getwd()
+	wd, err := os.Getwd()
 	if err != nil {
 		log.Fatalf("Could not determine working directory: %s", err)
 	}
 	viper.SetConfigName("client.cfg")    // name of config file (without extension)
 	viper.AddConfigPath("/etc/golook/")  // path to look for the config file in
 	viper.AddConfigPath("$HOME/.golook") // call multiple times to add many search paths
-	viper.AddConfigPath(wd)             // call multiple times to add many search paths
+	viper.AddConfigPath(wd)              // call multiple times to add many search paths
 }
 
 func initDefaults() {
