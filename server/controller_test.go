@@ -122,6 +122,19 @@ func TestGetFiles(t *testing.T) {
 
 }
 
+func TestPostFiles_EarlyExitWithEmptyBody(t *testing.T) {
+	makeTestRequest(
+		t,
+		"POST",
+		"/systems/a/file/c",
+		nil,
+		"/systems/{system}/file/{file}",
+		postFile,
+		http.StatusBadRequest,
+		nack,
+	)
+}
+
 /////////////////////////
 // Helper Functions - Requests
 /////////////////////////
