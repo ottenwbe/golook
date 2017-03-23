@@ -6,6 +6,7 @@ ENV GOPATH /build/go
 ENV GOLOOK $GOPATH/src/github.com/ottenwbe/golook
 RUN mkdir -p $GOPATH/src
 RUN git clone https://github.com/ottenwbe/golook.git $GOLOOK
-RUN go version
 RUN cd $GOLOOK; go get ./...; go build -o golook_server server_main.go
 RUN mv $GOLOOK/golook_server /usr/local/bin
+EXPOSE 8080
+ENTRYPOINT ["/usr/local/bin/golook_server"]

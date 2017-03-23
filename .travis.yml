@@ -2,7 +2,7 @@ language: go
 
 go: 
   - 1.7
-  - tip
+  - 1.8
 
 before_script:
   - for d in $(go list ./... | grep -v vendor); do go vet $d; done

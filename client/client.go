@@ -22,6 +22,20 @@ import (
 	. "github.com/ottenwbe/golook/helper"
 )
 
+/*func DoGetome() string {
+	c := &http.Client{}
+
+	response, err := c.Get(fmt.Sprintf("%s:%d/", config.Host(), config.ServerPort()))
+	if err != nil {
+		log.Print(err)
+	} else {
+		defer response.Body.Close()
+		return string(response.Body)
+	}
+	return ""
+}
+*/
+
 func DoGetSystem(system string) *System {
 	c := &http.Client{}
 
@@ -35,3 +49,29 @@ func DoGetSystem(system string) *System {
 		return &s
 	}
 }
+
+/*
+func DoPutSystem(system *System) *System {
+	c := &http.Client{}
+
+	url := fmt.Sprintf("%s:%d/systems", config.Host(), config.ServerPort())
+
+	jsonBody, _ := json.Marshal(system)
+	b := bytes.NewBuffer(jsonBody)
+	request, errRequest := http.NewRequest("PUT", url, b)
+	if errRequest == nil {
+		response, errResult := c.Do(request)
+		if errResult != nil {
+			log.Print(errResult)
+			return &System{}
+		} else {
+			defer response.Body.Close()
+			s, _ := DecodeSystem(response.Body) //TODO error handling
+			return &s
+		}
+	} else {
+		log.Print(errRequest)
+		return &System{}
+	}
+}*/
+
