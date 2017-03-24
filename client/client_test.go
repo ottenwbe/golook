@@ -27,19 +27,30 @@ const (
 )
 
 func TestDoGetSystem(t *testing.T) {
-	makeTestServer()
-	if sys := DoGetSystem(sysName); sys == nil && sys.Name == sysName {
-		t.Log("System could not retrieved by DoGetSystem")
-	}
-}
-
-func makeTestServer() {
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
 		s := makeTestSystem()
 		bytes, _ := json.Marshal(s)
 		fmt.Fprintln(writer, string(bytes))
 	}))
 	defer server.Close()
+
+	if sys := DoGetSystem(sysName); sys == nil && sys.Name == sysName {
+		t.Log("System could not retrieved by DoGetSystem")
+	}
+}
+
+func TestDoGetHome(t *testing.T) {
+	testString := "TestString"
+	server := httptest.NewServer(
+		http.HandlerFunc(
+			func(writer http.ResponseWriter, _ *http.Request) {
+		fmt.Fprintln(writer, testString)
+	}))
+	defer server.Close()
+
+	if s := DoGetHome(); s != testString {
+		t.Logf("TestString not successfully retrieved. Expected %s got %s", testString, s)
+	}
 }
 
 func makeTestSystem() *System {

@@ -20,9 +20,14 @@ import (
 
 	"github.com/ottenwbe/golook/client/config"
 	. "github.com/ottenwbe/golook/helper"
+	"io/ioutil"
+	"encoding/json"
+	"bytes"
 )
 
-/*func DoGetome() string {
+//TODO error handling
+
+func DoGetHome() string {
 	c := &http.Client{}
 
 	response, err := c.Get(fmt.Sprintf("%s:%d/", config.Host(), config.ServerPort()))
@@ -30,11 +35,12 @@ import (
 		log.Print(err)
 	} else {
 		defer response.Body.Close()
-		return string(response.Body)
+		ackResponse, _ := ioutil.ReadAll(response.Body);
+		return string(ackResponse)
 	}
 	return ""
 }
-*/
+
 
 func DoGetSystem(system string) *System {
 	c := &http.Client{}
@@ -50,7 +56,6 @@ func DoGetSystem(system string) *System {
 	}
 }
 
-/*
 func DoPutSystem(system *System) *System {
 	c := &http.Client{}
 
@@ -73,5 +78,5 @@ func DoPutSystem(system *System) *System {
 		log.Print(errRequest)
 		return &System{}
 	}
-}*/
+}
 
