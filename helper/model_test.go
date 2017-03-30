@@ -1,11 +1,28 @@
+//Copyright 2016-2017 Beate Ottenwälder
+//
+//Licensed under the Apache License, Version 2.0 (the "License");
+//you may not use this file except in compliance with the License.
+//You may obtain a copy of the License at
+//
+//http://www.apache.org/licenses/LICENSE-2.0
+//
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS,
+//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//See the License for the specific language governing permissions and
+//limitations under the License.
 package helper
 
 import (
 	"encoding/json"
 	"io"
 	"log"
-	"testing"
 	"time"
+)
+
+import (
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 const (
@@ -13,41 +30,47 @@ const (
 	testSysName  = "test"
 )
 
-func TestDecodeFile(t *testing.T) {
-	c := make(chan bool)
-	pipeReader, pipeWriter := io.Pipe()
-	go PipeWriteFile(pipeWriter)
-	go PipeReadFile(pipeReader, c)
-	result := <-c
+var _ = Describe("The model", func() {
 
-	if !result {
-		t.Error("Decoding failed")
-	}
-}
+	var (
+		chanbools  chan bool
+		pipeReader *io.PipeReader
+		pipeWriter *io.PipeWriter
+	)
 
-func TestDecodeSystem(t *testing.T) {
-	c := make(chan bool)
-	pipeReader, pipeWriter := io.Pipe()
-	go PipeWriteSystem(pipeWriter)
-	go PipeReadSystem(pipeReader, c)
-	result := <-c
+	BeforeEach(func() {
+		chanbools = make(chan bool)
+		pipeReader, pipeWriter = io.Pipe()
+	})
 
-	if !result {
-		t.Error("Decoding failed")
-	}
-}
+	Context("File", func() {
+		It("can be marshalled and unmarshalled", func() {
+			go PipeWriteFile(pipeWriter)
+			go PipeReadFile(pipeReader, chanbools)
+			result := <-chanbools
+			Expect(result).To(BeTrue())
+		})
+	})
 
-func TestDecodeFiles(t *testing.T) {
-	c := make(chan bool)
-	pipeReader, pipeWriter := io.Pipe()
-	go PipeWriteFiles(pipeWriter)
-	go PipeReadFiles(pipeReader, c)
-	result := <-c
+	Context("System", func() {
+		It("can be marshalled and unmarshalled", func() {
+			go PipeWriteSystem(pipeWriter)
+			go PipeReadSystem(pipeReader, chanbools)
+			result := <-chanbools
+			Expect(result).To(BeTrue())
+		})
+	})
 
-	if !result {
-		t.Error("Decoding failed")
-	}
-}
+	Context("Systems", func() {
+		It("can be marshalled and unmarshalled", func() {
+			go PipeWriteFiles(pipeWriter)
+			go PipeReadFiles(pipeReader, chanbools)
+			result := <-chanbools
+			Expect(result).To(BeTrue())
+		})
+	})
+
+})
 
 func newTestSystem(sysName string) *System {
 	s := &System{
@@ -71,6 +94,7 @@ func newTestFile(fileName string) File {
 
 func PipeWriteSystem(pipeWriter *io.PipeWriter) {
 	b, _ := json.Marshal(newTestSystem(testSysName))
+	defer pipeWriter.Close()
 	pipeWriter.Write(b)
 }
 
@@ -86,6 +110,7 @@ func PipeReadSystem(pipeReader *io.PipeReader, c chan bool) {
 
 func PipeWriteFiles(pipeWriter *io.PipeWriter) {
 	b, _ := json.Marshal([]File{newTestFile(testFileName), newTestFile(testFileName)})
+	defer pipeWriter.Close()
 	pipeWriter.Write(b)
 }
 
@@ -101,6 +126,7 @@ func PipeReadFiles(pipeReader *io.PipeReader, c chan bool) {
 
 func PipeWriteFile(pipeWriter *io.PipeWriter) {
 	b, _ := json.Marshal(newTestFile(testFileName))
+	defer pipeWriter.Close()
 	pipeWriter.Write(b)
 }
 

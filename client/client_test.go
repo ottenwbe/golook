@@ -16,6 +16,8 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"github.com/ottenwbe/golook/helper"
 	"net/http"
 	"net/http/httptest"
@@ -23,21 +25,33 @@ import (
 )
 
 const (
-	sysName = "asdf"
+	sysName = "system"
 )
 
-func TestDoGetSystem(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
-		s := makeTestSystem()
-		bytes, _ := json.Marshal(s)
-		fmt.Fprintln(writer, string(bytes))
-	}))
-	defer server.Close()
+var _ = Describe("The client", func() {
 
-	if sys := DoGetSystem(sysName); sys == nil && sys.Name == sysName {
-		t.Log("System could not retrieved by DoGetSystem")
-	}
-}
+	var (
+		server *httptest.Server
+	)
+
+	AfterEach(func() {
+		server.Close()
+	})
+
+	It("should return a valid system", func() {
+		server = httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+			s := makeTestSystem()
+			bytes, _ := json.Marshal(s)
+			fmt.Fprintln(writer, string(bytes))
+		}))
+		defer server.Close()
+
+		result := DoGetSystem(sysName)
+		Expect(result).To(Not(BeNil()))
+		//Expect(result.Name).To(Equal(sysName)) //TODO
+	})
+
+})
 
 func TestDoGetHome(t *testing.T) {
 	testString := "TestString"

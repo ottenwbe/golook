@@ -11,7 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package main
+package client
 
 import (
 	. "github.com/onsi/ginkgo"
@@ -19,7 +19,7 @@ import (
 	"testing"
 )
 
-func TestMains(t *testing.T) {
+func TestClients(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Main Suite")
+	RunSpecs(t, "Client Suite")
 }
