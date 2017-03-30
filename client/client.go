@@ -18,11 +18,11 @@ import (
 	"log"
 	"net/http"
 
+	"bytes"
+	"encoding/json"
 	"github.com/ottenwbe/golook/client/config"
 	. "github.com/ottenwbe/golook/helper"
 	"io/ioutil"
-	"encoding/json"
-	"bytes"
 )
 
 //TODO error handling
@@ -35,12 +35,11 @@ func DoGetHome() string {
 		log.Print(err)
 	} else {
 		defer response.Body.Close()
-		ackResponse, _ := ioutil.ReadAll(response.Body);
+		ackResponse, _ := ioutil.ReadAll(response.Body)
 		return string(ackResponse)
 	}
 	return ""
 }
-
 
 func DoGetSystem(system string) *System {
 	c := &http.Client{}
@@ -79,4 +78,3 @@ func DoPutSystem(system *System) *System {
 		return &System{}
 	}
 }
-

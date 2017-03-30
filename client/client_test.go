@@ -16,7 +16,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	. "github.com/ottenwbe/golook/helper"
+	"github.com/ottenwbe/golook/helper"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -44,8 +44,8 @@ func TestDoGetHome(t *testing.T) {
 	server := httptest.NewServer(
 		http.HandlerFunc(
 			func(writer http.ResponseWriter, _ *http.Request) {
-		fmt.Fprintln(writer, testString)
-	}))
+				fmt.Fprintln(writer, testString)
+			}))
 	defer server.Close()
 
 	if s := DoGetHome(); s != testString {
@@ -53,8 +53,8 @@ func TestDoGetHome(t *testing.T) {
 	}
 }
 
-func makeTestSystem() *System {
-	s := &System{
+func makeTestSystem() *helper.System {
+	s := &helper.System{
 		Name:  sysName,
 		Files: nil,
 		IP:    "1.1.1.1",

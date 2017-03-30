@@ -14,22 +14,25 @@
 package helper
 
 import (
-	"strings"
-	"testing"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-func TestUniquenessOfUUID(t *testing.T) {
-	uuid := createAndCheckUUID(t)
-	uuid2 := createAndCheckUUID(t)
-	if strings.Compare(uuid, uuid2) == 0 {
-		t.Error("UUIDs are equivalent, however, they should be different")
-	}
-}
+var _ = Describe("uuids", func() {
 
-func createAndCheckUUID(t *testing.T) string {
-	uuid, err := NewUUID()
-	if err != nil {
-		t.Errorf("Error during uuid creation: %s", err)
-	}
-	return uuid
-}
+	var (
+		uuid1, uuid2 string
+		err1, err2   error
+	)
+
+	BeforeEach(func() {
+		uuid1, err1 = NewUUID()
+		uuid2, err2 = NewUUID()
+	})
+
+	It("generated at random should differ", func() {
+		Expect(err1).To(BeNil())
+		Expect(err2).To(BeNil())
+		Expect(uuid1).To(Not(Equal(uuid2)))
+	})
+})
