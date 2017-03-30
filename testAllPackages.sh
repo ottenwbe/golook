@@ -3,9 +3,12 @@
 set -e
 echo "" > coverage.txt
 
-echo "Run test for $d"
 ginkgo -coverprofile=profile.out -covermode=atomic  *
-if [ -f profile.out ]; then
-    cat profile.out >> coverage.txt
-    rm profile.out
-fi
+
+for d in $(find . -type d -print0 | xargs -0 echo) ;do #$(go list ./... | grep -v vendor); do
+    coverprofile=${d}/${d##*/}.coverprofile
+    if [ -f ${coverprofile} ]; then
+        cat ${coverprofile} >> coverage.txt
+        rm ${coverprofile}
+    fi
+done
