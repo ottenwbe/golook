@@ -8,7 +8,10 @@ before_script:
   - for d in $(go list ./... | grep -v vendor); do go vet $d; done
 
 install:
-  - go get ./...
+  - go get -v -t ./...
+  - go get github.com/onsi/ginkgo/ginkgo
+  - go get github.com/onsi/gomega
+  - export PATH=$PATH:$HOME/gopath/bin
 
 script:
   - sh testAllPackages.sh
