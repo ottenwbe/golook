@@ -30,10 +30,24 @@ Search for files in a distributed system via Rest API.
 
 TBD
 
-## Build ##
+## Tests ##
 
-### Execute tests ###
+### Unit tests ###
 ```bash
 ./testAllPackages.sh
 ```
 
+## API ##
+
+| Path  | Method  |   |   |   |
+|---|---|---|---|---|
+| /  | "GET" |   |   |   |
+| /files/{file} |  "GET" |   |   |   |
+| /systems/{system}/files  |  "GET" |   |   |   |
+| /systems/{system}/files/{file}  |  "POST" |   |   |   |
+| /systems/{system}/files  |  "PUT" |   |   |   |
+| /systems/{system} |  "GET" |   |   |   |
+| /systems |  "PUT" |   |   |   |
+| /systems/{system} |  "DELETE" |   |   |   |
+ 
+ 

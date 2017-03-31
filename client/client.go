@@ -80,6 +80,27 @@ func DoPutSystem(system *System) *System {
 	}
 }
 
+func DoDeleteSystem(systemName string) string {
+	c := &http.Client{}
+
+	url := fmt.Sprintf("%s/systems/%s", serverUrl, systemName)
+
+	request, errRequest := http.NewRequest("DELETE", url, nil)
+	if errRequest == nil {
+		response, errResult := c.Do(request)
+		if errResult != nil {
+			log.Error(errResult)
+		} else {
+			defer response.Body.Close()
+			res,_:=ioutil.ReadAll(response.Body)
+			return string(res) //TODO error handling
+		}
+	} else {
+		log.Error(errRequest)
+	}
+	return ""
+}
+
 func init() {
 	serverUrl = fmt.Sprintf("%s:%d",config.Host(), config.ServerPort())
 }
