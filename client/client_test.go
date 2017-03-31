@@ -21,7 +21,6 @@ import (
 	"github.com/ottenwbe/golook/helper"
 	"net/http"
 	"net/http/httptest"
-	"testing"
 )
 
 const (
@@ -38,34 +37,39 @@ var _ = Describe("The client", func() {
 		server.Close()
 	})
 
-	It("should return a valid system", func() {
-		server = httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
-			s := makeTestSystem()
-			bytes, _ := json.Marshal(s)
-			fmt.Fprintln(writer, string(bytes))
-		}))
-		defer server.Close()
+	Context("Get System Method", func() {
+		It("should return a valid system", func() {
+			server = httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+				s := makeTestSystem()
+				bytes, _ := json.Marshal(s)
+				fmt.Fprintln(writer, string(bytes))
+			}))
+			serverUrl = server.URL
 
-		result := DoGetSystem(sysName)
-		Expect(result).To(Not(BeNil()))
-		//Expect(result.Name).To(Equal(sysName)) //TODO
+			result := DoGetSystem(sysName)
+			Expect(result).To(Not(BeNil()))
+			Expect(result.Name).To(Equal(sysName))
+		})
+	})
+
+	Context("Get Home", func() {
+
+		const testString = "TestString"
+
+		It("should return the string which was sent by the server", func() {
+
+			server := httptest.NewServer(
+				http.HandlerFunc(
+					func(writer http.ResponseWriter, _ *http.Request) {
+						fmt.Fprintln(writer, testString)
+					}))
+			serverUrl = server.URL
+
+			Expect(DoGetHome()).To(Equal(testString+"\n"))
+		})
 	})
 
 })
-
-func TestDoGetHome(t *testing.T) {
-	testString := "TestString"
-	server := httptest.NewServer(
-		http.HandlerFunc(
-			func(writer http.ResponseWriter, _ *http.Request) {
-				fmt.Fprintln(writer, testString)
-			}))
-	defer server.Close()
-
-	if s := DoGetHome(); s != testString {
-		t.Logf("TestString not successfully retrieved. Expected %s got %s", testString, s)
-	}
-}
 
 func makeTestSystem() *helper.System {
 	s := &helper.System{

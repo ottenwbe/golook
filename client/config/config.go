@@ -15,8 +15,8 @@ package config
 
 import (
 	"github.com/spf13/viper"
-	"log"
 	"os"
+	log "github.com/sirupsen/logrus"
 )
 
 func init() {
@@ -26,7 +26,7 @@ func init() {
 
 	err := viper.ReadInConfig() // Find and read the config file
 	if err != nil {             // Handle errors reading the config file
-		log.Printf("Config file could not be found: %s \n", err)
+		log.WithError(err).Info("Config file could not be found")
 	}
 }
 
@@ -42,7 +42,7 @@ func initConfig() {
 }
 
 func initDefaults() {
-	viper.SetDefault("server.host", "localhost")
+	viper.SetDefault("server.host", "http://127.0.0.1")
 	viper.SetDefault("server.port", 8080)
 }
 
@@ -51,5 +51,5 @@ func Host() string {
 }
 
 func ServerPort() int {
-	return viper.GetInt("server.host")
+	return viper.GetInt("server.port")
 }

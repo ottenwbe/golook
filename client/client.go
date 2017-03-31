@@ -15,8 +15,9 @@ package client
 
 import (
 	"fmt"
-	"log"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"bytes"
 	"encoding/json"
@@ -25,14 +26,14 @@ import (
 	"io/ioutil"
 )
 
-//TODO error handling
+var serverUrl string = ""
 
 func DoGetHome() string {
 	c := &http.Client{}
 
-	response, err := c.Get(fmt.Sprintf("%s:%d/", config.Host(), config.ServerPort()))
+	response, err := c.Get(serverUrl)
 	if err != nil {
-		log.Print(err)
+		log.Error(err)
 	} else {
 		defer response.Body.Close()
 		ackResponse, _ := ioutil.ReadAll(response.Body)
@@ -44,9 +45,9 @@ func DoGetHome() string {
 func DoGetSystem(system string) *System {
 	c := &http.Client{}
 
-	response, err := c.Get(fmt.Sprintf("%s:%d/systems/%s", config.Host(), config.ServerPort(), system))
+	response, err := c.Get(fmt.Sprintf("%s/systems/%s", serverUrl, system))
 	if err != nil {
-		log.Print(err)
+		log.Error(err)
 		return &System{}
 	} else {
 		defer response.Body.Close()
@@ -58,7 +59,7 @@ func DoGetSystem(system string) *System {
 func DoPutSystem(system *System) *System {
 	c := &http.Client{}
 
-	url := fmt.Sprintf("%s:%d/systems", config.Host(), config.ServerPort())
+	url := fmt.Sprintf("%s/systems", serverUrl)
 
 	jsonBody, _ := json.Marshal(system)
 	b := bytes.NewBuffer(jsonBody)
@@ -66,7 +67,7 @@ func DoPutSystem(system *System) *System {
 	if errRequest == nil {
 		response, errResult := c.Do(request)
 		if errResult != nil {
-			log.Print(errResult)
+			log.Error(errResult)
 			return &System{}
 		} else {
 			defer response.Body.Close()
@@ -74,7 +75,11 @@ func DoPutSystem(system *System) *System {
 			return &s
 		}
 	} else {
-		log.Print(errRequest)
+		log.Error(errRequest)
 		return &System{}
 	}
+}
+
+func init() {
+	serverUrl = fmt.Sprintf("%s:%d",config.Host(), config.ServerPort())
 }

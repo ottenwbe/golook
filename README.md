@@ -14,14 +14,14 @@ Search for files in a distributed system via Rest API.
 1. [Go](https://golang.org/doc/install) is installed and [GOPATH](https://golang.org/doc/code.html) is set.
 
 1. Get dependencies
-    ```sh
+    ```bash
     go get ./.. 
     ```
 
 ### Build the server ###
 
 1. Go build the executable
-    ```bashsh    
+    ```bash    
     cd server
     go build ./.. -o bin/server
     ```

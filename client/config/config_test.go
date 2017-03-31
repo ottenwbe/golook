@@ -13,16 +13,25 @@
 //limitations under the License.
 package config
 
-import "testing"
+import (
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"testing"
+)
 
-func TestHost(t *testing.T) {
-	if Host() != "localhost" {
-		t.Log("Default configuration is not set")
-	}
+func TestClients(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Config Suite")
 }
 
-func TestServerPort(t *testing.T) {
-	if ServerPort() == 8080 {
-		t.Log("Default port is not set")
-	}
-}
+
+var _ = Describe("The configuration", func() {
+	Context("default", func() {
+		It("should return the default host", func() {
+			Expect(Host()).To(Equal("http://127.0.0.1"))
+		})
+		It("should return the default port", func() {
+			Expect(ServerPort()).To(Equal(8080))
+		})
+	})
+})
