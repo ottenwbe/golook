@@ -16,21 +16,12 @@ package config
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"testing"
 )
 
-func TestClients(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Config Suite")
-}
-
-var _ = Describe("The configuration", func() {
+var _ = Describe("The server configuration", func() {
 	Context("default", func() {
-		It("should return the default host", func() {
-			Expect(Host()).To(Equal("http://127.0.0.1"))
-		})
-		It("should return the default port", func() {
-			Expect(ServerPort()).To(Equal(8080))
+		It("should return the default address", func() {
+			Expect(addr).To(Equal(":8080"))
 		})
 	})
 })

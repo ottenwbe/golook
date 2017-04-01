@@ -297,6 +297,12 @@
 			"revisionTime": "2017-03-03T19:59:13Z"
 		},
 		{
+			"checksumSHA1": "lU+gVOtSFnBKx11uhPL8b9v0uTE=",
+			"path": "github.com/spf13/cobra",
+			"revision": "7be4beda01ec05d0b93d80b3facd2b6f44080d94",
+			"revisionTime": "2017-03-14T17:12:53Z"
+		},
+		{
 			"checksumSHA1": "9pkkhgKp3mwSreiML3plQlQYdLQ=",
 			"path": "github.com/spf13/jwalterweatherman",
 			"revision": "fa7ca7e836cf3a8bb4ebf799f472c12d7e903d66",

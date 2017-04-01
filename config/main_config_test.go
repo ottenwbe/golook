@@ -11,16 +11,15 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package main
+package config
 
 import (
-	"flag"
-	"github.com/ottenwbe/golook/server"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"testing"
 )
 
-func main() {
-	address := flag.String("address", ":8080", "Address on which the server is listening")
-	flag.Parse()
-
-	server.StartServer(*address)
+func TestClients(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Config Suite")
 }

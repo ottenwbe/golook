@@ -10,3 +10,5 @@ coverage.txt
 *.coverprofile
 *.coverprofile.1
 .cover/
+
+golook.yml

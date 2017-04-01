@@ -14,20 +14,53 @@
 package config
 
 import (
+	"fmt"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
 )
 
+const (
+	PROGRAM_NAME = "golook"
+)
+
+var RootCmd = &cobra.Command{
+	Use:   PROGRAM_NAME,
+	Short: "Golook Client/Server",
+	Long:  "Golook Client/Server",
+}
+
+var cmdVersion = &cobra.Command{
+	Use:   "version",
+	Short: fmt.Sprintf("Print the version number of %s", PROGRAM_NAME),
+	Long:  fmt.Sprintf("All software has versions. This is %s's", PROGRAM_NAME),
+	Run: func(_ *cobra.Command, _ []string) {
+		fmt.Println("v0.0.0")
+	},
+}
+
+func Run() {
+	if err := RootCmd.Execute(); err != nil {
+		log.WithError(err).Fatal("Executing root command failed")
+	}
+}
+
 func init() {
 
+	initSubCommands()
 	initConfig()
-	initDefaults()
 
 	err := viper.ReadInConfig() // Find and read the config file
 	if err != nil {             // Handle errors reading the config file
-		log.WithError(err).Info("Config file could not be found")
+		const CFG_FILE string = "golook.yml"
+		log.WithError(err).Infof("Config file could not be found, default is created as, %s", CFG_FILE)
+		os.Create(CFG_FILE)
 	}
+}
+
+func initSubCommands() {
+	RootCmd.AddCommand(cmdVersion)
 }
 
 func initConfig() {
@@ -35,21 +68,8 @@ func initConfig() {
 	if err != nil {
 		log.Fatalf("Could not determine working directory: %s", err)
 	}
-	viper.SetConfigName("client.cfg")    // name of config file (without extension)
+	viper.SetConfigName("golook")        // name of config file (without extension)
 	viper.AddConfigPath("/etc/golook/")  // path to look for the config file in
 	viper.AddConfigPath("$HOME/.golook") // call multiple times to add many search paths
 	viper.AddConfigPath(wd)              // call multiple times to add many search paths
-}
-
-func initDefaults() {
-	viper.SetDefault("server.host", "http://127.0.0.1")
-	viper.SetDefault("server.port", 8080)
-}
-
-func Host() string {
-	return viper.GetString("server.host")
-}
-
-func ServerPort() int {
-	return viper.GetInt("server.port")
 }
