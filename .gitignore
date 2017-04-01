@@ -1,9 +1,12 @@
 .idea/
 *.iml
 projectFilesBackup/
+projectFilesBackup1/
 
 bin/
 
 profile
 coverage.txt
+*.coverprofile
+*.coverprofile.1
 .cover/
