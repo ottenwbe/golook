@@ -14,9 +14,10 @@
 package server
 
 import (
-	"github.com/gorilla/mux"
-	"log"
 	"net/http"
+
+	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 )
 
 var httpServer *http.Server

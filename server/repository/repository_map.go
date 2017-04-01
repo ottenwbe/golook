@@ -15,7 +15,6 @@ package repositories
 
 import (
 	. "github.com/ottenwbe/golook/helper"
-	"log"
 	"strings"
 )
 
@@ -73,9 +72,7 @@ func (repo *MapRepository) DelSystem(systemName string) {
 func (repo *MapRepository) FindSystemAndFiles(findString string) map[string]*System {
 	result := make(map[string]*System, 0)
 	for sid, system := range *repo {
-		log.Printf("test system %s", sid)
 		for _, file := range system.Files {
-			log.Printf("test %s", file.Name)
 			if strings.Contains(file.Name, findString) {
 				if _, ok := result[sid]; !ok {
 					result[sid] = new(System)

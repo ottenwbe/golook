@@ -18,10 +18,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
+
 	. "github.com/ottenwbe/golook/helper"
 	. "github.com/ottenwbe/golook/server/repository"
 )
@@ -247,7 +248,7 @@ func decodeFileAndReportSuccess(request *http.Request, writer http.ResponseWrite
 	file, err := DecodeFile(request.Body)
 	if err != nil {
 		http.Error(writer, errors.New(nack).Error(), http.StatusBadRequest)
-		log.Printf("File could not be decoded while putting the file to server %s", err)
+		log.WithError(err).Error("File could not be decoded while putting the file to server")
 		return File{}, false
 	}
 	return file, true
