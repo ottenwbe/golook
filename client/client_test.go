@@ -16,6 +16,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/ottenwbe/golook/helper"
@@ -31,24 +32,71 @@ var _ = Describe("The client", func() {
 
 	var (
 		server *httptest.Server
+		client *LookClient
 	)
 
-	AfterEach(func() {
-		server.Close()
+	BeforeEach(func() {
+		client = NewLookClient()
 	})
 
-	Context("Get System Method", func() {
-		It("should return a valid system", func() {
+	AfterEach(func() {
+		// ensure that the close method is executed and not forgotten
+		server.Close()
+		client = nil
+	})
+
+	Context(" System Methods ", func() {
+		It("should return a valid system with Get", func() {
 			server = httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
-				s := makeTestSystem()
+				s := newTestSystem()
 				bytes, _ := json.Marshal(s)
 				fmt.Fprintln(writer, string(bytes))
 			}))
-			serverUrl = server.URL
+			client.serverUrl = server.URL
 
-			result := DoGetSystem(sysName)
+			result, err := client.DoGetSystem(sysName)
+			Expect(err).To(BeNil())
 			Expect(result).To(Not(BeNil()))
 			Expect(result.Name).To(Equal(sysName))
+		})
+
+		It("should return a nil system with Get when the server does not exist", func() {
+			client.serverUrl = "/"
+			result, err := client.DoGetSystem(sysName)
+			Expect(result).To(BeNil())
+			Expect(err).To(Not(BeNil()))
+		})
+
+		It("should send a valid system to the server with Put", func() {
+
+			testSystem := newTestSystem()
+
+			server = httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
+				receivedSystem, _ := helper.DecodeSystem(req.Body)
+				Expect(receivedSystem.Name).To(Equal(testSystem.Name))
+			}))
+			client.serverUrl = server.URL
+
+			result := client.DoPutSystem(testSystem)
+
+			Expect(result).To(Not(BeNil()))
+		})
+
+		It("should transfer the delete request for a specific system to the server with DELETE", func() {
+
+			testSystemName := "testSystem"
+
+			server = httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
+				params := mux.Vars(req)
+				system := params["system"]
+				Expect(system).To(Equal(testSystemName))
+			}))
+			server.URL = "/systems/{system}"
+			client.serverUrl = server.URL
+
+			result := client.DoDeleteSystem(testSystemName)
+
+			Expect(result).To(Not(BeNil()))
 		})
 	})
 
@@ -56,22 +104,22 @@ var _ = Describe("The client", func() {
 
 		const testString = "TestString"
 
-		It("should return the string which was sent by the server", func() {
+		It("should pass the string which was sent by a server to the calle of DoGetHome()", func() {
 
 			server := httptest.NewServer(
 				http.HandlerFunc(
 					func(writer http.ResponseWriter, _ *http.Request) {
 						fmt.Fprintln(writer, testString)
 					}))
-			serverUrl = server.URL
+			client.serverUrl = server.URL
 
-			Expect(DoGetHome()).To(Equal(testString+"\n"))
+			Expect(client.DoGetHome()).To(Equal(testString + "\n"))
 		})
 	})
 
 })
 
-func makeTestSystem() *helper.System {
+func newTestSystem() *helper.System {
 	s := &helper.System{
 		Name:  sysName,
 		Files: nil,

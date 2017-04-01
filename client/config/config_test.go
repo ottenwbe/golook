@@ -24,7 +24,6 @@ func TestClients(t *testing.T) {
 	RunSpecs(t, "Config Suite")
 }
 
-
 var _ = Describe("The configuration", func() {
 	Context("default", func() {
 		It("should return the default host", func() {

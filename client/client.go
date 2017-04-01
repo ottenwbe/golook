@@ -26,12 +26,15 @@ import (
 	"io/ioutil"
 )
 
-var serverUrl string = ""
+type LookClient struct {
+	serverUrl string
+	//c http.Client //TODO: check if http client is synchronized
+}
 
-func DoGetHome() string {
+func (lc *LookClient) DoGetHome() string {
 	c := &http.Client{}
 
-	response, err := c.Get(serverUrl)
+	response, err := c.Get(lc.serverUrl)
 	if err != nil {
 		log.Error(err)
 	} else {
@@ -42,24 +45,24 @@ func DoGetHome() string {
 	return ""
 }
 
-func DoGetSystem(system string) *System {
+func (lc *LookClient) DoGetSystem(system string) (*System, error) {
 	c := &http.Client{}
 
-	response, err := c.Get(fmt.Sprintf("%s/systems/%s", serverUrl, system))
+	response, err := c.Get(fmt.Sprintf("%s/systems/%s", lc.serverUrl, system))
 	if err != nil {
 		log.Error(err)
-		return &System{}
+		return nil, err
 	} else {
 		defer response.Body.Close()
 		s, _ := DecodeSystem(response.Body) //TODO error handling
-		return &s
+		return &s, nil
 	}
 }
 
-func DoPutSystem(system *System) *System {
+func (lc *LookClient) DoPutSystem(system *System) *System {
 	c := &http.Client{}
 
-	url := fmt.Sprintf("%s/systems", serverUrl)
+	url := fmt.Sprintf("%s/systems", lc.serverUrl)
 
 	jsonBody, _ := json.Marshal(system)
 	b := bytes.NewBuffer(jsonBody)
@@ -76,14 +79,14 @@ func DoPutSystem(system *System) *System {
 		}
 	} else {
 		log.Error(errRequest)
-		return &System{}
+		return nil
 	}
 }
 
-func DoDeleteSystem(systemName string) string {
+func (lc *LookClient) DoDeleteSystem(systemName string) string {
 	c := &http.Client{}
 
-	url := fmt.Sprintf("%s/systems/%s", serverUrl, systemName)
+	url := fmt.Sprintf("%s/systems/%s", lc.serverUrl, systemName)
 
 	request, errRequest := http.NewRequest("DELETE", url, nil)
 	if errRequest == nil {
@@ -92,7 +95,7 @@ func DoDeleteSystem(systemName string) string {
 			log.Error(errResult)
 		} else {
 			defer response.Body.Close()
-			res,_:=ioutil.ReadAll(response.Body)
+			res, _ := ioutil.ReadAll(response.Body)
 			return string(res) //TODO error handling
 		}
 	} else {
@@ -101,6 +104,8 @@ func DoDeleteSystem(systemName string) string {
 	return ""
 }
 
-func init() {
-	serverUrl = fmt.Sprintf("%s:%d",config.Host(), config.ServerPort())
+func NewLookClient() *LookClient {
+	return &LookClient{
+		serverUrl: fmt.Sprintf("%s:%d", config.Host(), config.ServerPort()),
+	}
 }

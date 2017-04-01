@@ -14,9 +14,9 @@
 package config
 
 import (
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"os"
-	log "github.com/sirupsen/logrus"
 )
 
 func init() {
