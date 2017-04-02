@@ -26,5 +26,8 @@ var _ = Describe("The configuration", func() {
 		It("should return the default port", func() {
 			Expect(ServerPort()).To(Equal(8080))
 		})
+		It("should return the default detatch modus", func() {
+			Expect(RunDetatched()).To(BeFalse())
+		})
 	})
 })

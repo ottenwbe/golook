@@ -6,7 +6,7 @@ import (
 
 // support function to set positions for tomlValues
 // NOTE: this is done to allow ctx.lastPosition to indicate the start of any
-// values returned by the query engines
+// values returned by the data_manipulation engines
 func tomlValueCheck(node interface{}, ctx *queryContext) interface{} {
 	switch castNode := node.(type) {
 	case *tomlValue:
@@ -208,7 +208,7 @@ func newMatchFilterFn(name string, pos Position) *matchFilterFn {
 func (f *matchFilterFn) call(node interface{}, ctx *queryContext) {
 	fn, ok := (*ctx.filters)[f.Name]
 	if !ok {
-		panic(fmt.Sprintf("%s: query context does not have filter '%s'",
+		panic(fmt.Sprintf("%s: data_manipulation context does not have filter '%s'",
 			f.Pos.String(), f.Name))
 	}
 	switch castNode := tomlValueCheck(node, ctx).(type) {

@@ -11,27 +11,23 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package utils
+package config
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"path/filepath"
 )
 
-var _ = Describe("The file's", func() {
-
-	const FILE_NAME = "file_io_test.go"
-
-	It(",metadata can be read", func() {
-		fp, errFilePath := filepath.Abs(FILE_NAME)
-
-		file, errFile := NewFile(fp)
-
-		Expect(errFilePath).To(BeNil())
-		Expect(errFile).To(BeNil())
-		Expect(file).To(Not(BeNil()))
-		Expect(file.Name).To(Equal(FILE_NAME))
+var _ = Describe("The data_manipulation", func() {
+	Context("default", func() {
+		It("should return the default host", func() {
+			Expect(Host()).To(Equal("http://127.0.0.1"))
+		})
+		It("should return the default port", func() {
+			Expect(ServerPort()).To(Equal(8080))
+		})
+		It("should return the default detatch modus", func() {
+			Expect(RunDetatched()).To(BeFalse())
+		})
 	})
-
 })

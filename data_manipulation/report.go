@@ -11,27 +11,16 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package utils
+package data_manipulation
 
-import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"path/filepath"
-)
+//import "github.com/ottenwbe/golook/client"
 
-var _ = Describe("The file's", func() {
+// Report individual files
+func ReportFile(filePath string) {
+	//client.GolookClient.Do
+}
 
-	const FILE_NAME = "file_io_test.go"
-
-	It(",metadata can be read", func() {
-		fp, errFilePath := filepath.Abs(FILE_NAME)
-
-		file, errFile := NewFile(fp)
-
-		Expect(errFilePath).To(BeNil())
-		Expect(errFile).To(BeNil())
-		Expect(file).To(Not(BeNil()))
-		Expect(file.Name).To(Equal(FILE_NAME))
-	})
-
-})
+// Report files in a folder
+func ReportFolder(folderPath string) {
+	//client.GolookClient.Do
+}

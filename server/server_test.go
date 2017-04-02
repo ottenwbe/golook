@@ -31,6 +31,6 @@ func TestRouterCreation(t *testing.T) {
 	}*/
 }
 
-//TODO: test registered routes by query
+//TODO: test registered routes by data_manipulation
 // 1.) start server (in go routine)
 // 2.) start a "client" (in go routine) testing all routes

@@ -245,7 +245,7 @@ func (t *TomlTree) createSubTree(keys []string, pos Position) error {
 	return nil
 }
 
-// Query compiles and executes a query on a tree and returns the query result.
+// Query compiles and executes a data_manipulation on a tree and returns the data_manipulation result.
 func (t *TomlTree) Query(query string) (*QueryResult, error) {
 	q, err := CompileQuery(query)
 	if err != nil {

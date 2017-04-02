@@ -49,7 +49,7 @@ func Run() {
 
 func init() {
 
-	initSubCommands()
+	initMainSubCommands()
 	initConfig()
 
 	err := viper.ReadInConfig() // Find and read the config file
@@ -60,7 +60,7 @@ func init() {
 	}
 }
 
-func initSubCommands() {
+func initMainSubCommands() {
 	RootCmd.AddCommand(cmdVersion)
 }
 

@@ -21,28 +21,36 @@ import (
 var cmdClient = &cobra.Command{
 	Use:   "client",
 	Short: "Start as client",
-	Long:  "Start as client",
+	Long:  "Start as a simple client",
 	Run: func(_ *cobra.Command, _ []string) {
 		//TODO
 	},
 }
 
 func Host() string {
-	return viper.GetString("server.host")
+	return viper.GetString("server.uplink")
 }
 
 func ServerPort() int {
 	return viper.GetInt("server.port")
 }
 
-func init() {
-	cmdClient.Flags().StringP("host", "h", "127.0.0.1", "Url of the server (default is 127.0.0.1)")
-	viper.BindPFlag("server.host", cmdClient.Flags().Lookup("host"))
-	viper.SetDefault("server.host", "http://127.0.0.1")
+func RunDetatched() bool {
+	return viper.GetBool("client.detatch")
+}
 
-	cmdClient.Flags().IntP("port", "p", 8080, "Port of the server (default is 8080)")
+func init() {
+	cmdClient.Flags().StringP("uplink", "u", "127.0.0.1", "Url of the uplink server (default is 127.0.0.1)")
+	viper.BindPFlag("server.uplink", cmdClient.Flags().Lookup("uplink"))
+	viper.SetDefault("server.uplink", "http://127.0.0.1")
+
+	cmdClient.Flags().IntP("port", "p", 8080, "Port of the uplink server (default is 8080)")
 	viper.BindPFlag("server.port", cmdClient.Flags().Lookup("port"))
 	viper.SetDefault("server.port", 8080)
+
+	cmdClient.Flags().BoolP("detach", "d", false, "Run as background process")
+	viper.BindPFlag("client.detatch", cmdClient.Flags().Lookup("detach"))
+	viper.SetDefault("client.detatch", false)
 
 	RootCmd.AddCommand(cmdClient)
 }

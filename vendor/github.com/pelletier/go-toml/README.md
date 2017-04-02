@@ -70,7 +70,7 @@ if err != nil {
     fmt.Println("User position: %v", configTree.GetPosition("user"))
     fmt.Println("Password position: %v", configTree.GetPosition("password"))
 
-    // use a query to gather elements without walking the tree
+    data_manipulation
     results, _ := config.Query("$..[user,password]")
     for ii, item := range results.Values() {
       fmt.Println("Query result %d: %v", ii, item)

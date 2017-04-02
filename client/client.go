@@ -31,6 +31,8 @@ type LookClient struct {
 	//c http.Client //TODO: check if http client is synchronized
 }
 
+var GolookClient *LookClient = NewLookClient()
+
 func (lc *LookClient) DoGetHome() string {
 	c := &http.Client{}
 

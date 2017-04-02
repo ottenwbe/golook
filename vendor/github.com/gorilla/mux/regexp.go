@@ -15,7 +15,7 @@ import (
 )
 
 // newRouteRegexp parses a route template and returns a routeRegexp,
-// used to match a host, a path or a query string.
+// used to match a host, a path or a data_manipulation string.
 //
 // It will extract named variables, assemble a regexp to be matched, create
 // a "reverse" template to build URLs and compile regexps to validate variable
@@ -92,7 +92,7 @@ func newRouteRegexp(tpl string, matchHost, matchPrefix, matchQuery, strictSlash,
 		pattern.WriteString("[/]?")
 	}
 	if matchQuery {
-		// Add the default pattern if the query value is empty
+		// Add the default pattern if the data_manipulation value is empty
 		if queryVal := strings.SplitN(template, "=", 2)[1]; queryVal == "" {
 			pattern.WriteString(defaultPattern)
 		}
@@ -128,9 +128,9 @@ func newRouteRegexp(tpl string, matchHost, matchPrefix, matchQuery, strictSlash,
 type routeRegexp struct {
 	// The unmodified template.
 	template string
-	// True for host match, false for path or query string match.
+	// True for host match, false for path or data_manipulation string match.
 	matchHost bool
-	// True for query string match, false for path and host match.
+	// True for data_manipulation string match, false for path and host match.
 	matchQuery bool
 	// The strictSlash value defined on the route, but disabled if PathPrefix was used.
 	strictSlash bool
@@ -189,7 +189,7 @@ func (r *routeRegexp) url(values map[string]string) (string, error) {
 	return rv, nil
 }
 
-// getURLQuery returns a single query parameter from a request URL.
+// getURLQuery returns a single data_manipulation parameter from a request URL.
 // For a URL with foo=bar&baz=ding, we return only the relevant key
 // value pair for the routeRegexp.
 func (r *routeRegexp) getURLQuery(req *http.Request) string {
@@ -285,7 +285,7 @@ func (v *routeRegexpGroup) setMatch(req *http.Request, m *RouteMatch, r *Route) 
 			}
 		}
 	}
-	// Store query string variables.
+	// Store data_manipulation string variables.
 	for _, q := range v.queries {
 		queryURL := q.getURLQuery(req)
 		matches := q.regexp.FindStringSubmatchIndex(queryURL)

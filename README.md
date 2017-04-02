@@ -5,62 +5,64 @@
 [![Build Status](https://travis-ci.org/ottenwbe/golook.svg?branch=development)](https://travis-ci.org/ottenwbe/golook)
 [![codecov](https://codecov.io/gh/ottenwbe/golook/branch/master/graph/badge.svg)](https://codecov.io/gh/ottenwbe/golook)
 
-Search for files in a distributed system via Rest API. 
+Golook is a cli tool that allows users to search for files in a distributed system.
+To this end, the application can act as a client and server.
+Clients report and query a server for files on a specific systems.
+Servers cache the reports of multiple clients and can therefore answer queries about the location of files.
+Client and server communicate via an Rest API. 
 
-## Build ##
+## Install ##
 
-### Prerequisites for both, server and client ###
+1. Ensure that [Go](https://golang.org/doc/install) is installed and [GOPATH](https://golang.org/doc/code.html) is set. 
+Moreover `$GOPATH/bin` is in your `PATH`.
 
-1. [Go](https://golang.org/doc/install) is installed and [GOPATH](https://golang.org/doc/code.html) is set.
-
-1. Get dependencies
-    ```bash
-    go get ./.. 
-    ```
-
-### Build the server ###
-
-1. Go build the executable
+1. Go build the executable in `${GOPATH}/bin`:
+    
     ```bash    
-    cd server
-    go build ./.. -o bin/server
+    go get github.com/ottenwbe/golook
     ```
+1. Now you can execute the application by typing: 
 
-### Build the client ###
-
-TBD
+    ```bash    
+    golook --help
+    ```
 
 ## Development ##
 
-For development the dependencies are needed. 
+For development the following dependencies are needed. 
 
-Ginkgo for testing:
+[Ginkgo](https://onsi.github.io/ginkgo/) is required for testing:
 
     go get github.com/onsi/ginkgo/ginkgo
     go get github.com/onsi/gomega
     
-Govendor for vendoring:    
+[Govendor](https://github.com/kardianos/govendor) is used for vendoring:    
     
     go get github.com/kardianos/govendor
 
-## Tests ##
+### Tests ###
 
-### Unit tests ###
-```bash
-./testAllPackages.sh
-```
+#### Unit tests ####
 
-## API ##
+The execution of unit tests is simplified by a script:
 
-| Path  | Method  |   |   |   |
-|---|---|---|---|---|
-| /  | "GET" |   |   |   |
-| /files/{file} |  "GET" |   |   |   |
-| /systems/{system}/files  |  "GET" |   |   |   |
-| /systems/{system}/files/{file}  |  "POST" |   |   |   |
-| /systems/{system}/files  |  "PUT" |   |   |   |
-| /systems/{system} |  "GET" |   |   |   |
-| /systems |  "PUT" |   |   |   |
-| /systems/{system} |  "DELETE" |   |   |   |
+    ./testAllPackages.sh
+
+#### Integration tests ####
+
+TODO: Will be executed by executing client and server in Docker containers.
+
+## Server API ##
+
+| Path  | Method  | Purpose  |   
+|---|---|---|
+| /  | "GET" | Returns the current version of the server  |   
+| /files/{file} |  "GET" |  Get all systems that host a specific file |  
+| /systems/{system}/files  |  "GET" | Get all files of a system | 
+| /systems/{system}/files/{file}  |  "POST" | Report a distinct file |
+| /systems/{system}/files  |  "PUT" | Replace all reported files |
+| /systems/{system} |  "GET" | Get details about a system  |
+| /systems |  "PUT" |  Report a new system |
+| /systems/{system} |  "DELETE" |  Delete a system |
  
  
