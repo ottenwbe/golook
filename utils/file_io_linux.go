@@ -23,11 +23,11 @@ import (
 	"time"
 )
 
-func NewFile(filePath string) (f *helper.File, err error) {
+func NewFile(filePath string) (f *File, err error) {
 
 	var fi os.FileInfo
 
-	f = &helper.File{}
+	f = &File{}
 	fi, err = os.Stat(filePath)
 	if err != nil {
 		return
