@@ -14,7 +14,7 @@
 package repositories
 
 import (
-	. "github.com/ottenwbe/golook/helper"
+	. "github.com/ottenwbe/golook/utils"
 	"strings"
 )
 

@@ -30,6 +30,19 @@ Search for files in a distributed system via Rest API.
 
 TBD
 
+## Development ##
+
+For development the dependencies are needed. 
+
+Ginkgo for testing:
+
+    go get github.com/onsi/ginkgo/ginkgo
+    go get github.com/onsi/gomega
+    
+Govendor for vendoring:    
+    
+    go get github.com/kardianos/govendor
+
 ## Tests ##
 
 ### Unit tests ###

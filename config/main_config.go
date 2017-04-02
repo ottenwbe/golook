@@ -15,10 +15,11 @@ package config
 
 import (
 	"fmt"
+	"os"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"os"
 )
 
 const (
@@ -66,7 +67,7 @@ func initSubCommands() {
 func initConfig() {
 	wd, err := os.Getwd()
 	if err != nil {
-		log.Fatalf("Could not determine working directory: %s", err)
+		log.WithError(err).Fatalf("Could not determine working directory")
 	}
 	viper.SetConfigName("golook")        // name of config file (without extension)
 	viper.AddConfigPath("/etc/golook/")  // path to look for the config file in

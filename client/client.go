@@ -22,7 +22,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/ottenwbe/golook/config"
-	. "github.com/ottenwbe/golook/helper"
+	. "github.com/ottenwbe/golook/utils"
 	"io/ioutil"
 )
 

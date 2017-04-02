@@ -16,17 +16,16 @@ package server
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/gorilla/mux"
-	. "github.com/ottenwbe/golook/helper"
 	"io"
-	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
-	"syscall"
 	"testing"
-	"time"
+
+	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
+
+	. "github.com/ottenwbe/golook/utils"
 )
 
 const systemName = "testSystem"
@@ -140,20 +139,10 @@ func TestPostFiles_EarlyExitWithEmptyBody(t *testing.T) {
 /////////////////////////
 
 func createTestFile() *File {
-	const filename = "controller.go"
-	f := &File{}
-	fi, err := os.Stat(filename)
-
+	f, err := NewFile("controller_test.go")
 	if err != nil {
-		log.Fatalf("Test file (%s) could not be opened", filename)
+		log.WithError(err).Fatal("Test file cannot be read")
 	}
-
-	var stat = fi.Sys().(*syscall.Stat_t)
-	f.Accessed = time.Unix(stat.Atim.Sec, stat.Atim.Nsec)
-	f.Created = time.Unix(stat.Ctim.Sec, stat.Ctim.Nsec)
-	f.Modified = time.Unix(stat.Mtim.Sec, stat.Mtim.Nsec)
-	f.Name = filename
-
 	return f
 }
 

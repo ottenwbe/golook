@@ -19,7 +19,7 @@ import (
 	"github.com/gorilla/mux"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/ottenwbe/golook/helper"
+	"github.com/ottenwbe/golook/utils"
 	"net/http"
 	"net/http/httptest"
 )
@@ -72,7 +72,7 @@ var _ = Describe("The client", func() {
 			testSystem := newTestSystem()
 
 			server = httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
-				receivedSystem, _ := helper.DecodeSystem(req.Body)
+				receivedSystem, _ := utils.DecodeSystem(req.Body)
 				Expect(receivedSystem.Name).To(Equal(testSystem.Name))
 			}))
 			client.serverUrl = server.URL
@@ -119,8 +119,8 @@ var _ = Describe("The client", func() {
 
 })
 
-func newTestSystem() *helper.System {
-	s := &helper.System{
+func newTestSystem() *utils.System {
+	s := &utils.System{
 		Name:  sysName,
 		Files: nil,
 		IP:    "1.1.1.1",

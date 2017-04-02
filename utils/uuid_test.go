@@ -11,15 +11,28 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package helper
+package utils
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"testing"
 )
 
-func TestModels(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Helper Suite")
-}
+var _ = Describe("uuids", func() {
+
+	var (
+		uuid1, uuid2 string
+		err1, err2   error
+	)
+
+	BeforeEach(func() {
+		uuid1, err1 = NewUUID()
+		uuid2, err2 = NewUUID()
+	})
+
+	It("generated at random should differ", func() {
+		Expect(err1).To(BeNil())
+		Expect(err2).To(BeNil())
+		Expect(uuid1).To(Not(Equal(uuid2)))
+	})
+})
