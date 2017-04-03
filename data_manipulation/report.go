@@ -13,11 +13,19 @@
 //limitations under the License.
 package data_manipulation
 
-//import "github.com/ottenwbe/golook/client"
+import (
+	. "github.com/ottenwbe/golook/client"
+	"github.com/ottenwbe/golook/utils"
+	log "github.com/sirupsen/logrus"
+)
 
 // Report individual files
 func ReportFile(filePath string) {
-	//client.GolookClient.Do
+	if f, err := utils.NewFile(filePath); err != nil {
+		log.WithError(err).Error("Could not report file")
+	} else /* report file */ {
+		GolookClient.DoPostFile(f)
+	}
 }
 
 // Report files in a folder

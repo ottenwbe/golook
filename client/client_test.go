@@ -32,11 +32,12 @@ var _ = Describe("The client", func() {
 
 	var (
 		server *httptest.Server
-		client *LookClient
+		client *LookClientData
 	)
 
 	BeforeEach(func() {
-		client = NewLookClient()
+		tmpClient := NewLookClient()
+		client = tmpClient.(*LookClientData)
 	})
 
 	AfterEach(func() {
@@ -93,8 +94,9 @@ var _ = Describe("The client", func() {
 			}))
 			server.URL = "/systems/{system}"
 			client.serverUrl = server.URL
+			client.systemName = testSystemName
 
-			result := client.DoDeleteSystem(testSystemName)
+			result := client.DoDeleteSystem()
 
 			Expect(result).To(Not(BeNil()))
 		})

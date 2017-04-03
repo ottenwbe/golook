@@ -12,3 +12,37 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 package data_manipulation
+
+import (
+	. "github.com/onsi/ginkgo"
+	"github.com/ottenwbe/golook/client"
+	"github.com/ottenwbe/golook/utils"
+)
+
+var _ = Describe("The report service", func() {
+	It("should call the golook client with a given file", func() {
+
+		client.GolookClient = testGolookClient{
+			visitDoPostFile: false,
+		}
+
+		//ReportFile("reporting_test.go")
+
+		//Expect(client.GolookClient.(testGolookClient).visitDoPostFile).To(BeTrue())
+	})
+
+})
+
+type testGolookClient struct {
+	visitDoPostFile bool
+}
+
+func (testGolookClient) DoGetHome() string {
+	panic("not needed")
+	return ""
+}
+
+func (t testGolookClient) DoPostFile(file *utils.File) string {
+	t.visitDoPostFile = true
+	return ""
+}

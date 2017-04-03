@@ -26,14 +26,20 @@ import (
 	"io/ioutil"
 )
 
-type LookClient struct {
-	serverUrl string
+type LookClientFunctions interface {
+	DoGetHome() string
+	DoPostFile(file *File) string
+}
+
+type LookClientData struct {
+	serverUrl  string
+	systemName string
 	//c http.Client //TODO: check if http client is synchronized
 }
 
-var GolookClient *LookClient = NewLookClient()
+var GolookClient LookClientFunctions = NewLookClient()
 
-func (lc *LookClient) DoGetHome() string {
+func (lc *LookClientData) DoGetHome() string {
 	c := &http.Client{}
 
 	response, err := c.Get(lc.serverUrl)
@@ -47,7 +53,7 @@ func (lc *LookClient) DoGetHome() string {
 	return ""
 }
 
-func (lc *LookClient) DoGetSystem(system string) (*System, error) {
+func (lc *LookClientData) DoGetSystem(system string) (*System, error) {
 	c := &http.Client{}
 
 	response, err := c.Get(fmt.Sprintf("%s/systems/%s", lc.serverUrl, system))
@@ -61,15 +67,15 @@ func (lc *LookClient) DoGetSystem(system string) (*System, error) {
 	}
 }
 
-func (lc *LookClient) DoPutSystem(system *System) *System {
+func (lc *LookClientData) DoPutSystem(system *System) *System {
 	c := &http.Client{}
 
 	url := fmt.Sprintf("%s/systems", lc.serverUrl)
 
 	jsonBody, _ := json.Marshal(system)
-	b := bytes.NewBuffer(jsonBody)
-	request, errRequest := http.NewRequest("PUT", url, b)
+	request, errRequest := http.NewRequest("PUT", url, bytes.NewBuffer(jsonBody))
 	if errRequest == nil {
+		request.Header.Set("Content-Type", "application/json")
 		response, errResult := c.Do(request)
 		if errResult != nil {
 			log.Error(errResult)
@@ -85,10 +91,10 @@ func (lc *LookClient) DoPutSystem(system *System) *System {
 	}
 }
 
-func (lc *LookClient) DoDeleteSystem(systemName string) string {
+func (lc *LookClientData) DoDeleteSystem() string {
 	c := &http.Client{}
 
-	url := fmt.Sprintf("%s/systems/%s", lc.serverUrl, systemName)
+	url := fmt.Sprintf("%s/systems/%s", lc.serverUrl, lc.systemName)
 
 	request, errRequest := http.NewRequest("DELETE", url, nil)
 	if errRequest == nil {
@@ -106,8 +112,33 @@ func (lc *LookClient) DoDeleteSystem(systemName string) string {
 	return ""
 }
 
-func NewLookClient() *LookClient {
-	return &LookClient{
-		serverUrl: fmt.Sprintf("%s:%d", config.Host(), config.ServerPort()),
+func (lc *LookClientData) DoPostFile(file *File) string {
+	c := &http.Client{}
+	var fileName string = file.Name
+
+	url := fmt.Sprintf("%s/systems/%s/files/%s", lc.serverUrl, lc.systemName, fileName)
+
+	fileJson, _ := json.Marshal(file) //TODO error handling
+	request, errRequest := http.NewRequest("POST", url, bytes.NewBuffer(fileJson))
+	if errRequest == nil {
+		request.Header.Set("Content-Type", "application/json")
+		response, errResult := c.Do(request)
+		if errResult != nil {
+			log.Error(errResult)
+		} else {
+			defer response.Body.Close()
+			res, _ := ioutil.ReadAll(response.Body)
+			return string(res) //TODO error handling
+		}
+	} else {
+		log.Error(errRequest)
+	}
+	return ""
+}
+
+func NewLookClient() LookClientFunctions {
+	return &LookClientData{
+		serverUrl:  fmt.Sprintf("%s:%d", config.Host(), config.ServerPort()),
+		systemName: "",
 	}
 }

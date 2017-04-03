@@ -23,8 +23,8 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
-	. "github.com/ottenwbe/golook/utils"
 	. "github.com/ottenwbe/golook/repository"
+	. "github.com/ottenwbe/golook/utils"
 )
 
 const (
