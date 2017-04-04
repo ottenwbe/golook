@@ -36,17 +36,37 @@ var _ = Describe("The report service", func() {
 		})
 	})
 
-	It("should call the golook client with files from existing folder", func() {
+	It("should call the golook client with a given file", func() {
 		runWithMockedGolookClient(func() {
 			ReportFolder(FOLDER_NAME)
-			//Expect(client.GolookClient.(*MockGolookClient).visitDoPostFile).To(BeFalse())
+			Expect(client.GolookClient.(*MockGolookClient).visitDoPostFile).To(BeTrue())
 		})
 	})
 
+	It("should NOT call the golook client with a non existing file", func() {
+		runWithMockedGolookClient(func() {
+			ReportFolder("no_folder")
+			Expect(client.GolookClient.(*MockGolookClient).visitDoPostFile).To(BeFalse())
+		})
+	})
+
+	It("should call the golook client with files from existing folder which replace reported files", func() {
+		runWithMockedGolookClient(func() {
+			ReportFolderR(FOLDER_NAME)
+			Expect(client.GolookClient.(*MockGolookClient).visitDoPutFiles).To(BeTrue())
+		})
+	})
+
+	It("should NOT call the golook client with files from existing folder when folder does not exist", func() {
+		runWithMockedGolookClient(func() {
+			ReportFolderR("no_folder")
+			Expect(client.GolookClient.(*MockGolookClient).visitDoPutFiles).To(BeFalse())
+		})
+	})
 })
 
 const FILE_NAME = "reporting_test.go"
-const FOLDER_NAME = "../data_manipulation"
+const FOLDER_NAME = "."
 
 func runWithMockedGolookClient(mockedFunction func()) {
 
@@ -58,6 +78,7 @@ func runWithMockedGolookClient(mockedFunction func()) {
 	//create a mock client
 	client.GolookClient = &MockGolookClient{
 		visitDoPostFile: false,
+		visitDoPutFiles: false,
 	}
 
 	mockedFunction()
@@ -65,7 +86,7 @@ func runWithMockedGolookClient(mockedFunction func()) {
 
 type MockGolookClient struct {
 	visitDoPostFile bool
-	file            *utils.File
+	visitDoPutFiles bool
 }
 
 func (*MockGolookClient) DoGetSystem(system string) (*utils.System, error) {
@@ -91,7 +112,7 @@ func (t *MockGolookClient) DoPostFile(file *utils.File) string {
 	return ""
 }
 
-func (t *MockGolookClient) DoPutFiles(file []utils.File) string {
-	t.visitDoPostFile = true
+func (t *MockGolookClient) DoPutFiles(files []utils.File) string {
+	t.visitDoPutFiles = len(files) > 0
 	return ""
 }

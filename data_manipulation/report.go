@@ -29,18 +29,31 @@ func ReportFile(filePath string) {
 	}
 }
 
-// Report files in a folder
-func ReportFolder(folderPath string) {
-	report := []utils.File{}
+// Report files in a folder and replace all previously reported files
+func ReportFolderR(folderPath string) {
+	report := make([]utils.File, 0)
 
 	//TODO error handling
 	files, _ := ioutil.ReadDir(folderPath)
-	for _, f := range files {
-		if file, err := utils.NewFile(f.Name()); err != nil {
+	for idx := range files {
+		if file, err := utils.NewFile(files[idx].Name()); err != nil {
 			log.WithError(err).Error("Could not report file")
-		} else /* report file */ {
+		} else if !files[idx].IsDir() /* report file */ {
 			report = append(report, *file)
 		}
 	}
 	GolookClient.DoPutFiles(report)
+}
+
+// Report files in a folder
+func ReportFolder(folderPath string) {
+	//TODO error handling
+	files, _ := ioutil.ReadDir(folderPath)
+	for idx := range files {
+		if file, err := utils.NewFile(files[idx].Name()); err != nil {
+			log.WithError(err).Error("Could not report file")
+		} else if !files[idx].IsDir() /* report file */ {
+			GolookClient.DoPostFile(file)
+		}
+	}
 }
