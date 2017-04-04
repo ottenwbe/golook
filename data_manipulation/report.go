@@ -17,6 +17,7 @@ import (
 	. "github.com/ottenwbe/golook/client"
 	"github.com/ottenwbe/golook/utils"
 	log "github.com/sirupsen/logrus"
+	"io/ioutil"
 )
 
 // Report individual files
@@ -30,5 +31,16 @@ func ReportFile(filePath string) {
 
 // Report files in a folder
 func ReportFolder(folderPath string) {
-	//client.GolookClient.Do
+	report := []utils.File{}
+
+	//TODO error handling
+	files, _ := ioutil.ReadDir(folderPath)
+	for _, f := range files {
+		if file, err := utils.NewFile(f.Name()); err != nil {
+			log.WithError(err).Error("Could not report file")
+		} else /* report file */ {
+			report = append(report, *file)
+		}
+	}
+	GolookClient.DoPutFiles(report)
 }
