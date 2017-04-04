@@ -24,6 +24,7 @@ import (
 
 const (
 	PROGRAM_NAME = "golook"
+	VERSION      = "v0.1.0-dev"
 )
 
 var RootCmd = &cobra.Command{
@@ -37,7 +38,7 @@ var cmdVersion = &cobra.Command{
 	Short: fmt.Sprintf("Print the version number of %s", PROGRAM_NAME),
 	Long:  fmt.Sprintf("All software has versions. This is %s's", PROGRAM_NAME),
 	Run: func(_ *cobra.Command, _ []string) {
-		fmt.Println("v0.0.0")
+		fmt.Print(VERSION)
 	},
 }
 
