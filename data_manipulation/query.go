@@ -13,6 +13,12 @@
 //limitations under the License.
 package data_manipulation
 
+import "github.com/ottenwbe/golook/client"
+
 // 1. Find computer hosting a specific file
 
 // 2. Get files that have been reported by this client
+func QueryFiles() error {
+	client.GolookClient.DoGetFiles()
+	return nil
+}

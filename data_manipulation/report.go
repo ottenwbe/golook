@@ -14,46 +14,57 @@
 package data_manipulation
 
 import (
+	"io/ioutil"
+
 	. "github.com/ottenwbe/golook/client"
 	"github.com/ottenwbe/golook/utils"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
 )
 
 // Report individual files
-func ReportFile(filePath string) {
+func ReportFile(filePath string) error {
 	if f, err := utils.NewFile(filePath); err != nil {
+		//return err
 		log.WithError(err).Error("Could not report file")
 	} else /* report file */ {
 		GolookClient.DoPostFile(f)
 	}
+	return nil
 }
 
 // Report files in a folder and replace all previously reported files
-func ReportFolderR(folderPath string) {
+func ReportFolderR(folderPath string) error {
 	report := make([]utils.File, 0)
 
-	//TODO error handling
-	files, _ := ioutil.ReadDir(folderPath)
+	files, err := ioutil.ReadDir(folderPath)
+	if err != nil {
+		return err
+	}
 	for idx := range files {
 		if file, err := utils.NewFile(files[idx].Name()); err != nil {
-			log.WithError(err).Error("Could not report file")
+			return err
+			//log.WithError(err).Error("Could not report file")
 		} else if !files[idx].IsDir() /* report file */ {
 			report = append(report, *file)
 		}
 	}
 	GolookClient.DoPutFiles(report)
+	return nil
 }
 
 // Report files in a folder
-func ReportFolder(folderPath string) {
-	//TODO error handling
-	files, _ := ioutil.ReadDir(folderPath)
+func ReportFolder(folderPath string) error {
+	files, err := ioutil.ReadDir(folderPath)
+	if err != nil {
+		return err
+	}
 	for idx := range files {
 		if file, err := utils.NewFile(files[idx].Name()); err != nil {
-			log.WithError(err).Error("Could not report file")
+			return err
+			//log.WithError(err).Error("Could not report file")
 		} else if !files[idx].IsDir() /* report file */ {
 			GolookClient.DoPostFile(file)
 		}
 	}
+	return nil
 }

@@ -12,19 +12,3 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 package data_manipulation
-
-import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"github.com/ottenwbe/golook/client"
-)
-
-var _ = Describe("The query service", func() {
-	It("should call the golook client", func() {
-		runWithMockedGolookClient(func() {
-			err := QueryFiles()
-			Expect(err).To(BeNil())
-			Expect(client.GolookClient.(*MockGolookClient).visitDoGetFiles).To(BeTrue())
-		})
-	})
-})

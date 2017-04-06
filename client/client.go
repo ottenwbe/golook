@@ -26,13 +26,14 @@ import (
 	"io/ioutil"
 )
 
-type LookClientFunctions interface {
+type LookClient interface {
 	DoGetHome() string
 	DoPostFile(file *File) string
 	DoPutFiles(file []File) string
 	DoGetSystem(system string) (*System, error)
 	DoPutSystem(system *System) *System
 	DoDeleteSystem() string
+	DoGetFiles() string
 }
 
 type LookClientData struct {
@@ -41,7 +42,7 @@ type LookClientData struct {
 	//c http.Client //TODO: check if http client is synchronized
 }
 
-var GolookClient LookClientFunctions = NewLookClient()
+var GolookClient LookClient = NewLookClient()
 
 func (lc *LookClientData) DoGetHome() string {
 	c := &http.Client{}
@@ -163,7 +164,28 @@ func (lc *LookClientData) DoPutFiles(file []File) string {
 	return ""
 }
 
-func NewLookClient() LookClientFunctions {
+func (lc *LookClientData) DoGetFiles() string {
+	c := &http.Client{}
+
+	url := fmt.Sprintf("%s/systems/%s/files", lc.serverUrl, lc.systemName)
+
+	request, errRequest := http.NewRequest("GET", url, nil)
+	if errRequest == nil {
+		response, errResult := c.Do(request)
+		if errResult != nil {
+			log.Error(errResult)
+		} else {
+			defer response.Body.Close()
+			res, _ := ioutil.ReadAll(response.Body)
+			return string(res) //TODO error handling
+		}
+	} else {
+		log.Error(errRequest)
+	}
+	return ""
+}
+
+func NewLookClient() LookClient {
 	return &LookClientData{
 		serverUrl:  fmt.Sprintf("%s:%d", config.Host(), config.ServerPort()),
 		systemName: "",
