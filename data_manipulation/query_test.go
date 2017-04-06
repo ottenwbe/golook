@@ -16,6 +16,7 @@ package data_manipulation
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
 	"github.com/ottenwbe/golook/client"
 )
 
