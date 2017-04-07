@@ -185,6 +185,12 @@ func (lc *LookClientData) DoGetFiles() string {
 	return ""
 }
 
+func (lc *LookClientData) DoQuerySystemsAndFiles() error {
+	_ = &http.Client{}
+	//TODO...
+	return nil
+}
+
 func NewLookClient() LookClient {
 	return &LookClientData{
 		serverUrl:  fmt.Sprintf("%s:%d", config.Host(), config.ServerPort()),

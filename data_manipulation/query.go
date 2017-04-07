@@ -16,6 +16,11 @@ package data_manipulation
 import "github.com/ottenwbe/golook/client"
 
 // 1. Find computer hosting a specific file
+func QuerySystemsAndFiles() error {
+	client.GolookClient.DoQuerySystemsAndFiles()
+	return nil
+}
+
 
 // 2. Get files that have been reported by this client
 func QueryFiles() error {
