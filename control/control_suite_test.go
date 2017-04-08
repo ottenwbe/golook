@@ -11,7 +11,7 @@ import (
 
 func TestClients(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Data Manipulation Test Suite")
+	RunSpecs(t, "Control Test Suite")
 }
 
 const FILE_NAME = "reporting_test.go"
@@ -26,9 +26,9 @@ func runWithMockedGolookClient(mockedFunction func()) {
 
 	//create a mock routing
 	routing.GolookClient = &MockGolookClient{
-		visitDoPostFile: false,
-		visitDoPutFiles: false,
-		visitDoGetFiles: false,
+		visitDoPostFile:  false,
+		visitDoPutFiles:  false,
+		visitDoGetFiles:  false,
 		visitDoPostFiles: false,
 	}
 
@@ -36,9 +36,9 @@ func runWithMockedGolookClient(mockedFunction func()) {
 }
 
 type MockGolookClient struct {
-	visitDoPostFile bool
-	visitDoPutFiles bool
-	visitDoGetFiles bool
+	visitDoPostFile  bool
+	visitDoPutFiles  bool
+	visitDoGetFiles  bool
 	visitDoPostFiles bool
 }
 

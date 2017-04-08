@@ -30,6 +30,6 @@ var _ = Describe("uuids", func() {
 	})
 
 	It("generated at random should differ", func() {
-		Expect(uuid1).To(Not(Equal(uuid2)))
+		Expect(uuid1).ToNot(Equal(uuid2))
 	})
 })

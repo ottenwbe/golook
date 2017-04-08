@@ -21,7 +21,6 @@ func QuerySystemsAndFiles() error {
 	return nil
 }
 
-
 // 2. Get files that have been reported by this routing
 func QueryFiles() error {
 	routing.GolookClient.DoGetFiles()

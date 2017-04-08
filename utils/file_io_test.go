@@ -14,6 +14,7 @@
 package utils
 
 import (
+	"fmt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"path/filepath"
@@ -23,7 +24,7 @@ var _ = Describe("The file's", func() {
 
 	const FILE_NAME = "file_io_test.go"
 
-	It(",metadata can be read", func() {
+	It("metadata of file file_io_test.go can be read", func() {
 		fp, errFilePath := filepath.Abs(FILE_NAME)
 
 		file, errFile := NewFile(fp)
@@ -32,6 +33,14 @@ var _ = Describe("The file's", func() {
 		Expect(errFile).To(BeNil())
 		Expect(file).To(Not(BeNil()))
 		Expect(file.Name).To(Equal(FILE_NAME))
+	})
+
+	It("non existing file is not read", func() {
+		fp := fmt.Sprintf("%s_does_not_exist", FILE_NAME)
+
+		_, errFile := NewFile(fp)
+
+		Expect(errFile).ToNot(BeNil())
 	})
 
 })

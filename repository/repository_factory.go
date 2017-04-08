@@ -15,9 +15,9 @@ package repositories
 
 type RepositoryType int
 
-const (  // iota is reset to 0
-	NO_REPOSITORY RepositoryType = iota  // c1 == 1
-	MAP_REPOSITORY RepositoryType = iota  // c0 == 0
+const ( // iota is reset to 0
+	NO_REPOSITORY  RepositoryType = iota // == 0
+	MAP_REPOSITORY RepositoryType = iota // == 1
 )
 
 var (
@@ -26,6 +26,7 @@ var (
 
 func NewRepository() Repository {
 	var repo Repository
+
 	switch repositoryType {
 	case NO_REPOSITORY:
 		repo = nil
