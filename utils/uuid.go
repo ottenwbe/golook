@@ -17,6 +17,7 @@ import (
 	"github.com/satori/go.uuid"
 )
 
+// Facade for uuid
 func NewUUID() string {
 	uuid := uuid.NewV4()
 	return uuid.String()

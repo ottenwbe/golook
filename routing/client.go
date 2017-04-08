@@ -33,7 +33,7 @@ type LookClient interface {
 	DoGetSystem(system string) (*System, error)
 	DoPutSystem(system *System) *System
 	DoDeleteSystem() string
-	DoGetFiles() string
+	DoGetFiles() ([]File, error)
 	DoQuerySystemsAndFiles() error
 }
 
@@ -188,25 +188,25 @@ func (lc *LookClientData) DoPostFiles(file []File) string {
 	return ""
 }
 
-func (lc *LookClientData) DoGetFiles() string {
-	c := &http.Client{}
+func (lc *LookClientData) DoGetFiles() ([]File, error) {
+
+	var (
+		c        *http.Client = &http.Client{}
+		err      error        = nil
+		response *http.Response
+		files    []File
+	)
 
 	url := fmt.Sprintf("%s/systems/%s/files", lc.serverUrl, lc.systemName)
 
-	request, errRequest := http.NewRequest("GET", url, nil)
-	if errRequest == nil {
-		response, errResult := c.Do(request)
-		if errResult != nil {
-			log.Error(errResult)
-		} else {
-			defer response.Body.Close()
-			res, _ := ioutil.ReadAll(response.Body)
-			return string(res) //TODO error handling
-		}
-	} else {
-		log.Error(errRequest)
+	response, err = c.Get(url)
+	if err != nil {
+		return nil, err
 	}
-	return ""
+	defer response.Body.Close()
+
+	files, err = DecodeFiles(response.Body)
+	return files, err
 }
 
 func (lc *LookClientData) DoQuerySystemsAndFiles() error {

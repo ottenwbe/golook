@@ -37,7 +37,7 @@ var _ = Describe("The report service", func() {
 	It("should call the golook routing for a given folder", func() {
 		runWithMockedGolookClient(func() {
 			ReportFolder(FOLDER_NAME)
-			//Expect(routing.GolookClient.(*MockGolookClient).visitDoPostFile).To(BeTrue())
+			Expect(routing.GolookClient.(*MockGolookClient).visitDoPostFiles).To(BeTrue())
 		})
 	})
 

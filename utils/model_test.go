@@ -59,10 +59,19 @@ var _ = Describe("The model", func() {
 		})
 	})
 
-	Context("Systems", func() {
+	Context("Files", func() {
 		It("can be marshalled and unmarshalled", func() {
 			go PipeWriteFiles(pipeWriter)
 			go PipeReadFiles(pipeReader, chanbools)
+			result := <-chanbools
+			Expect(result).To(BeTrue())
+		})
+	})
+
+	Context("Systems", func() {
+		It("can be marshalled and unmarshalled", func() {
+			go PipeWriteSystems(pipeWriter)
+			go PipeReadSystems(pipeReader, chanbools)
 			result := <-chanbools
 			Expect(result).To(BeTrue())
 		})
@@ -102,6 +111,24 @@ func PipeReadSystem(pipeReader *io.PipeReader, c chan bool) {
 	} else {
 		log.Printf("Error expected nil, got %s", err)
 		log.Printf("File, expected %s got %s", testSysName, s.Name)
+	}
+	c <- false
+}
+
+func PipeWriteSystems(pipeWriter *io.PipeWriter) {
+	b, _ := json.Marshal([]*System{
+		newTestSystem(testSysName),
+	})
+	defer pipeWriter.Close()
+	pipeWriter.Write(b)
+}
+
+func PipeReadSystems(pipeReader *io.PipeReader, c chan bool) {
+	if s, err := DecodeSystems(pipeReader); err == nil && s[0].Name == testSysName {
+		c <- true
+	} else {
+		log.Printf("Error expected nil, got %s", err)
+		log.Printf("File, expected %s got %s", testSysName, s[0].Name)
 	}
 	c <- false
 }

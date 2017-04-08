@@ -80,7 +80,7 @@ func (mock *MockGolookClient) DoPutFiles(files []utils.File) string {
 	return ""
 }
 
-func (mock *MockGolookClient) DoGetFiles() string {
+func (mock *MockGolookClient) DoGetFiles() ([]utils.File, error) {
 	mock.visitDoGetFiles = true
-	return ""
+	return []utils.File{}, nil
 }

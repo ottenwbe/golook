@@ -25,7 +25,8 @@ import (
 )
 
 const (
-	sysName = "system"
+	sysName   = "system"
+	FILE_NAME = "file.txt"
 )
 
 var _ = Describe("The routing", func() {
@@ -65,7 +66,7 @@ var _ = Describe("The routing", func() {
 			client.serverUrl = "/"
 			result, err := client.DoGetSystem(sysName)
 			Expect(result).To(BeNil())
-			Expect(err).To(Not(BeNil()))
+			Expect(err).ToNot(BeNil())
 		})
 
 		It("should send a valid system to the server with Put", func() {
@@ -102,6 +103,23 @@ var _ = Describe("The routing", func() {
 		})
 	})
 
+	Context(" File Methods ", func() {
+		It("should return a valid set of files with Get", func() {
+			server := httptest.NewServer(
+				http.HandlerFunc(
+					func(writer http.ResponseWriter, _ *http.Request) {
+						b, _ := json.Marshal([]utils.File{newTestFile()})
+						fmt.Fprint(writer, string(b))
+					}))
+			client.serverUrl = server.URL
+
+			files, err := client.DoGetFiles()
+			Expect(err).To(BeNil())
+			Expect(len(files)).To(Equal(1))
+			Expect(files[0].Name).To(Equal(FILE_NAME))
+		})
+	})
+
 	Context("Get Home", func() {
 
 		const testString = "TestString"
@@ -122,11 +140,16 @@ var _ = Describe("The routing", func() {
 })
 
 func newTestSystem() *utils.System {
-	s := &utils.System{
+	return &utils.System{
 		Name:  sysName,
 		Files: nil,
 		IP:    "1.1.1.1",
 		OS:    "linux",
 		UUID:  "1234"}
-	return s
+}
+
+func newTestFile() utils.File {
+	return utils.File{
+		Name: FILE_NAME,
+	}
 }

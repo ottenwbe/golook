@@ -21,5 +21,5 @@ import (
 
 func TestClients(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Client Suite")
+	RunSpecs(t, "Routing Suite")
 }

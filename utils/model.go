@@ -46,6 +46,12 @@ func DecodeFile(fileReader io.Reader) (File, error) {
 	return file, err
 }
 
+func DecodeSystems(reader io.Reader) ([]*System, error) {
+	systems := make([]*System, 0)
+	err := json.NewDecoder(reader).Decode(&systems)
+	return systems, err
+}
+
 func DecodeSystem(sysReader io.Reader) (System, error) {
 	var sys System
 	err := json.NewDecoder(sysReader).Decode(&sys)

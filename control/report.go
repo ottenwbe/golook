@@ -32,46 +32,42 @@ func ReportFile(filePath string) error {
 }
 
 // Report files in a folder and replace all previously reported files
-func ReportFolderR(folderPath string) (err error) {
-	report := make([]utils.File, 0)
-	var files []os.FileInfo
-	err = nil
-
-	files, err = ioutil.ReadDir(folderPath)
-	if err != nil {
-		return
-	}
-
-	for idx := range files {
-		err, report = reportFilesOfFolder(files[idx], report)
-	}
-
+func ReportFolderR(folderPath string) error {
+	report, err := generateReport(folderPath)
 	GolookClient.DoPutFiles(report)
-	return
+	return err
 }
 
 // Report files in a folder
-func ReportFolder(folderPath string) (err error) {
-	report := make([]utils.File, 0)
-	var files []os.FileInfo
-	err = nil
+func ReportFolder(folderPath string) error {
+	report, err := generateReport(folderPath)
+	GolookClient.DoPostFiles(report)
+	return err
+}
 
-	files, err = ioutil.ReadDir(folderPath)
-	if err != nil {
-		return
+func generateReport(folderPath string) ([]utils.File, error) {
+
+	var (
+		files     []os.FileInfo
+		returnErr error        = nil
+		report    []utils.File = make([]utils.File, 0)
+	)
+
+	files, returnErr = ioutil.ReadDir(folderPath)
+	if returnErr != nil {
+		return report, returnErr
 	}
 
 	for idx := range files {
-		err, report = reportFilesOfFolder(files[idx], report)
+		report, returnErr = appendFile(files[idx], report)
 	}
-	GolookClient.DoPostFiles(report)
-	return
+	return report, returnErr
 }
 
-func reportFilesOfFolder(fi os.FileInfo, oldReport []utils.File) (err error, report []utils.File) {
+func appendFile(fileToAppend os.FileInfo, appendReport []utils.File) (report []utils.File, err error) {
 	var file *utils.File = nil
-	if file, err = utils.NewFile(fi.Name()); err == nil && !fi.IsDir() {
-		report = append(oldReport, *file)
+	if file, err = utils.NewFile(fileToAppend.Name()); err == nil && !fileToAppend.IsDir() {
+		report = append(appendReport, *file)
 	}
 	return
 }
