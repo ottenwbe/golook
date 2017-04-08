@@ -13,11 +13,27 @@
 //limitations under the License.
 package repositories
 
-import "testing"
 
-func TestCreateEmptyRepositoryMap(t *testing.T) {
-	repo := NewRepository()
-	if repo == nil {
-		t.Error("Repository was nil, hence it was not created")
-	}
-}
+import (
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+)
+
+var _ = Describe("The repository factory", func() {
+	It("should return nil when no repository is configured", func() {
+		repositoryType = NO_REPOSITORY
+		Expect(NewRepository()).To(BeNil())
+
+	})
+	It("should return nil when a wrong repository is configured", func() {
+		repositoryType = RepositoryType(2222)
+		Expect(NewRepository()).To(BeNil())
+
+	})
+	It("should return a map repository when repositoryType is set to MAP_REPOSITORY", func() {
+		repositoryType = MAP_REPOSITORY
+		repo := NewRepository()
+		Expect(repo).ToNot(BeNil())
+		//Expect(reflect.TypeOf(repo).Name()).To(Equal(reflect.TypeOf(MapRepository{}).Name()))
+	})
+})

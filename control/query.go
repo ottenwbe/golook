@@ -11,21 +11,19 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package data_manipulation
+package control
 
-import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+import "github.com/ottenwbe/golook/routing"
 
-	"github.com/ottenwbe/golook/routing"
-)
+// 1. Find computer hosting a specific file
+func QuerySystemsAndFiles() error {
+	routing.GolookClient.DoQuerySystemsAndFiles()
+	return nil
+}
 
-var _ = Describe("The query service", func() {
-	It("should call the golook routing", func() {
-		runWithMockedGolookClient(func() {
-			err := QueryFiles()
-			Expect(err).To(BeNil())
-			Expect(routing.GolookClient.(*MockGolookClient).visitDoGetFiles).To(BeTrue())
-		})
-	})
-})
+
+// 2. Get files that have been reported by this routing
+func QueryFiles() error {
+	routing.GolookClient.DoGetFiles()
+	return nil
+}

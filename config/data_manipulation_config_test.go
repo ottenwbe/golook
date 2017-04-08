@@ -18,7 +18,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("The data_manipulation", func() {
+var _ = Describe("The control", func() {
 	Context("default", func() {
 		It("should return the default host", func() {
 			Expect(Host()).To(Equal("http://127.0.0.1"))

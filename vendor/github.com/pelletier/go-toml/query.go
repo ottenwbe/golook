@@ -28,7 +28,7 @@ func (r *QueryResult) appendResult(node interface{}, pos Position) {
 }
 
 // Values is a set of values within a QueryResult.  The order of values is not
-// guaranteed to be in document order, and may be different each time a data_manipulation is
+// guaranteed to be in document order, and may be different each time a control is
 // executed.
 func (r QueryResult) Values() []interface{} {
 	values := make([]interface{}, len(r.items))
@@ -49,7 +49,7 @@ func (r QueryResult) Positions() []Position {
 	return r.positions
 }
 
-// runtime context for executing data_manipulation paths
+// runtime context for executing control paths
 type queryContext struct {
 	result       *QueryResult
 	filters      *map[string]NodeFilterFn
@@ -94,7 +94,7 @@ func CompileQuery(path string) (*Query, error) {
 	return parseQuery(lexQuery(path))
 }
 
-// Execute executes a data_manipulation against a TomlTree, and returns the result of the data_manipulation.
+// Execute executes a control against a TomlTree, and returns the result of the control.
 func (q *Query) Execute(tree *TomlTree) *QueryResult {
 	result := &QueryResult{
 		items:     []interface{}{},
@@ -113,7 +113,7 @@ func (q *Query) Execute(tree *TomlTree) *QueryResult {
 }
 
 // SetFilter sets a user-defined filter function.  These may be used inside
-// "?(..)" data_manipulation expressions to filter TOML document elements within a data_manipulation.
+// "?(..)" control expressions to filter TOML document elements within a control.
 func (q *Query) SetFilter(name string, fn NodeFilterFn) {
 	if q.filters == &defaultFilterFunctions {
 		// clone the static table

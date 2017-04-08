@@ -86,7 +86,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		// Clean path to canonical form and redirect.
 		if p := cleanPath(path); p != path {
 
-			// Added 3 lines (Philip Schlump) - It was dropping the data_manipulation string and #whatever from data_manipulation.
+			// Added 3 lines (Philip Schlump) - It was dropping the control string and #whatever from control.
 			// This matches with fix in go 1.2 r.c. 4 for same problem.  Go Issue:
 			// http://code.google.com/p/go/issues/detail?id=5252
 			url := *req.URL
@@ -263,7 +263,7 @@ func (r *Router) PathPrefix(tpl string) *Route {
 	return r.NewRoute().PathPrefix(tpl)
 }
 
-// Queries registers a new route with a matcher for URL data_manipulation values.
+// Queries registers a new route with a matcher for URL control values.
 // See Route.Queries().
 func (r *Router) Queries(pairs ...string) *Route {
 	return r.NewRoute().Queries(pairs...)

@@ -13,7 +13,28 @@
 //limitations under the License.
 package repositories
 
+type RepositoryType int
+
+const (  // iota is reset to 0
+	NO_REPOSITORY RepositoryType = iota  // c1 == 1
+	MAP_REPOSITORY RepositoryType = iota  // c0 == 0
+)
+
+var (
+	repositoryType RepositoryType = MAP_REPOSITORY
+)
+
 func NewRepository() Repository {
-	repo := make(MapRepository, 0)
-	return &repo
+	var repo Repository
+	switch repositoryType {
+	case NO_REPOSITORY:
+		repo = nil
+	case MAP_REPOSITORY:
+		tmpRepo := make(MapRepository, 0)
+		repo = &tmpRepo
+	default:
+		repo = nil
+	}
+
+	return repo
 }

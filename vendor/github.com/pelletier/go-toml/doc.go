@@ -49,7 +49,7 @@
 //   // returns the key at this path, if it is there
 //   tree.GetPath([]string{"foo","bar","baz"})
 //
-// Note that this is distinct from the heavyweight data_manipulation syntax supported by
+// Note that this is distinct from the heavyweight control syntax supported by
 // TomlTree.Query() and the Query() struct (see below).
 //
 // Position Support
@@ -77,10 +77,10 @@
 //
 // Query Support
 //
-// The TOML data_manipulation path implementation is based loosely on the JSONPath specification:
+// The TOML control path implementation is based loosely on the JSONPath specification:
 // http://goessner.net/articles/JsonPath/
 //
-// The idea behind a data_manipulation path is to allow quick access to any element, or set
+// The idea behind a control path is to allow quick access to any element, or set
 // of elements within TOML document, with a single expression.
 //
 //   result, err := tree.Query("$.foo.bar.baz")
@@ -98,15 +98,15 @@
 //
 // err is nil if any parsing exception occurs.
 //
-// If no node in the tree matches the data_manipulation, result will simply contain an empty list of
+// If no node in the tree matches the control, result will simply contain an empty list of
 // items.
 //
-// As illustrated above, the data_manipulation path is much more efficient, especially since
+// As illustrated above, the control path is much more efficient, especially since
 // the structure of the TOML file can vary.  Rather than making assumptions about
-// a document's structure, a data_manipulation allows the programmer to make structured
+// a document's structure, a control allows the programmer to make structured
 // requests into the document, and get zero or more values as a result.
 //
-// The syntax of a data_manipulation begins with a root token, followed by any number
+// The syntax of a control begins with a root token, followed by any number
 // sub-expressions:
 //
 //   $
@@ -201,11 +201,11 @@
 //
 // Query Results
 //
-// An executed data_manipulation returns a QueryResult object.  This contains the nodes
-// in the TOML tree that qualify the data_manipulation expression.  Position information
+// An executed control returns a QueryResult object.  This contains the nodes
+// in the TOML tree that qualify the control expression.  Position information
 // is also available for each value in the set.
 //
-//   // display the results of a data_manipulation
+//   // display the results of a control
 //   results := tree.Query("$.foo.bar.baz")
 //   for idx, value := results.Values() {
 //       fmt.Println("%v: %v", results.Positions()[idx], value)
@@ -215,17 +215,17 @@
 //
 // Queries may be executed directly on a TomlTree object, or compiled ahead
 // of time and executed discretely.  The former is more convienent, but has the
-// penalty of having to recompile the data_manipulation expression each time.
+// penalty of having to recompile the control expression each time.
 //
-//   // basic data_manipulation
+//   // basic control
 //   results := tree.Query("$.foo.bar.baz")
 //
-//   // compiled data_manipulation
-//   data_manipulation := toml.CompileQuery("$.foo.bar.baz")
-//   results := data_manipulation.Execute(tree)
+//   // compiled control
+//   control := toml.CompileQuery("$.foo.bar.baz")
+//   results := control.Execute(tree)
 //
-//   // run the compiled data_manipulation again on a different tree
-//   moreResults := data_manipulation.Execute(anotherTree)
+//   // run the compiled control again on a different tree
+//   moreResults := control.Execute(anotherTree)
 //
 // User Defined Query Filters
 //
@@ -233,18 +233,18 @@
 // function on the Query object.  The function must return true/false, which
 // signifies if the passed node is kept or discarded, respectively.
 //
-//   // create a data_manipulation that references a user-defined filter
-//   data_manipulation, _ := CompileQuery("$[?(bazOnly)]")
+//   // create a control that references a user-defined filter
+//   control, _ := CompileQuery("$[?(bazOnly)]")
 //
-//   // define the filter, and assign it to the data_manipulation
-//   data_manipulation.SetFilter("bazOnly", func(node interface{}) bool{
+//   // define the filter, and assign it to the control
+//   control.SetFilter("bazOnly", func(node interface{}) bool{
 //       if tree, ok := node.(*TomlTree); ok {
 //           return tree.Has("baz")
 //       }
 //       return false  // reject all other node types
 //   })
 //
-//   // run the data_manipulation
-//   data_manipulation.Execute(tree)
+//   // run the control
+//   control.Execute(tree)
 //
 package toml

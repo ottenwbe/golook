@@ -1,4 +1,4 @@
-package data_manipulation
+package control
 
 import (
 	. "github.com/onsi/ginkgo"
