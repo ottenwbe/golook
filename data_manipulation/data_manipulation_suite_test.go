@@ -29,6 +29,7 @@ func runWithMockedGolookClient(mockedFunction func()) {
 		visitDoPostFile: false,
 		visitDoPutFiles: false,
 		visitDoGetFiles: false,
+		visitDoPostFiles: false,
 	}
 
 	mockedFunction()
@@ -38,6 +39,15 @@ type MockGolookClient struct {
 	visitDoPostFile bool
 	visitDoPutFiles bool
 	visitDoGetFiles bool
+	visitDoPostFiles bool
+}
+
+func (mock *MockGolookClient) DoPostFiles(file []utils.File) string {
+	mock.visitDoPostFiles = true
+}
+
+func (*MockGolookClient) DoQuerySystemsAndFiles() error {
+	panic("implement me")
 }
 
 func (*MockGolookClient) DoGetSystem(system string) (*utils.System, error) {
@@ -57,19 +67,19 @@ func (*MockGolookClient) DoGetHome() string {
 	return ""
 }
 
-func (t *MockGolookClient) DoPostFile(file *utils.File) string {
+func (mock *MockGolookClient) DoPostFile(file *utils.File) string {
 
-	t.visitDoPostFile = t.visitDoPostFile || file != nil && file.Name == FILE_NAME
-	logrus.WithField("called", t.visitDoPostFile).WithField("file", *file).Info("Test DoPostFile")
+	mock.visitDoPostFile = mock.visitDoPostFile || file != nil && file.Name == FILE_NAME
+	logrus.WithField("called", mock.visitDoPostFile).WithField("file", *file).Info("Test DoPostFile")
 	return ""
 }
 
-func (t *MockGolookClient) DoPutFiles(files []utils.File) string {
-	t.visitDoPutFiles = len(files) > 0
+func (mock *MockGolookClient) DoPutFiles(files []utils.File) string {
+	mock.visitDoPutFiles = len(files) > 0
 	return ""
 }
 
-func (t *MockGolookClient) DoGetFiles() string {
-	t.visitDoGetFiles = true
+func (mock *MockGolookClient) DoGetFiles() string {
+	mock.visitDoGetFiles = true
 	return ""
 }

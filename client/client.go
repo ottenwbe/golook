@@ -30,10 +30,12 @@ type LookClient interface {
 	DoGetHome() string
 	DoPostFile(file *File) string
 	DoPutFiles(file []File) string
+	DoPostFiles(file []File) string
 	DoGetSystem(system string) (*System, error)
 	DoPutSystem(system *System) *System
 	DoDeleteSystem() string
 	DoGetFiles() string
+	DoQuerySystemsAndFiles() error
 }
 
 type LookClientData struct {
@@ -148,6 +150,29 @@ func (lc *LookClientData) DoPutFiles(file []File) string {
 
 	fileJson, _ := json.Marshal(file) //TODO error handling
 	request, errRequest := http.NewRequest("PUT", url, bytes.NewBuffer(fileJson))
+	if errRequest == nil {
+		request.Header.Set("Content-Type", "application/json")
+		response, errResult := c.Do(request)
+		if errResult != nil {
+			log.Error(errResult)
+		} else {
+			defer response.Body.Close()
+			res, _ := ioutil.ReadAll(response.Body)
+			return string(res) //TODO error handling
+		}
+	} else {
+		log.Error(errRequest)
+	}
+	return ""
+}
+
+func (lc *LookClientData) DoPostFiles(file []File) string {
+	c := &http.Client{}
+
+	url := fmt.Sprintf("%s/systems/%s/files", lc.serverUrl, lc.systemName)
+
+	fileJson, _ := json.Marshal(file) //TODO error handling
+	request, errRequest := http.NewRequest("POST", url, bytes.NewBuffer(fileJson))
 	if errRequest == nil {
 		request.Header.Set("Content-Type", "application/json")
 		response, errResult := c.Do(request)

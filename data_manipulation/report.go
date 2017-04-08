@@ -15,17 +15,16 @@ package data_manipulation
 
 import (
 	"io/ioutil"
+	"os"
 
 	. "github.com/ottenwbe/golook/client"
 	"github.com/ottenwbe/golook/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 // Report individual files
 func ReportFile(filePath string) error {
 	if f, err := utils.NewFile(filePath); err != nil {
-		//return err
-		log.WithError(err).Error("Could not report file")
+		return err
 	} else /* report file */ {
 		GolookClient.DoPostFile(f)
 	}
@@ -33,38 +32,46 @@ func ReportFile(filePath string) error {
 }
 
 // Report files in a folder and replace all previously reported files
-func ReportFolderR(folderPath string) error {
+func ReportFolderR(folderPath string) (err error) {
 	report := make([]utils.File, 0)
+	var files []os.FileInfo
+	err = nil
 
-	files, err := ioutil.ReadDir(folderPath)
+	files, err = ioutil.ReadDir(folderPath)
 	if err != nil {
-		return err
+		return
 	}
+
 	for idx := range files {
-		if file, err := utils.NewFile(files[idx].Name()); err != nil {
-			return err
-			//log.WithError(err).Error("Could not report file")
-		} else if !files[idx].IsDir() /* report file */ {
-			report = append(report, *file)
-		}
+		err, report = reportFilesOfFolder(files[idx], report)
 	}
+
 	GolookClient.DoPutFiles(report)
-	return nil
+	return
 }
 
 // Report files in a folder
-func ReportFolder(folderPath string) error {
-	files, err := ioutil.ReadDir(folderPath)
+func ReportFolder(folderPath string) (err error) {
+	report := make([]utils.File, 0)
+	var files []os.FileInfo
+	err = nil
+
+	files, err = ioutil.ReadDir(folderPath)
 	if err != nil {
-		return err
+		return
 	}
+
 	for idx := range files {
-		if file, err := utils.NewFile(files[idx].Name()); err != nil {
-			return err
-			//log.WithError(err).Error("Could not report file")
-		} else if !files[idx].IsDir() /* report file */ {
-			GolookClient.DoPostFile(file)
-		}
+		err, report = reportFilesOfFolder(files[idx], report)
 	}
-	return nil
+	GolookClient.DoPostFiles(report)
+	return
+}
+
+func reportFilesOfFolder(fi os.FileInfo, oldReport []utils.File) (err error, report []utils.File) {
+	var file *utils.File = nil
+	if file, err = utils.NewFile(fi.Name()); err == nil && !fi.IsDir() {
+		report = append(oldReport, *file)
+	}
+	return
 }
