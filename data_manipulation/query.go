@@ -13,17 +13,17 @@
 //limitations under the License.
 package data_manipulation
 
-import "github.com/ottenwbe/golook/client"
+import "github.com/ottenwbe/golook/routing"
 
 // 1. Find computer hosting a specific file
 func QuerySystemsAndFiles() error {
-	client.GolookClient.DoQuerySystemsAndFiles()
+	routing.GolookClient.DoQuerySystemsAndFiles()
 	return nil
 }
 
 
-// 2. Get files that have been reported by this client
+// 2. Get files that have been reported by this routing
 func QueryFiles() error {
-	client.GolookClient.DoGetFiles()
+	routing.GolookClient.DoGetFiles()
 	return nil
 }

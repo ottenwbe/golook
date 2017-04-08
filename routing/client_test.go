@@ -11,7 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package client
+package routing
 
 import (
 	"encoding/json"
@@ -28,7 +28,7 @@ const (
 	sysName = "system"
 )
 
-var _ = Describe("The client", func() {
+var _ = Describe("The routing", func() {
 
 	var (
 		server *httptest.Server
@@ -36,7 +36,7 @@ var _ = Describe("The client", func() {
 	)
 
 	BeforeEach(func() {
-		tmpClient := NewLookClient()
+		tmpClient := NewLookClient("http://127.0.0.1", 8123)
 		client = tmpClient.(*LookClientData)
 	})
 

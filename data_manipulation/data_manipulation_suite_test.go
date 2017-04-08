@@ -3,7 +3,7 @@ package data_manipulation
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/ottenwbe/golook/client"
+	"github.com/ottenwbe/golook/routing"
 	"github.com/ottenwbe/golook/utils"
 	"github.com/sirupsen/logrus"
 	"testing"
@@ -20,12 +20,12 @@ const FOLDER_NAME = "."
 func runWithMockedGolookClient(mockedFunction func()) {
 
 	//ensure that the GolookClient is reset after the function's execution
-	defer func(reset client.LookClient) {
-		client.GolookClient = reset
-	}(client.GolookClient)
+	defer func(reset routing.LookClient) {
+		routing.GolookClient = reset
+	}(routing.GolookClient)
 
-	//create a mock client
-	client.GolookClient = &MockGolookClient{
+	//create a mock routing
+	routing.GolookClient = &MockGolookClient{
 		visitDoPostFile: false,
 		visitDoPutFiles: false,
 		visitDoGetFiles: false,
@@ -44,6 +44,7 @@ type MockGolookClient struct {
 
 func (mock *MockGolookClient) DoPostFiles(file []utils.File) string {
 	mock.visitDoPostFiles = true
+	return ""
 }
 
 func (*MockGolookClient) DoQuerySystemsAndFiles() error {

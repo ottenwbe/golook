@@ -11,7 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package client
+package routing
 
 import (
 	"fmt"
@@ -21,7 +21,6 @@ import (
 
 	"bytes"
 	"encoding/json"
-	"github.com/ottenwbe/golook/config"
 	. "github.com/ottenwbe/golook/utils"
 	"io/ioutil"
 )
@@ -41,10 +40,10 @@ type LookClient interface {
 type LookClientData struct {
 	serverUrl  string
 	systemName string
-	//c http.Client //TODO: check if http client is synchronized
+	//c http.Client //TODO: check if http routing is synchronized
 }
 
-var GolookClient LookClient = NewLookClient()
+var GolookClient LookClient
 
 func (lc *LookClientData) DoGetHome() string {
 	c := &http.Client{}
@@ -216,9 +215,9 @@ func (lc *LookClientData) DoQuerySystemsAndFiles() error {
 	return nil
 }
 
-func NewLookClient() LookClient {
+func NewLookClient(host string, port int) LookClient {
 	return &LookClientData{
-		serverUrl:  fmt.Sprintf("%s:%d", config.Host(), config.ServerPort()),
+		serverUrl:  fmt.Sprintf("%s:%d", host, port),
 		systemName: "",
 	}
 }

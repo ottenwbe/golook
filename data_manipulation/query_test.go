@@ -17,15 +17,15 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/ottenwbe/golook/client"
+	"github.com/ottenwbe/golook/routing"
 )
 
 var _ = Describe("The query service", func() {
-	It("should call the golook client", func() {
+	It("should call the golook routing", func() {
 		runWithMockedGolookClient(func() {
 			err := QueryFiles()
 			Expect(err).To(BeNil())
-			Expect(client.GolookClient.(*MockGolookClient).visitDoGetFiles).To(BeTrue())
+			Expect(routing.GolookClient.(*MockGolookClient).visitDoGetFiles).To(BeTrue())
 		})
 	})
 })

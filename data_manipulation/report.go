@@ -17,7 +17,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	. "github.com/ottenwbe/golook/client"
+	. "github.com/ottenwbe/golook/routing"
 	"github.com/ottenwbe/golook/utils"
 )
 
