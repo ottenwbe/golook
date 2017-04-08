@@ -22,17 +22,14 @@ var _ = Describe("uuids", func() {
 
 	var (
 		uuid1, uuid2 string
-		err1, err2   error
 	)
 
 	BeforeEach(func() {
-		uuid1, err1 = NewUUID()
-		uuid2, err2 = NewUUID()
+		uuid1 = NewUUID()
+		uuid2 = NewUUID()
 	})
 
 	It("generated at random should differ", func() {
-		Expect(err1).To(BeNil())
-		Expect(err2).To(BeNil())
 		Expect(uuid1).To(Not(Equal(uuid2)))
 	})
 })

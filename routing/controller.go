@@ -155,19 +155,14 @@ func addSystemAndWriteResult(writer http.ResponseWriter, body io.Reader) {
 
 func formatAndStoreSystem(system *System, writer *http.ResponseWriter) {
 	var systemName string
-	var errUuid error = nil
 	if system.UUID == "" {
-		systemName, errUuid = NewUUID()
+		systemName = NewUUID()
 	} else {
 		systemName = system.UUID
 	}
-	if errUuid == nil {
-		repository.StoreSystem(systemName, system)
-		fmt.Fprint(*writer, fmt.Sprintf("{\"id\":\"%s\"}", systemName))
-	} else {
-		http.Error(*writer, errors.New(nack).Error(), http.StatusBadRequest)
-		log.Panicf("Unexpected UUID error %s", errUuid)
-	}
+
+	repository.StoreSystem(systemName, system)
+	fmt.Fprint(*writer, fmt.Sprintf("{\"id\":\"%s\"}", systemName))
 }
 
 func stopOnInvalidRequest(request *http.Request, writer http.ResponseWriter) bool {
