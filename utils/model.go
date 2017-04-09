@@ -16,6 +16,8 @@ package utils
 import (
 	"encoding/json"
 	"io"
+	"net"
+	"runtime"
 	"time"
 )
 
@@ -56,4 +58,63 @@ func DecodeSystem(sysReader io.Reader) (System, error) {
 	var sys System
 	err := json.NewDecoder(sysReader).Decode(&sys)
 	return sys, err
+}
+
+func NewSystem() *System {
+	return &System{
+		Name:  systemName(),
+		OS:    systemOS(),
+		IP:    externalIP(),
+		UUID:  systemUuid(),
+		Files: nil,
+	}
+}
+func systemUuid() string {
+	return ""
+}
+
+func systemName() string {
+	return ""
+}
+
+func systemOS() string {
+	return runtime.GOOS
+}
+
+//https://play.golang.org/p/BDt3qEQ_2H
+func externalIP() string {
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		return ""
+	}
+	for _, iface := range ifaces {
+		if iface.Flags&net.FlagUp == 0 {
+			continue // interface down
+		}
+		if iface.Flags&net.FlagLoopback != 0 {
+			continue // loopback interface
+		}
+		addrs, err := iface.Addrs()
+		if err != nil {
+			return ""
+		}
+		for _, addr := range addrs {
+			var ip net.IP
+			switch v := addr.(type) {
+			case *net.IPNet:
+				ip = v.IP
+			case *net.IPAddr:
+				ip = v.IP
+			}
+			if ip == nil || ip.IsLoopback() {
+				continue
+			}
+			ip = ip.To4()
+			if ip == nil {
+				continue // not an ipv4 address
+			}
+			return ip.String()
+		}
+	}
+	return "" //errors.New("No connection detected")
 }

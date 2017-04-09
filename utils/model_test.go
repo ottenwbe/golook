@@ -21,6 +21,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"runtime"
 )
 
 const (
@@ -75,6 +76,19 @@ var _ = Describe("The model", func() {
 			result := <-chanbools
 			Expect(result).To(BeTrue())
 		})
+
+		It("a new system is not nil", func() {
+			Expect(NewSystem()).ToNot(BeNil())
+		})
+
+		It("a new system has no uuid be assigned", func() {
+			Expect(systemUuid()).To(Equal(""))
+		})
+
+		It("can be assigned the correct os", func() {
+			Expect(systemOS()).To(Equal(runtime.GOOS))
+		})
+
 	})
 
 })

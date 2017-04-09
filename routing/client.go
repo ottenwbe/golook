@@ -34,7 +34,7 @@ type LookClient interface {
 	DoPutSystem(system *System) *System
 	DoDeleteSystem() string
 	DoGetFiles() ([]File, error)
-	DoQuerySystemsAndFiles() error
+	DoQuerySystemsAndFiles(fileName string) (systems map[string]*System, err error)
 }
 
 type LookClientData struct {
@@ -119,6 +119,9 @@ func (lc *LookClientData) DoDeleteSystem() string {
 }
 
 func (lc *LookClientData) DoPostFile(file *File) string {
+
+	log.WithField("file", file.Name).Debug("DoPostFile")
+
 	c := &http.Client{}
 	var fileName string = file.Name
 
@@ -166,6 +169,9 @@ func (lc *LookClientData) DoPutFiles(file []File) string {
 }
 
 func (lc *LookClientData) DoPostFiles(file []File) string {
+
+	log.Infof("DoPostFiles for %d files", len(file))
+
 	c := &http.Client{}
 
 	url := fmt.Sprintf("%s/systems/%s/files", lc.serverUrl, lc.systemName)
@@ -209,10 +215,10 @@ func (lc *LookClientData) DoGetFiles() ([]File, error) {
 	return files, err
 }
 
-func (lc *LookClientData) DoQuerySystemsAndFiles() error {
+func (lc *LookClientData) DoQuerySystemsAndFiles(fileName string) (systems map[string]*System, err error) {
 	_ = &http.Client{}
 	//TODO...
-	return nil
+	return nil, nil
 }
 
 func NewLookClient(host string, port int) LookClient {
