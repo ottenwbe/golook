@@ -18,12 +18,27 @@ import (
 	"os"
 
 	. "github.com/ottenwbe/golook/routing"
-	"github.com/ottenwbe/golook/utils"
+	. "github.com/ottenwbe/golook/utils"
 )
 
+func (DefaultController) QueryAllSystemsForFile(fileName string) (systems map[string]*System, err error) {
+	systems, err = GolookClient.DoQuerySystemsAndFiles(fileName)
+	return
+}
+
+func (DefaultController) QueryReportedFiles() (files []File, err error) {
+	files, err = GolookClient.DoGetFiles()
+	return
+}
+
+func (DefaultController) QueryFiles(systemName string) (files []File, err error) {
+	files, err = GolookClient.DoGetFiles()
+	return
+}
+
 // Report individual files
-func ReportFile(filePath string) error {
-	if f, err := utils.NewFile(filePath); err != nil {
+func (DefaultController) ReportFile(filePath string) error {
+	if f, err := NewFile(filePath); err != nil {
 		return err
 	} else /* report file */ {
 		GolookClient.DoPostFile(f)
@@ -32,25 +47,25 @@ func ReportFile(filePath string) error {
 }
 
 // Report files in a folder and replace all previously reported files
-func ReportFolderR(folderPath string) error {
+func (DefaultController) ReportFolderR(folderPath string) error {
 	report, err := generateReport(folderPath)
 	GolookClient.DoPutFiles(report)
 	return err
 }
 
 // Report files in a folder
-func ReportFolder(folderPath string) error {
+func (DefaultController) ReportFolder(folderPath string) error {
 	report, err := generateReport(folderPath)
 	GolookClient.DoPostFiles(report)
 	return err
 }
 
-func generateReport(folderPath string) ([]utils.File, error) {
+func generateReport(folderPath string) ([]File, error) {
 
 	var (
 		files     []os.FileInfo
-		returnErr error        = nil
-		report    []utils.File = make([]utils.File, 0)
+		report    []File = make([]File, 0)
+		returnErr error  = nil
 	)
 
 	files, returnErr = ioutil.ReadDir(folderPath)
@@ -64,9 +79,9 @@ func generateReport(folderPath string) ([]utils.File, error) {
 	return report, returnErr
 }
 
-func appendFile(fileToAppend os.FileInfo, appendReport []utils.File) (report []utils.File, err error) {
-	var file *utils.File = nil
-	if file, err = utils.NewFile(fileToAppend.Name()); err == nil && !fileToAppend.IsDir() {
+func appendFile(fileToAppend os.FileInfo, appendReport []File) (report []File, err error) {
+	var file *File = nil
+	if file, err = NewFile(fileToAppend.Name()); err == nil && !fileToAppend.IsDir() {
 		report = append(appendReport, *file)
 	}
 	return

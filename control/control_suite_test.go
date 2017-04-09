@@ -1,12 +1,13 @@
 package control
 
 import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"github.com/ottenwbe/golook/routing"
 	"github.com/ottenwbe/golook/utils"
-	"github.com/sirupsen/logrus"
 	"testing"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
 )
 
 func TestClients(t *testing.T) {
@@ -14,11 +15,11 @@ func TestClients(t *testing.T) {
 	RunSpecs(t, "Control Test Suite")
 }
 
-const FILE_NAME = "reporting_test.go"
-const FOLDER_NAME = "."
+func RunWithMockedGolookClient(mockedFunction func()) {
+	RunWithMockedGolookClientF(mockedFunction, "", "")
+}
 
-func runWithMockedGolookClient(mockedFunction func()) {
-
+func RunWithMockedGolookClientF(mockedFunction func(), fileName string, folderName string) {
 	//ensure that the GolookClient is reset after the function's execution
 	defer func(reset routing.LookClient) {
 		routing.GolookClient = reset
@@ -30,6 +31,8 @@ func runWithMockedGolookClient(mockedFunction func()) {
 		visitDoPutFiles:  false,
 		visitDoGetFiles:  false,
 		visitDoPostFiles: false,
+		fileName:         fileName,
+		folderName:       folderName,
 	}
 
 	mockedFunction()
@@ -40,6 +43,8 @@ type MockGolookClient struct {
 	visitDoPutFiles  bool
 	visitDoGetFiles  bool
 	visitDoPostFiles bool
+	fileName         string
+	folderName       string
 }
 
 func (mock *MockGolookClient) DoPostFiles(file []utils.File) string {
@@ -47,7 +52,7 @@ func (mock *MockGolookClient) DoPostFiles(file []utils.File) string {
 	return ""
 }
 
-func (*MockGolookClient) DoQuerySystemsAndFiles() error {
+func (*MockGolookClient) DoQuerySystemsAndFiles(fileName string) (systems map[string]*utils.System, err error) {
 	panic("implement me")
 }
 
@@ -69,9 +74,8 @@ func (*MockGolookClient) DoGetHome() string {
 }
 
 func (mock *MockGolookClient) DoPostFile(file *utils.File) string {
-
-	mock.visitDoPostFile = mock.visitDoPostFile || file != nil && file.Name == FILE_NAME
-	logrus.WithField("called", mock.visitDoPostFile).WithField("file", *file).Info("Test DoPostFile")
+	log.WithField("called", mock.visitDoPostFile).WithField("file", *file).Info("Test DoPostFile")
+	mock.visitDoPostFile = mock.visitDoPostFile || file != nil && file.Name == mock.fileName
 	return ""
 }
 
