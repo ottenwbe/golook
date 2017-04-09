@@ -29,6 +29,14 @@ const (
 	FILE_NAME = "file.txt"
 )
 
+var _ = Describe(" LookClient ", func() {
+	It("should be configured during construction with host and port", func() {
+		ConfigLookClient("do.test", 8123)
+		Expect(GolookClient.(*LookClientData).serverUrl).To(ContainSubstring("do.test"))
+		Expect(GolookClient.(*LookClientData).serverUrl).To(ContainSubstring("8123"))
+	})
+})
+
 var _ = Describe("The routing", func() {
 
 	var (

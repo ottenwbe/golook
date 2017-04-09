@@ -17,8 +17,11 @@ import (
 	"encoding/json"
 	"io"
 	"net"
+	"os"
 	"runtime"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type File struct {
@@ -70,11 +73,13 @@ func NewSystem() *System {
 	}
 }
 func systemUuid() string {
-	return ""
+	return "" //TODO: get from cache
 }
 
 func systemName() string {
-	return ""
+	hostName, err := os.Hostname()
+	logError(err)
+	return hostName
 }
 
 func systemOS() string {
@@ -117,4 +122,8 @@ func externalIP() string {
 		}
 	}
 	return "" //errors.New("No connection detected")
+}
+
+func logError(err error) {
+	log.WithError(err).Error("Error when instantiating System")
 }

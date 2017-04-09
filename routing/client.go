@@ -221,6 +221,13 @@ func (lc *LookClientData) DoQuerySystemsAndFiles(fileName string) (systems map[s
 	return nil, nil
 }
 
+func ConfigLookClient(host string, port int) {
+	GolookClient = &LookClientData{
+		serverUrl:  fmt.Sprintf("%s:%d", host, port),
+		systemName: "",
+	}
+}
+
 func NewLookClient(host string, port int) LookClient {
 	return &LookClientData{
 		serverUrl:  fmt.Sprintf("%s:%d", host, port),

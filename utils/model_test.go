@@ -16,11 +16,11 @@ package utils
 import (
 	"encoding/json"
 	"io"
-	"log"
 	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
 	"runtime"
 )
 
