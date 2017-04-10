@@ -16,7 +16,7 @@ package control
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/ottenwbe/golook/routing"
+	. "github.com/ottenwbe/golook/routing"
 )
 
 var _ = Describe("The report service", func() {
@@ -37,42 +37,42 @@ var _ = Describe("The report service", func() {
 	It("should call the golook routing with a given file", func() {
 		RunWithMockedGolookClientF(func() {
 			ctl.ReportFile(FILE_NAME)
-			Expect(routing.GolookClient.(*MockGolookClient).visitDoPostFile).To(BeTrue())
+			Expect(AccessMockedGolookClient().VisitDoPostFile).To(BeTrue())
 		}, FILE_NAME, FOLDER_NAME)
 	})
 
 	It("should NOT call the golook routing with a non existing file", func() {
 		RunWithMockedGolookClient(func() {
 			ctl.ReportFile(FILE_NAME + ".abc")
-			Expect(routing.GolookClient.(*MockGolookClient).visitDoPostFile).To(BeFalse())
+			Expect(AccessMockedGolookClient().VisitDoPostFile).To(BeFalse())
 		})
 	})
 
 	It("should call the golook routing for a given folder", func() {
 		RunWithMockedGolookClientF(func() {
 			ctl.ReportFolder(FOLDER_NAME)
-			Expect(routing.GolookClient.(*MockGolookClient).visitDoPostFiles).To(BeTrue())
+			Expect(AccessMockedGolookClient().VisitDoPostFiles).To(BeTrue())
 		}, FILE_NAME, FOLDER_NAME)
 	})
 
 	It("should NOT call the golook routing with a non existing file", func() {
 		RunWithMockedGolookClient(func() {
 			ctl.ReportFolder("no_folder")
-			Expect(routing.GolookClient.(*MockGolookClient).visitDoPostFile).To(BeFalse())
+			Expect(AccessMockedGolookClient().VisitDoPostFile).To(BeFalse())
 		})
 	})
 
 	It("should call the golook routing with files from existing folder which replace reported files", func() {
 		RunWithMockedGolookClient(func() {
 			ctl.ReportFolderR(FOLDER_NAME)
-			Expect(routing.GolookClient.(*MockGolookClient).visitDoPutFiles).To(BeTrue())
+			Expect(AccessMockedGolookClient().VisitDoPutFiles).To(BeTrue())
 		})
 	})
 
 	It("should NOT call the golook routing with files from existing folder when folder does not exist", func() {
 		RunWithMockedGolookClient(func() {
 			ctl.ReportFolderR("no_folder")
-			Expect(routing.GolookClient.(*MockGolookClient).visitDoPutFiles).To(BeFalse())
+			Expect(AccessMockedGolookClient().VisitDoPutFiles).To(BeFalse())
 		})
 	})
 })
@@ -91,7 +91,7 @@ var _ = Describe("The query service", func() {
 		RunWithMockedGolookClient(func() {
 			_, err := ctl.QueryReportedFiles()
 			Expect(err).To(BeNil())
-			Expect(routing.GolookClient.(*MockGolookClient).visitDoGetFiles).To(BeTrue())
+			Expect(AccessMockedGolookClient().VisitDoGetFiles).To(BeTrue())
 		})
 	})
 })
