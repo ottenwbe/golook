@@ -11,65 +11,65 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package control
+package routing
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/ottenwbe/golook/routing"
+	. "github.com/ottenwbe/golook/communication"
 )
 
 var _ = Describe("The report service", func() {
 
 	const (
-		FILE_NAME   string = "default_test.go"
+		FILE_NAME   string = "default_router_test.go"
 		FOLDER_NAME string = "."
 	)
 
 	var (
-		ctl LookController
+		ctl LookRouter
 	)
 
 	BeforeEach(func() {
-		ctl = NewController()
+		ctl = NewRouter()
 	})
 
-	It("should call the golook routing with a given file", func() {
+	It("should call the golook communication with a given file", func() {
 		RunWithMockedGolookClientF(func() {
 			ctl.ReportFile(FILE_NAME)
 			Expect(AccessMockedGolookClient().VisitDoPostFile).To(BeTrue())
 		}, FILE_NAME, FOLDER_NAME)
 	})
 
-	It("should NOT call the golook routing with a non existing file", func() {
+	It("should NOT call the golook communication with a non existing file", func() {
 		RunWithMockedGolookClient(func() {
 			ctl.ReportFile(FILE_NAME + ".abc")
 			Expect(AccessMockedGolookClient().VisitDoPostFile).To(BeFalse())
 		})
 	})
 
-	It("should call the golook routing for a given folder", func() {
+	It("should call the golook communication for a given folder", func() {
 		RunWithMockedGolookClientF(func() {
 			ctl.ReportFolder(FOLDER_NAME)
 			Expect(AccessMockedGolookClient().VisitDoPostFiles).To(BeTrue())
 		}, FILE_NAME, FOLDER_NAME)
 	})
 
-	It("should NOT call the golook routing with a non existing file", func() {
+	It("should NOT call the golook communication with a non existing file", func() {
 		RunWithMockedGolookClient(func() {
 			ctl.ReportFolder("no_folder")
 			Expect(AccessMockedGolookClient().VisitDoPostFile).To(BeFalse())
 		})
 	})
 
-	It("should call the golook routing with files from existing folder which replace reported files", func() {
+	It("should call the golook communication with files from existing folder which replace reported files", func() {
 		RunWithMockedGolookClient(func() {
 			ctl.ReportFolderR(FOLDER_NAME)
 			Expect(AccessMockedGolookClient().VisitDoPutFiles).To(BeTrue())
 		})
 	})
 
-	It("should NOT call the golook routing with files from existing folder when folder does not exist", func() {
+	It("should NOT call the golook communication with files from existing folder when folder does not exist", func() {
 		RunWithMockedGolookClient(func() {
 			ctl.ReportFolderR("no_folder")
 			Expect(AccessMockedGolookClient().VisitDoPutFiles).To(BeFalse())
@@ -80,14 +80,14 @@ var _ = Describe("The report service", func() {
 var _ = Describe("The query service", func() {
 
 	var (
-		ctl LookController
+		ctl LookRouter
 	)
 
 	BeforeEach(func() {
-		ctl = NewController()
+		ctl = NewRouter()
 	})
 
-	It("should call the golook routing", func() {
+	It("should call the golook communication", func() {
 		RunWithMockedGolookClient(func() {
 			_, err := ctl.QueryReportedFiles()
 			Expect(err).To(BeNil())

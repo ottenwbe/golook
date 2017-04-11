@@ -4,7 +4,7 @@
 
 // +build darwin dragonfly freebsd linux netbsd openbsd solaris
 
-// Socket control messages
+// Socket routing messages
 
 package unix
 
@@ -37,13 +37,13 @@ func cmsgData(h *Cmsghdr) unsafe.Pointer {
 	return unsafe.Pointer(uintptr(unsafe.Pointer(h)) + uintptr(cmsgAlignOf(SizeofCmsghdr)))
 }
 
-// SocketControlMessage represents a socket control message.
+// SocketControlMessage represents a socket routing message.
 type SocketControlMessage struct {
 	Header Cmsghdr
 	Data   []byte
 }
 
-// ParseSocketControlMessage parses b as an array of socket control
+// ParseSocketControlMessage parses b as an array of socket routing
 // messages.
 func ParseSocketControlMessage(b []byte) ([]SocketControlMessage, error) {
 	var msgs []SocketControlMessage
@@ -69,7 +69,7 @@ func socketControlMessageHeaderAndData(b []byte) (*Cmsghdr, []byte, error) {
 }
 
 // UnixRights encodes a set of open file descriptors into a socket
-// control message for sending to another process.
+// routing message for sending to another process.
 func UnixRights(fds ...int) []byte {
 	datalen := len(fds) * 4
 	b := make([]byte, CmsgSpace(datalen))
@@ -85,7 +85,7 @@ func UnixRights(fds ...int) []byte {
 	return b
 }
 
-// ParseUnixRights decodes a socket control message that contains an
+// ParseUnixRights decodes a socket routing message that contains an
 // integer array of open file descriptors from another process.
 func ParseUnixRights(m *SocketControlMessage) ([]int, error) {
 	if m.Header.Level != SOL_SOCKET {

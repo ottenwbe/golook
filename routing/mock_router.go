@@ -11,7 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package control
+package routing
 
 import (
 	"github.com/ottenwbe/golook/utils"
@@ -22,24 +22,25 @@ type MockedLookController struct {
 	Visited bool
 }
 
-func NewMockedLookController() LookController {
+func NewMockedRouter() LookRouter {
 	return &MockedLookController{}
 }
 
 func (mlc *MockedLookController) QueryAllSystemsForFile(fileName string) (files map[string]*utils.System, err error) {
+	log.Debug("Mocked query for all Systems for file.")
 	mlc.Visited = true
 	return nil, nil
 }
 
 func (mlc *MockedLookController) QueryReportedFiles() (files []utils.File, err error) {
-	log.Info("Mocked Reported Files")
+	log.Debug("Mocked reported files.")
 	mlc.Visited = true
-	return nil, nil
+	return []utils.File{}, nil
 }
 
 func (mlc *MockedLookController) QueryFiles(systemName string) (files []utils.File, err error) {
 	mlc.Visited = true
-	return nil, nil
+	return []utils.File{}, nil
 }
 
 func (mlc *MockedLookController) ReportFile(filePath string) error {

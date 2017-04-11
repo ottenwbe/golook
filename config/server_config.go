@@ -14,7 +14,7 @@
 package config
 
 import (
-	"github.com/ottenwbe/golook/routing"
+	"github.com/ottenwbe/golook/communication"
 	"github.com/spf13/cobra"
 )
 
@@ -25,7 +25,7 @@ var cmdServer = &cobra.Command{
 	Short: "Start as server",
 	Long:  "Start as server",
 	Run: func(_ *cobra.Command, _ []string) {
-		routing.StartServer(addr)
+		communication.StartServer(addr)
 	},
 }
 

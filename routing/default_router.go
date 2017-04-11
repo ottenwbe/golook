@@ -11,33 +11,36 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package control
+package routing
 
 import (
 	"io/ioutil"
 	"os"
 
-	. "github.com/ottenwbe/golook/routing"
+	. "github.com/ottenwbe/golook/communication"
 	. "github.com/ottenwbe/golook/utils"
 )
 
-func (DefaultController) QueryAllSystemsForFile(fileName string) (systems map[string]*System, err error) {
+type DefaultRouter struct {
+}
+
+func (DefaultRouter) QueryAllSystemsForFile(fileName string) (systems map[string]*System, err error) {
 	systems, err = GolookClient.DoQuerySystemsAndFiles(fileName)
 	return
 }
 
-func (DefaultController) QueryReportedFiles() (files []File, err error) {
+func (DefaultRouter) QueryReportedFiles() (files []File, err error) {
 	files, err = GolookClient.DoGetFiles()
 	return
 }
 
-func (DefaultController) QueryFiles(systemName string) (files []File, err error) {
+func (DefaultRouter) QueryFiles(systemName string) (files []File, err error) {
 	files, err = GolookClient.DoGetFiles()
 	return
 }
 
 // Report individual files
-func (DefaultController) ReportFile(filePath string) error {
+func (DefaultRouter) ReportFile(filePath string) error {
 	if f, err := NewFile(filePath); err != nil {
 		return err
 	} else /* report file */ {
@@ -47,14 +50,14 @@ func (DefaultController) ReportFile(filePath string) error {
 }
 
 // Report files in a folder and replace all previously reported files
-func (DefaultController) ReportFolderR(folderPath string) error {
+func (DefaultRouter) ReportFolderR(folderPath string) error {
 	report, err := generateReport(folderPath)
 	GolookClient.DoPutFiles(report)
 	return err
 }
 
 // Report files in a folder
-func (DefaultController) ReportFolder(folderPath string) error {
+func (DefaultRouter) ReportFolder(folderPath string) error {
 	report, err := generateReport(folderPath)
 	GolookClient.DoPostFiles(report)
 	return err

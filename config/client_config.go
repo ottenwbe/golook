@@ -19,9 +19,9 @@ import (
 )
 
 var cmdClient = &cobra.Command{
-	Use:   "routing",
-	Short: "Start as routing",
-	Long:  "Start as a simple routing",
+	Use:   "communication",
+	Short: "Start as communication",
+	Long:  "Start as a simple communication",
 	Run: func(_ *cobra.Command, _ []string) {
 		//TODO
 	},
@@ -36,7 +36,7 @@ func ServerPort() int {
 }
 
 func RunDetatched() bool {
-	return viper.GetBool("routing.detatch")
+	return viper.GetBool("communication.detatch")
 }
 
 func init() {
@@ -49,8 +49,8 @@ func init() {
 	viper.SetDefault("server.port", 8080)
 
 	cmdClient.Flags().BoolP("detach", "d", false, "Run as background process")
-	viper.BindPFlag("routing.detatch", cmdClient.Flags().Lookup("detach"))
-	viper.SetDefault("routing.detatch", false)
+	viper.BindPFlag("communication.detatch", cmdClient.Flags().Lookup("detach"))
+	viper.SetDefault("communication.detatch", false)
 
 	RootCmd.AddCommand(cmdClient)
 }

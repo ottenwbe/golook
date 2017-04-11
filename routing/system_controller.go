@@ -11,26 +11,37 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-
 package routing
 
 import (
-	"testing"
+	. "github.com/ottenwbe/golook/communication"
+	. "github.com/ottenwbe/golook/utils"
 )
 
-func TestRouterCreation(t *testing.T) {
-	router := createRouter()
-
-	if router == nil {
-		t.Error("Router is nil after creation")
-	}
-
-	/* TODO: check if all routes are registered */
-	/*if router.Get("/") == nil {
-		t.Error("Route / does not exists")
-	}*/
+type SystemController struct {
+	uplink string
+	system *System
 }
 
-//TODO: test registered routes by control
-// 1.) start server (in go routine)
-// 2.) start a "routing" (in go routine) testing all routes
+func NewSystemController(uplink string) *SystemController {
+	return &SystemController{
+		uplink: uplink,
+		system: NewSystem(),
+	}
+}
+
+func (sc *SystemController) Connect() {
+	GolookClient.DoPutSystem(sc.system)
+}
+
+func (sc *SystemController) ConnectWith(uplinkHost string) {
+	GolookClient.DoPutSystem(sc.system)
+}
+
+func (sc *SystemController) Disconnect(uplinkHost string) {
+
+}
+
+func (sc *SystemController) DisconnectAll() {
+
+}

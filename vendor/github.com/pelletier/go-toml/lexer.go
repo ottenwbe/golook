@@ -477,7 +477,7 @@ func (l *tomlLexer) lexStringAsString(terminator string, discardLeadingNewLine, 
 			r := l.peek()
 
 			if 0x00 <= r && r <= 0x1F && !(acceptNewLines && (r == '\n' || r == '\r')) {
-				return "", fmt.Errorf("unescaped control character %U", r)
+				return "", fmt.Errorf("unescaped routing character %U", r)
 			}
 			l.next()
 			growingString += string(r)
