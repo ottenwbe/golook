@@ -49,6 +49,15 @@ func (DefaultRouter) ReportFile(filePath string) error {
 	return nil
 }
 
+func (DefaultRouter) ReportFileR(filePath string) error {
+	if f, err := NewFile(filePath); err != nil {
+		return err
+	} else /* report file */ {
+		GolookClient.DoPutFiles([]File{*f})
+	}
+	return nil
+}
+
 // Report files in a folder and replace all previously reported files
 func (DefaultRouter) ReportFolderR(folderPath string) error {
 	report, err := generateReport(folderPath)

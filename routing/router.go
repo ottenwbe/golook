@@ -20,6 +20,7 @@ type LookRouter interface {
 	QueryReportedFiles() (files []utils.File, err error)
 	QueryFiles(systemName string) (files []utils.File, err error)
 	ReportFile(filePath string) error
+	ReportFileR(filePath string) error
 	ReportFolderR(folderPath string) error
 	ReportFolder(folderPath string) error
 }

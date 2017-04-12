@@ -48,6 +48,11 @@ func (mlc *MockedLookController) ReportFile(filePath string) error {
 	return nil
 }
 
+func (mlc *MockedLookController) ReportFileR(filePath string) error {
+	mlc.Visited = true
+	return nil
+}
+
 func (mlc *MockedLookController) ReportFolderR(folderPath string) error {
 	mlc.Visited = true
 	return nil

@@ -53,6 +53,11 @@ var _ = Describe("The mocked router", func() {
 		Expect(router.Visited).To(BeTrue())
 	})
 
+	It("should set the valid flag to true after calling ReportFileR", func() {
+		router.ReportFileR("file.txt")
+		Expect(router.Visited).To(BeTrue())
+	})
+
 	It("should set the valid flag to true after calling ReportFile", func() {
 		router.ReportFile("file.txt")
 		Expect(router.Visited).To(BeTrue())
