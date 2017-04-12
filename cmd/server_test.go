@@ -12,7 +12,7 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-package communication
+package cmd
 
 import (
 	"testing"
@@ -33,4 +33,4 @@ func TestRouterCreation(t *testing.T) {
 
 //TODO: test registered routes by routing
 // 1.) start server (in go routine)
-// 2.) start a "communication" (in go routine) testing all routes
+// 2.) start a "cmd" (in go routine) testing all routes

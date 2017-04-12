@@ -162,7 +162,7 @@ func (r *Router) SkipClean(value bool) *Router {
 // For eg. "/path/foo%2Fbar/to" will match the path "/path/{var}/to".
 // This behavior has the drawback of needing to match routes against
 // r.RequestURI instead of r.URL.Path. Any modifications (such as http.StripPrefix)
-// to r.URL.Path will not affect communication when this flag is on and thus may
+// to r.URL.Path will not affect cmd when this flag is on and thus may
 // induce unintended behavior.
 //
 // If not called, the router will match the unencoded path to the routes.

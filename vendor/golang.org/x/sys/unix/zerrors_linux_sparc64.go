@@ -2053,7 +2053,7 @@ var errors = [...]string{
 	82:  "link has been severed",
 	83:  "advertise error",
 	84:  "srmount error",
-	85:  "communication error on send",
+	85:  "cmd error on send",
 	86:  "protocol error",
 	87:  "multihop attempted",
 	88:  "RFS specific error",
