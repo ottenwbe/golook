@@ -14,7 +14,7 @@
 package main
 
 import (
-	. "github.com/ottenwbe/golook/config"
+	. "github.com/ottenwbe/golook/cmd"
 )
 
 func main() {

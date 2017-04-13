@@ -11,7 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package config
+package cmd
 
 import (
 	"fmt"
@@ -53,8 +53,8 @@ func init() {
 	initMainSubCommands()
 	initConfig()
 
-	err := viper.ReadInConfig() // Find and read the config file
-	if err != nil {             // Handle errors reading the config file
+	err := viper.ReadInConfig() // Find and read the cmd file
+	if err != nil {             // Handle errors reading the cmd file
 		const CFG_FILE string = "golook.yml"
 		log.WithError(err).Infof("Config file could not be found, default is created as, %s", CFG_FILE)
 		os.Create(CFG_FILE)
@@ -70,8 +70,8 @@ func initConfig() {
 	if err != nil {
 		log.WithError(err).Fatalf("Could not determine working directory")
 	}
-	viper.SetConfigName("golook")        // name of config file (without extension)
-	viper.AddConfigPath("/etc/golook/")  // path to look for the config file in
+	viper.SetConfigName("golook")        // name of cmd file (without extension)
+	viper.AddConfigPath("/etc/golook/")  // path to look for the cmd file in
 	viper.AddConfigPath("$HOME/.golook") // call multiple times to add many search paths
 	viper.AddConfigPath(wd)              // call multiple times to add many search paths
 }

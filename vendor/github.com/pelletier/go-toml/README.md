@@ -52,7 +52,7 @@ import (
     "github.com/pelletier/go-toml"
 )
 
-config, err := toml.LoadFile("config.toml")
+config, err := toml.LoadFile(cmd)
 if err != nil {
     fmt.Println("Error ", err.Error())
 } else {

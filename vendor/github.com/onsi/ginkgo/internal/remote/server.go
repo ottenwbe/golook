@@ -102,7 +102,7 @@ func (server *Server) specSuiteWillBegin(writer http.ResponseWriter, request *ht
 	body := server.readAll(request)
 
 	var data struct {
-		Config  config.GinkgoConfigType `json:"config"`
+		Config  config.GinkgoConfigType `json:"cmd"`
 		Summary *types.SuiteSummary     `json:"suite-summary"`
 	}
 
