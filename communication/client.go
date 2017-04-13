@@ -11,7 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package cmd
+package communication
 
 import (
 	"fmt"
@@ -40,7 +40,7 @@ type LookClient interface {
 type LookClientData struct {
 	serverUrl  string
 	systemName string
-	//c http.Client //TODO: check if http cmd is synchronized
+	//c http.Client //TODO: check if http communication is synchronized
 }
 
 var GolookClient LookClient

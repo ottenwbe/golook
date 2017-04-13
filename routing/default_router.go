@@ -17,7 +17,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	. "github.com/ottenwbe/golook/cmd"
+	. "github.com/ottenwbe/golook/communication"
 	. "github.com/ottenwbe/golook/utils"
 )
 

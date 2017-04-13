@@ -11,26 +11,17 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-
 package cmd
 
 import (
-	"testing"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-func TestRouterCreation(t *testing.T) {
-	router := createRouter()
-
-	if router == nil {
-		t.Error("Router is nil after creation")
-	}
-
-	/* TODO: check if all routes are registered */
-	/*if router.Get("/") == nil {
-		t.Error("Route / does not exists")
-	}*/
-}
-
-//TODO: test registered routes by routing
-// 1.) start server (in go routine)
-// 2.) start a "cmd" (in go routine) testing all routes
+var _ = Describe("The server configuration", func() {
+	Context("default", func() {
+		It("should return the default address", func() {
+			Expect(addr).To(Equal(":8080"))
+		})
+	})
+})

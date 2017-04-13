@@ -16,10 +16,18 @@ package cmd
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"testing"
 )
 
-func TestClients(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Communication Suite")
-}
+var _ = Describe("The routing", func() {
+	Context("default", func() {
+		It("should return the default host", func() {
+			Expect(Host()).To(Equal("http://127.0.0.1"))
+		})
+		It("should return the default port", func() {
+			Expect(ServerPort()).To(Equal(8080))
+		})
+		It("should return the default detatch modus", func() {
+			Expect(RunDetatched()).To(BeFalse())
+		})
+	})
+})

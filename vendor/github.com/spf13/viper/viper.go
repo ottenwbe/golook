@@ -13,7 +13,7 @@
 // overrides
 // flag
 // env
-// config
+// cmd
 // key/value store
 // default
 
@@ -104,7 +104,7 @@ func (fnfe ConfigFileNotFoundError) Error() string {
 // 1. overrides
 // 2. flags
 // 3. env. variables
-// 4. config file
+// 4. cmd file
 // 5. key/value store
 // 6. defaults
 //
@@ -123,7 +123,7 @@ func (fnfe ConfigFileNotFoundError) Error() string {
 //  	"secret": "somesecretkey"
 //  }
 //
-// The resulting config will have the following values:
+// The resulting cmd will have the following values:
 //
 //	{
 //		"secret": "somesecretkey",
@@ -135,10 +135,10 @@ type Viper struct {
 	// used to access a nested value in one go
 	keyDelim string
 
-	// A set of paths to look for the config file in
+	// A set of paths to look for the cmd file in
 	configPaths []string
 
-	// The filesystem to read config from.
+	// The filesystem to read cmd from.
 	fs afero.Fs
 
 	// A set of remote providers to search for the configuration
@@ -169,7 +169,7 @@ type Viper struct {
 func New() *Viper {
 	v := new(Viper)
 	v.keyDelim = "."
-	v.configName = "config"
+	v.configName = "cmd"
 	v.fs = afero.NewOsFs()
 	v.config = make(map[string]interface{})
 	v.override = make(map[string]interface{})
@@ -261,7 +261,7 @@ func (v *Viper) WatchConfig() {
 			for {
 				select {
 				case event := <-watcher.Events:
-					// we only care about the config file
+					// we only care about the cmd file
 					if filepath.Clean(event.Name) == configFile {
 						if event.Op&fsnotify.Write == fsnotify.Write || event.Op&fsnotify.Create == fsnotify.Create {
 							err := v.ReadInConfig()
@@ -282,8 +282,8 @@ func (v *Viper) WatchConfig() {
 	}()
 }
 
-// SetConfigFile explicitly defines the path, name and extension of the config file
-// Viper will use this and not check any of the config paths
+// SetConfigFile explicitly defines the path, name and extension of the cmd file
+// Viper will use this and not check any of the cmd paths
 func SetConfigFile(in string) { v.SetConfigFile(in) }
 func (v *Viper) SetConfigFile(in string) {
 	if in != "" {
@@ -314,7 +314,7 @@ func (v *Viper) mergeWithEnvPrefix(in string) string {
 // (cammel case to snake case for JSON keys perhaps)
 
 // getEnv is a wrapper around os.Getenv which replaces characters in the original
-// key. This allows env vars which have different keys then the config object
+// key. This allows env vars which have different keys then the cmd object
 // keys
 func (v *Viper) getEnv(key string) string {
 	if v.envKeyReplacer != nil {
@@ -323,11 +323,11 @@ func (v *Viper) getEnv(key string) string {
 	return os.Getenv(key)
 }
 
-// ConfigFileUsed returns the file used to populate the config registry
+// ConfigFileUsed returns the file used to populate the cmd registry
 func ConfigFileUsed() string            { return v.ConfigFileUsed() }
 func (v *Viper) ConfigFileUsed() string { return v.configFile }
 
-// AddConfigPath adds a path for Viper to search for the config file in.
+// AddConfigPath adds a path for Viper to search for the cmd file in.
 // Can be called multiple times to define multiple search paths.
 func AddConfigPath(in string) { v.AddConfigPath(in) }
 func (v *Viper) AddConfigPath(in string) {
@@ -345,8 +345,8 @@ func (v *Viper) AddConfigPath(in string) {
 // provider is a string value, "etcd" or "consul" are currently supported.
 // endpoint is the url.  etcd requires http://ip:port  consul requires ip:port
 // path is the path in the k/v store to retrieve configuration
-// To retrieve a config file called myapp.json from /configs/myapp.json
-// you should set path to /configs and set config name (SetConfigName()) to
+// To retrieve a cmd file called myapp.json from /configs/myapp.json
+// you should set path to /configs and set cmd name (SetConfigName()) to
 // "myapp"
 func AddRemoteProvider(provider, endpoint, path string) error {
 	return v.AddRemoteProvider(provider, endpoint, path)
@@ -375,8 +375,8 @@ func (v *Viper) AddRemoteProvider(provider, endpoint, path string) error {
 // endpoint is the url.  etcd requires http://ip:port  consul requires ip:port
 // secretkeyring is the filepath to your openpgp secret keyring.  e.g. /etc/secrets/myring.gpg
 // path is the path in the k/v store to retrieve configuration
-// To retrieve a config file called myapp.json from /configs/myapp.json
-// you should set path to /configs and set config name (SetConfigName()) to
+// To retrieve a cmd file called myapp.json from /configs/myapp.json
+// you should set path to /configs and set cmd name (SetConfigName()) to
 // "myapp"
 // Secure Remote Providers are implemented with github.com/xordataexchange/crypt
 func AddSecureRemoteProvider(provider, endpoint, path, secretkeyring string) error {
@@ -449,7 +449,7 @@ func (v *Viper) searchMap(source map[string]interface{}, path []string) interfac
 // e.g., if in the source, "foo" is defined with a sub-key "bar", and "foo.bar"
 // is also defined, this latter value is returned for path ["foo", "bar"].
 //
-// This should be useful only at config level (other maps may not contain dots
+// This should be useful only at cmd level (other maps may not contain dots
 // in their keys).
 //
 // Note: This assumes that the path entries and map keys are lower cased.
@@ -585,7 +585,7 @@ func GetViper() *Viper {
 // Get is case-insensitive for a key.
 // Get has the behavior of returning the value associated with the first
 // place from where it is set. Viper will check in the following order:
-// override, flag, env, config file, key/value store, default
+// override, flag, env, cmd file, key/value store, default
 //
 // Get returns an interface. For a specific value use one of the Get____ methods.
 func Get(key string) interface{} { return v.Get(key) }
@@ -722,7 +722,7 @@ func (v *Viper) UnmarshalKey(key string, rawVal interface{}) error {
 	return mapstructure.Decode(v.Get(key), rawVal)
 }
 
-// Unmarshal unmarshals the config into a Struct. Make sure that the tags
+// Unmarshal unmarshals the cmd into a Struct. Make sure that the tags
 // on the fields of the structure are properly set.
 func Unmarshal(rawVal interface{}) error { return v.Unmarshal(rawVal) }
 func (v *Viper) Unmarshal(rawVal interface{}) error {
@@ -757,7 +757,7 @@ func decode(input interface{}, config *mapstructure.DecoderConfig) error {
 	return decoder.Decode(input)
 }
 
-// UnmarshalExact unmarshals the config into a Struct, erroring if a field is nonexistent
+// UnmarshalExact unmarshals the cmd into a Struct, erroring if a field is nonexistent
 // in the destination struct.
 func (v *Viper) UnmarshalExact(rawVal interface{}) error {
 	config := defaultDecoderConfig(rawVal)
@@ -775,7 +775,7 @@ func (v *Viper) UnmarshalExact(rawVal interface{}) error {
 }
 
 // BindPFlags binds a full flag set to the configuration, using each flag's long
-// name as the config key.
+// name as the cmd key.
 func BindPFlags(flags *pflag.FlagSet) error { return v.BindPFlags(flags) }
 func (v *Viper) BindPFlags(flags *pflag.FlagSet) error {
 	return v.BindFlagValues(pflagValueSet{flags})
@@ -793,7 +793,7 @@ func (v *Viper) BindPFlag(key string, flag *pflag.Flag) error {
 }
 
 // BindFlagValues binds a full FlagValue set to the configuration, using each flag's long
-// name as the config key.
+// name as the cmd key.
 func BindFlagValues(flags FlagValueSet) error { return v.BindFlagValues(flags) }
 func (v *Viper) BindFlagValues(flags FlagValueSet) (err error) {
 	flags.VisitAll(func(flag FlagValue) {
@@ -845,7 +845,7 @@ func (v *Viper) BindEnv(input ...string) error {
 
 // Given a key, find the value.
 // Viper will check in the following order:
-// flag, env, config file, key/value store, default.
+// flag, env, cmd file, key/value store, default.
 // Viper will check to see if an alias exists first.
 // Note: this assumes a lower-cased key given.
 func (v *Viper) find(lcaseKey string) interface{} {
@@ -973,7 +973,7 @@ func (v *Viper) IsSet(key string) bool {
 }
 
 // AutomaticEnv has Viper check ENV variables for all.
-// keys set in config, default & flags
+// keys set in cmd, default & flags
 func AutomaticEnv() { v.AutomaticEnv() }
 func (v *Viper) AutomaticEnv() {
 	v.automaticEnvApplied = true
@@ -1002,7 +1002,7 @@ func (v *Viper) registerAlias(alias string, key string) {
 		if !exists {
 			// if we alias something that exists in one of the maps to another
 			// name, we'll never be able to get that value using the original
-			// name, so move the config value to the new realkey.
+			// name, so move the cmd value to the new realkey.
 			if val, ok := v.config[alias]; ok {
 				delete(v.config, alias)
 				v.config[key] = val
@@ -1035,7 +1035,7 @@ func (v *Viper) realKey(key string) string {
 	return key
 }
 
-// InConfig checks to see if the given key (or an alias) is in the config file.
+// InConfig checks to see if the given key (or an alias) is in the cmd file.
 func InConfig(key string) bool { return v.InConfig(key) }
 func (v *Viper) InConfig(key string) bool {
 	// if the requested key is an alias, then return the proper key
@@ -1047,7 +1047,7 @@ func (v *Viper) InConfig(key string) bool {
 
 // SetDefault sets the default value for this key.
 // SetDefault is case-insensitive for a key.
-// Default only used when no value is provided by the user via flag, config or ENV.
+// Default only used when no value is provided by the user via flag, cmd or ENV.
 func SetDefault(key string, value interface{}) { v.SetDefault(key, value) }
 func (v *Viper) SetDefault(key string, value interface{}) {
 	// If alias passed in, then set the proper default
@@ -1065,7 +1065,7 @@ func (v *Viper) SetDefault(key string, value interface{}) {
 // Set sets the value for the key in the override regiser.
 // Set is case-insensitive for a key.
 // Will be used instead of values obtained via
-// flags, config file, ENV, default, or key/value store.
+// flags, cmd file, ENV, default, or key/value store.
 func Set(key string, value interface{}) { v.Set(key, value) }
 func (v *Viper) Set(key string, value interface{}) {
 	// If alias passed in, then set the proper override
@@ -1084,7 +1084,7 @@ func (v *Viper) Set(key string, value interface{}) {
 // and key/value stores, searching in one of the defined paths.
 func ReadInConfig() error { return v.ReadInConfig() }
 func (v *Viper) ReadInConfig() error {
-	jww.INFO.Println("Attempting to read in config file")
+	jww.INFO.Println("Attempting to read in cmd file")
 	filename, err := v.getConfigFile()
 	if err != nil {
 		return err
@@ -1110,10 +1110,10 @@ func (v *Viper) ReadInConfig() error {
 	return nil
 }
 
-// MergeInConfig merges a new configuration with an existing config.
+// MergeInConfig merges a new configuration with an existing cmd.
 func MergeInConfig() error { return v.MergeInConfig() }
 func (v *Viper) MergeInConfig() error {
-	jww.INFO.Println("Attempting to merge in config file")
+	jww.INFO.Println("Attempting to merge in cmd file")
 	filename, err := v.getConfigFile()
 	if err != nil {
 		return err
@@ -1139,7 +1139,7 @@ func (v *Viper) ReadConfig(in io.Reader) error {
 	return v.unmarshalReader(in, v.config)
 }
 
-// MergeConfig merges a new configuration with an existing config.
+// MergeConfig merges a new configuration with an existing cmd.
 func MergeConfig(in io.Reader) error { return v.MergeConfig(in) }
 func (v *Viper) MergeConfig(in io.Reader) error {
 	if v.config == nil {
@@ -1455,7 +1455,7 @@ func (v *Viper) SetFs(fs afero.Fs) {
 	v.fs = fs
 }
 
-// SetConfigName sets name for the config file.
+// SetConfigName sets name for the cmd file.
 // Does not include extension.
 func SetConfigName(in string) { v.SetConfigName(in) }
 func (v *Viper) SetConfigName(in string) {
@@ -1509,7 +1509,7 @@ func (v *Viper) getConfigFile() (string, error) {
 }
 
 func (v *Viper) searchInPath(in string) (filename string) {
-	jww.DEBUG.Println("Searching for config in ", in)
+	jww.DEBUG.Println("Searching for cmd in ", in)
 	for _, ext := range SupportedExts {
 		jww.DEBUG.Println("Checking for", filepath.Join(in, v.configName+"."+ext))
 		if b, _ := exists(filepath.Join(in, v.configName+"."+ext)); b {
@@ -1521,11 +1521,11 @@ func (v *Viper) searchInPath(in string) (filename string) {
 	return ""
 }
 
-// Search all configPaths for any config file.
-// Returns the first path that exists (and is a config file).
+// Search all configPaths for any cmd file.
+// Returns the first path that exists (and is a cmd file).
 func (v *Viper) findConfigFile() (string, error) {
 
-	jww.INFO.Println("Searching for config in ", v.configPaths)
+	jww.INFO.Println("Searching for cmd in ", v.configPaths)
 
 	for _, cp := range v.configPaths {
 		file := v.searchInPath(cp)

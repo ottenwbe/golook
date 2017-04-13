@@ -14,7 +14,7 @@
 package routing
 
 import (
-	. "github.com/ottenwbe/golook/cmd"
+	. "github.com/ottenwbe/golook/communication"
 	. "github.com/ottenwbe/golook/utils"
 )
 

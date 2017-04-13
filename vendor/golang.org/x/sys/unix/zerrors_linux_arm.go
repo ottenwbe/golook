@@ -1713,7 +1713,7 @@ var errors = [...]string{
 	67:  "link has been severed",
 	68:  "advertise error",
 	69:  "srmount error",
-	70:  "cmd error on send",
+	70:  "communication error on send",
 	71:  "protocol error",
 	72:  "multihop attempted",
 	73:  "RFS specific error",

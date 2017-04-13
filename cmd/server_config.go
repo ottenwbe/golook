@@ -11,12 +11,25 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package main
+package cmd
 
 import (
-	. "github.com/ottenwbe/golook/cmd"
+	"github.com/ottenwbe/golook/communication"
+	"github.com/spf13/cobra"
 )
 
-func main() {
-	Run()
+var addr string
+
+var cmdServer = &cobra.Command{
+	Use:   "server",
+	Short: "Start as server",
+	Long:  "Start as server",
+	Run: func(_ *cobra.Command, _ []string) {
+		communication.StartServer(addr)
+	},
+}
+
+func init() {
+	cmdServer.Flags().StringVar(&addr, "address", ":8080", "Address of the server (default is :8080)")
+	RootCmd.AddCommand(cmdServer)
 }
