@@ -352,7 +352,7 @@ how to use Consul.
 ### Remote Key/Value Store Example - Unencrypted
 
 ```go
-viper.AddRemoteProvider("etcd", "http://127.0.0.1:4001",cmd)
+viper.AddRemoteProvider("etcd", "http://127.0.0.1:4001","/config/hugo.json")
 viper.SetConfigType("json") // because there is no file extension in a stream of bytes, supported extensions are "json", "toml", "yaml", "yml", "properties", "props", "prop"
 err := viper.ReadRemoteConfig()
 ```
@@ -360,7 +360,7 @@ err := viper.ReadRemoteConfig()
 ### Remote Key/Value Store Example - Encrypted
 
 ```go
-viper.AddSecureRemoteProvider("etcd","http://127.0.0.1:4001",cmd,"/etc/secrets/mykeyring.gpg")
+viper.AddSecureRemoteProvider("etcd","http://127.0.0.1:4001","/config/hugo.json","/etc/secrets/mykeyring.gpg")
 viper.SetConfigType("json") // because there is no file extension in a stream of bytes,  supported extensions are "json", "toml", "yaml", "yml", "properties", "props", "prop"
 err := viper.ReadRemoteConfig()
 ```

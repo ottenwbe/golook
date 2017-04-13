@@ -86,7 +86,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		// Clean path to canonical form and redirect.
 		if p := cleanPath(path); p != path {
 
-			// Added 3 lines (Philip Schlump) - It was dropping the routing string and #whatever from routing.
+			// Added 3 lines (Philip Schlump) - It was dropping the query string and #whatever from query.
 			// This matches with fix in go 1.2 r.c. 4 for same problem.  Go Issue:
 			// http://code.google.com/p/go/issues/detail?id=5252
 			url := *req.URL
@@ -162,7 +162,7 @@ func (r *Router) SkipClean(value bool) *Router {
 // For eg. "/path/foo%2Fbar/to" will match the path "/path/{var}/to".
 // This behavior has the drawback of needing to match routes against
 // r.RequestURI instead of r.URL.Path. Any modifications (such as http.StripPrefix)
-// to r.URL.Path will not affect rpc when this flag is on and thus may
+// to r.URL.Path will not affect routing when this flag is on and thus may
 // induce unintended behavior.
 //
 // If not called, the router will match the unencoded path to the routes.
@@ -263,7 +263,7 @@ func (r *Router) PathPrefix(tpl string) *Route {
 	return r.NewRoute().PathPrefix(tpl)
 }
 
-// Queries registers a new route with a matcher for URL routing values.
+// Queries registers a new route with a matcher for URL query values.
 // See Route.Queries().
 func (r *Router) Queries(pairs ...string) *Route {
 	return r.NewRoute().Queries(pairs...)

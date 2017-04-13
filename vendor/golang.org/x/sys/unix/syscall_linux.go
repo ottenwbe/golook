@@ -553,7 +553,7 @@ func (sa *SockaddrALG) sockaddr() (unsafe.Pointer, _Socklen, error) {
 
 // SockaddrVM implements the Sockaddr interface for AF_VSOCK type sockets.
 // SockaddrVM provides access to Linux VM sockets: a mechanism that enables
-// bidirectional rpc between a hypervisor and its guest virtual
+// bidirectional communication between a hypervisor and its guest virtual
 // machines.
 type SockaddrVM struct {
 	// CID and Port specify a context ID and port address for a VM socket.

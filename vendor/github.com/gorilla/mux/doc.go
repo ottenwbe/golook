@@ -11,7 +11,7 @@ registered routes and calls a handler for the route that matches the URL
 or other conditions. The main features are:
 
 	* Requests can be matched based on URL host, path, path prefix, schemes,
-	  header and routing values, HTTP methods or using custom matchers.
+	  header and query values, HTTP methods or using custom matchers.
 	* URL hosts and paths can have variables with an optional regular
 	  expression.
 	* Registered URLs can be built, or "reversed", which helps maintaining
@@ -85,7 +85,7 @@ There are several other matchers that can be added. To match path prefixes:
 
 	r.Headers("X-Requested-With", "XMLHttpRequest")
 
-...or routing values:
+...or query values:
 
 	r.Queries("key", "value")
 

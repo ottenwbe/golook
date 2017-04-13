@@ -38,12 +38,12 @@ import (
 
 func main() {
 	// init from a file
-	p := properties.MustLoadFile(cmd, properties.UTF8)
+	p := properties.MustLoadFile("${HOME}/config.properties", properties.UTF8)
 
 	// or multiple files
 	p = properties.MustLoadFiles([]string{
-			cmd,
-			cmd,
+			"${HOME}/config.properties",
+			"${HOME}/config-${USER}.properties",
 		}, properties.UTF8, true)
 
 	// or from a map
@@ -57,8 +57,8 @@ func main() {
 
 	// or from multiple URLs
 	p = properties.MustLoadURL([]string{
-			cmd,
-			cmd,
+			"http://host/config",
+			"http://host/config-${USER}",
 		}, true)
 
 	// or from flags

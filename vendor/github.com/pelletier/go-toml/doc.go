@@ -49,7 +49,7 @@
 //   // returns the key at this path, if it is there
 //   tree.GetPath([]string{"foo","bar","baz"})
 //
-// Note that this is distinct from the heavyweight routing syntax supported by
+// Note that this is distinct from the heavyweight query syntax supported by
 // TomlTree.Query() and the Query() struct (see below).
 //
 // Position Support
@@ -77,10 +77,10 @@
 //
 // Query Support
 //
-// The TOML routing path implementation is based loosely on the JSONPath specification:
+// The TOML query path implementation is based loosely on the JSONPath specification:
 // http://goessner.net/articles/JsonPath/
 //
-// The idea behind a routing path is to allow quick access to any element, or set
+// The idea behind a query path is to allow quick access to any element, or set
 // of elements within TOML document, with a single expression.
 //
 //   result, err := tree.Query("$.foo.bar.baz")
@@ -98,15 +98,15 @@
 //
 // err is nil if any parsing exception occurs.
 //
-// If no node in the tree matches the routing, result will simply contain an empty list of
+// If no node in the tree matches the query, result will simply contain an empty list of
 // items.
 //
-// As illustrated above, the routing path is much more efficient, especially since
+// As illustrated above, the query path is much more efficient, especially since
 // the structure of the TOML file can vary.  Rather than making assumptions about
-// a document's structure, a routing allows the programmer to make structured
+// a document's structure, a query allows the programmer to make structured
 // requests into the document, and get zero or more values as a result.
 //
-// The syntax of a routing begins with a root token, followed by any number
+// The syntax of a query begins with a root token, followed by any number
 // sub-expressions:
 //
 //   $
@@ -201,11 +201,11 @@
 //
 // Query Results
 //
-// An executed routing returns a QueryResult object.  This contains the nodes
-// in the TOML tree that qualify the routing expression.  Position information
+// An executed query returns a QueryResult object.  This contains the nodes
+// in the TOML tree that qualify the query expression.  Position information
 // is also available for each value in the set.
 //
-//   // display the results of a routing
+//   // display the results of a query
 //   results := tree.Query("$.foo.bar.baz")
 //   for idx, value := results.Values() {
 //       fmt.Println("%v: %v", results.Positions()[idx], value)
@@ -215,17 +215,17 @@
 //
 // Queries may be executed directly on a TomlTree object, or compiled ahead
 // of time and executed discretely.  The former is more convienent, but has the
-// penalty of having to recompile the routing expression each time.
+// penalty of having to recompile the query expression each time.
 //
-//   // basic routing
+//   // basic query
 //   results := tree.Query("$.foo.bar.baz")
 //
-//   // compiled routing
-//   routing := toml.CompileQuery("$.foo.bar.baz")
-//   results := routing.Execute(tree)
+//   // compiled query
+//   query := toml.CompileQuery("$.foo.bar.baz")
+//   results := query.Execute(tree)
 //
-//   // run the compiled routing again on a different tree
-//   moreResults := routing.Execute(anotherTree)
+//   // run the compiled query again on a different tree
+//   moreResults := query.Execute(anotherTree)
 //
 // User Defined Query Filters
 //
@@ -233,18 +233,18 @@
 // function on the Query object.  The function must return true/false, which
 // signifies if the passed node is kept or discarded, respectively.
 //
-//   // create a routing that references a user-defined filter
-//   routing, _ := CompileQuery("$[?(bazOnly)]")
+//   // create a query that references a user-defined filter
+//   query, _ := CompileQuery("$[?(bazOnly)]")
 //
-//   // define the filter, and assign it to the routing
-//   routing.SetFilter("bazOnly", func(node interface{}) bool{
+//   // define the filter, and assign it to the query
+//   query.SetFilter("bazOnly", func(node interface{}) bool{
 //       if tree, ok := node.(*TomlTree); ok {
 //           return tree.Has("baz")
 //       }
 //       return false  // reject all other node types
 //   })
 //
-//   // run the routing
-//   routing.Execute(tree)
+//   // run the query
+//   query.Execute(tree)
 //
 package toml

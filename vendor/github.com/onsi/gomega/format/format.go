@@ -149,7 +149,7 @@ Pretty prints the passed in object at the passed in indentation level.
 
 Object recurses into deeply nested objects emitting pretty-printed representations of their components.
 
-Modify format.MaxDepth to routing how deep the recursion is allowed to go
+Modify format.MaxDepth to control how deep the recursion is allowed to go
 Set format.UseStringerRepresentation to true to return object.GoString() or object.String() when available instead of
 recursing into the object.
 
@@ -255,7 +255,7 @@ func formatValue(value reflect.Value, indentation uint) string {
 	case reflect.Map:
 		return formatMap(value, indentation)
 	case reflect.Struct:
-		if value.Type() == timeType && value.CanInterface() {
+		if value.Type() == timeType {
 			t, _ := value.Interface().(time.Time)
 			return t.Format(time.RFC3339Nano)
 		}

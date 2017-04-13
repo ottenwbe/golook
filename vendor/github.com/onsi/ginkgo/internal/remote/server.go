@@ -22,8 +22,8 @@ import (
 )
 
 /*
-Server spins up on an automatically selected port and listens for rpc from the forwarding reporter.
-It then forwards that rpc to attached reporters.
+Server spins up on an automatically selected port and listens for communication from the forwarding reporter.
+It then forwards that communication to attached reporters.
 */
 type Server struct {
 	listener        net.Listener
@@ -102,7 +102,7 @@ func (server *Server) specSuiteWillBegin(writer http.ResponseWriter, request *ht
 	body := server.readAll(request)
 
 	var data struct {
-		Config  config.GinkgoConfigType `json:"cmd"`
+		Config  config.GinkgoConfigType `json:"config"`
 		Summary *types.SuiteSummary     `json:"suite-summary"`
 	}
 

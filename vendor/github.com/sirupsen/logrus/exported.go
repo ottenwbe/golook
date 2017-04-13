@@ -63,7 +63,7 @@ func WithField(key string, value interface{}) *Entry {
 }
 
 // WithFields creates an entry from the standard logger and adds multiple
-// fields to it. This is simply a utils for `WithField`, invoking it
+// fields to it. This is simply a helper for `WithField`, invoking it
 // once for each field.
 //
 // Note that it doesn't log until you call Debug, Print, Info, Warn, Fatal

@@ -345,7 +345,7 @@ func yaml_parser_update_buffer(parser *yaml_parser_t, length int) bool {
 			case value >= 0x10000 && value <= 0x10FFFF:
 			default:
 				return yaml_parser_set_reader_error(parser,
-					"routing characters are not allowed",
+					"control characters are not allowed",
 					parser.offset, int(value))
 			}
 

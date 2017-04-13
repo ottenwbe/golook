@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Socket routing messages
+// Socket control messages
 
 package unix
 
 import "unsafe"
 
-// UnixCredentials encodes credentials into a socket routing message
+// UnixCredentials encodes credentials into a socket control message
 // for sending to another process. This can be used for
 // authentication.
 func UnixCredentials(ucred *Ucred) []byte {
@@ -21,7 +21,7 @@ func UnixCredentials(ucred *Ucred) []byte {
 	return b
 }
 
-// ParseUnixCredentials decodes a socket routing message that contains
+// ParseUnixCredentials decodes a socket control message that contains
 // credentials in a Ucred structure. To receive such a message, the
 // SO_PASSCRED option must be enabled on the socket.
 func ParseUnixCredentials(m *SocketControlMessage) (*Ucred, error) {

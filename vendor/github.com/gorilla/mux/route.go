@@ -346,7 +346,7 @@ func (r *Route) PathPrefix(tpl string) *Route {
 
 // Query ----------------------------------------------------------------------
 
-// Queries adds a matcher for URL routing values.
+// Queries adds a matcher for URL query values.
 // It accepts a sequence of key/value pairs. Values may define variables.
 // For example:
 //

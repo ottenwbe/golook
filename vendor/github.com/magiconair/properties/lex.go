@@ -94,7 +94,7 @@ func (l *lexer) backup() {
 	l.pos -= l.width
 }
 
-// emit passes an item back to the rpc.
+// emit passes an item back to the client.
 func (l *lexer) emit(t itemType) {
 	i := item{t, l.start, string(l.runes)}
 	l.items <- i

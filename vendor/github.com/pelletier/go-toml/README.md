@@ -52,7 +52,7 @@ import (
     "github.com/pelletier/go-toml"
 )
 
-config, err := toml.LoadFile(cmd)
+config, err := toml.LoadFile("config.toml")
 if err != nil {
     fmt.Println("Error ", err.Error())
 } else {
@@ -70,7 +70,7 @@ if err != nil {
     fmt.Println("User position: %v", configTree.GetPosition("user"))
     fmt.Println("Password position: %v", configTree.GetPosition("password"))
 
-    data_manipulation
+    // use a query to gather elements without walking the tree
     results, _ := config.Query("$..[user,password]")
     for ii, item := range results.Values() {
       fmt.Println("Query result %d: %v", ii, item)

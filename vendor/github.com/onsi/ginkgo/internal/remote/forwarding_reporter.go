@@ -10,7 +10,7 @@ import (
 	"github.com/onsi/ginkgo/types"
 )
 
-//An interface to net/http's rpc to allow the injection of fakes under test
+//An interface to net/http's client to allow the injection of fakes under test
 type Poster interface {
 	Post(url string, bodyType string, body io.Reader) (resp *http.Response, err error)
 }
@@ -48,7 +48,7 @@ func (reporter *ForwardingReporter) post(path string, data interface{}) {
 
 func (reporter *ForwardingReporter) SpecSuiteWillBegin(conf config.GinkgoConfigType, summary *types.SuiteSummary) {
 	data := struct {
-		Config  config.GinkgoConfigType `json:"cmd"`
+		Config  config.GinkgoConfigType `json:"config"`
 		Summary *types.SuiteSummary     `json:"suite-summary"`
 	}{
 		conf,
