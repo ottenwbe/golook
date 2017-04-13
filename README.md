@@ -5,11 +5,20 @@
 [![Build Status](https://travis-ci.org/ottenwbe/golook.svg?branch=development)](https://travis-ci.org/ottenwbe/golook)
 [![codecov](https://codecov.io/gh/ottenwbe/golook/branch/master/graph/badge.svg)](https://codecov.io/gh/ottenwbe/golook)
 
-Golook is a cli tool that allows users to search for files in a distributed system.
+Golook is a broker backend that allows users to search for files in a distributed system, i.e., your LAN.
 To this end, the application can act as a client and server.
 Clients report and query a server for files on a specific systems.
 Servers cache the reports of multiple clients and can therefore answer queries about the location of files.
 Client and server communicate via an Rest API. 
+
+## Background ##
+
+If you are like me, you have multiple machines connected in your local network, i.e., laptops, servers, nas, raspi etc.
+Many of the files on these machines are versioned in a (git) repository, tracked by a configuration management system, or are backed up. 
+However, from time to time I wonder where a specific file is, i.e., where I downloaded the latest Linux Image.
+At this point, I recalled the distributed file search algorithms, i.e., Chord and Can.
+
+So I decided to implement a simple distributed file search. And as a benefit I have the opportunity to learn go.   
 
 ## Install ##
 

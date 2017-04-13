@@ -11,7 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package communication
+package rpc
 
 import (
 	"fmt"
@@ -40,15 +40,14 @@ type LookClient interface {
 type LookClientData struct {
 	serverUrl  string
 	systemName string
-	//c http.Client //TODO: check if http communication is synchronized
+	c          *http.Client //TODO: check if http rpc is synchronized
 }
 
 var GolookClient LookClient
 
 func (lc *LookClientData) DoGetHome() string {
-	c := &http.Client{}
 
-	response, err := c.Get(lc.serverUrl)
+	response, err := lc.c.Get(lc.serverUrl)
 	if err != nil {
 		log.Error(err)
 	} else {
@@ -60,9 +59,8 @@ func (lc *LookClientData) DoGetHome() string {
 }
 
 func (lc *LookClientData) DoGetSystem(system string) (*System, error) {
-	c := &http.Client{}
 
-	response, err := c.Get(fmt.Sprintf("%s/systems/%s", lc.serverUrl, system))
+	response, err := lc.c.Get(fmt.Sprintf("%s/systems/%s", lc.serverUrl, system))
 	if err != nil {
 		log.Error(err)
 		return nil, err
@@ -74,7 +72,6 @@ func (lc *LookClientData) DoGetSystem(system string) (*System, error) {
 }
 
 func (lc *LookClientData) DoPutSystem(system *System) *System {
-	c := &http.Client{}
 
 	url := fmt.Sprintf("%s/systems", lc.serverUrl)
 
@@ -82,7 +79,7 @@ func (lc *LookClientData) DoPutSystem(system *System) *System {
 	request, errRequest := http.NewRequest("PUT", url, bytes.NewBuffer(jsonBody))
 	if errRequest == nil {
 		request.Header.Set("Content-Type", "application/json")
-		response, errResult := c.Do(request)
+		response, errResult := lc.c.Do(request)
 		if errResult != nil {
 			log.Error(errResult)
 			return &System{}
@@ -98,13 +95,12 @@ func (lc *LookClientData) DoPutSystem(system *System) *System {
 }
 
 func (lc *LookClientData) DoDeleteSystem() string {
-	c := &http.Client{}
 
 	url := fmt.Sprintf("%s/systems/%s", lc.serverUrl, lc.systemName)
 
 	request, errRequest := http.NewRequest("DELETE", url, nil)
 	if errRequest == nil {
-		response, errResult := c.Do(request)
+		response, errResult := lc.c.Do(request)
 		if errResult != nil {
 			log.Error(errResult)
 		} else {
@@ -122,7 +118,6 @@ func (lc *LookClientData) DoPostFile(file *File) string {
 
 	log.WithField("file", file.Name).Debug("DoPostFile")
 
-	c := &http.Client{}
 	var fileName string = file.Name
 
 	url := fmt.Sprintf("%s/systems/%s/files/%s", lc.serverUrl, lc.systemName, fileName)
@@ -131,7 +126,7 @@ func (lc *LookClientData) DoPostFile(file *File) string {
 	request, errRequest := http.NewRequest("POST", url, bytes.NewBuffer(fileJson))
 	if errRequest == nil {
 		request.Header.Set("Content-Type", "application/json")
-		response, errResult := c.Do(request)
+		response, errResult := lc.c.Do(request)
 		if errResult != nil {
 			log.Error(errResult)
 		} else {
@@ -146,7 +141,6 @@ func (lc *LookClientData) DoPostFile(file *File) string {
 }
 
 func (lc *LookClientData) DoPutFiles(file []File) string {
-	c := &http.Client{}
 
 	url := fmt.Sprintf("%s/systems/%s/files", lc.serverUrl, lc.systemName)
 
@@ -154,7 +148,7 @@ func (lc *LookClientData) DoPutFiles(file []File) string {
 	request, errRequest := http.NewRequest("PUT", url, bytes.NewBuffer(fileJson))
 	if errRequest == nil {
 		request.Header.Set("Content-Type", "application/json")
-		response, errResult := c.Do(request)
+		response, errResult := lc.c.Do(request)
 		if errResult != nil {
 			log.Error(errResult)
 		} else {
@@ -197,15 +191,14 @@ func (lc *LookClientData) DoPostFiles(file []File) string {
 func (lc *LookClientData) DoGetFiles() ([]File, error) {
 
 	var (
-		c        *http.Client = &http.Client{}
-		err      error        = nil
+		err      error = nil
 		response *http.Response
 		files    []File
 	)
 
 	url := fmt.Sprintf("%s/systems/%s/files", lc.serverUrl, lc.systemName)
 
-	response, err = c.Get(url)
+	response, err = lc.c.Get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -222,15 +215,13 @@ func (lc *LookClientData) DoQuerySystemsAndFiles(fileName string) (systems map[s
 }
 
 func ConfigLookClient(host string, port int) {
-	GolookClient = &LookClientData{
-		serverUrl:  fmt.Sprintf("%s:%d", host, port),
-		systemName: "",
-	}
+	GolookClient = NewLookClient(host, port)
 }
 
 func NewLookClient(host string, port int) LookClient {
 	return &LookClientData{
 		serverUrl:  fmt.Sprintf("%s:%d", host, port),
 		systemName: "",
+		c:          &http.Client{},
 	}
 }

@@ -22,8 +22,8 @@ import (
 )
 
 /*
-Server spins up on an automatically selected port and listens for communication from the forwarding reporter.
-It then forwards that communication to attached reporters.
+Server spins up on an automatically selected port and listens for rpc from the forwarding reporter.
+It then forwards that rpc to attached reporters.
 */
 type Server struct {
 	listener        net.Listener

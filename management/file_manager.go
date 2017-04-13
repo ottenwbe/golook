@@ -11,25 +11,17 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package cmd
+package management
 
-import (
-	"github.com/ottenwbe/golook/rpc"
-	"github.com/spf13/cobra"
-)
+import "github.com/ottenwbe/golook/utils"
 
-var addr string
+type LookRouter interface {
+	QueryAllSystemsForFile(fileName string) (files map[string]*utils.System, err error)
+	QueryReportedFiles() (files []utils.File, err error)
+	QueryFiles(systemName string) (files []utils.File, err error)
 
-var cmdServer = &cobra.Command{
-	Use:   "server",
-	Short: "Start as server",
-	Long:  "Start as server",
-	Run: func(_ *cobra.Command, _ []string) {
-		rpc.StartServer(addr)
-	},
-}
-
-func init() {
-	cmdServer.Flags().StringVar(&addr, "address", ":8080", "Address of the server (default is :8080)")
-	RootCmd.AddCommand(cmdServer)
+	ReportFile(filePath string, monitor bool) error
+	ReportFileR(filePath string, monitor bool) error
+	ReportFolder(folderPath string, monitor bool) error
+	ReportFolderR(folderPath string, monitor bool) error
 }

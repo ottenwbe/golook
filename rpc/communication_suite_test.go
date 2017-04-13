@@ -11,26 +11,15 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-
-package communication
+package rpc
 
 import (
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"testing"
 )
 
-func TestRouterCreation(t *testing.T) {
-	router := createRouter()
-
-	if router == nil {
-		t.Error("Router is nil after creation")
-	}
-
-	/* TODO: check if all routes are registered */
-	/*if router.Get("/") == nil {
-		t.Error("Route / does not exists")
-	}*/
+func TestClients(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Communication Suite")
 }
-
-//TODO: test registered routes by routing
-// 1.) start server (in go routine)
-// 2.) start a "communication" (in go routine) testing all routes

@@ -284,7 +284,7 @@ const (
 	SizeofTCPInfo           = C.sizeof_struct_tcp_info
 )
 
-// Netlink communication and interface messages
+// Netlink rpc and interface messages
 
 const (
 	IFA_UNSPEC          = C.IFA_UNSPEC
