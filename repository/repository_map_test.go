@@ -65,7 +65,7 @@ func TestMapRepository_StoreAndRetrieveFiles(t *testing.T) {
 	f2 := newTestFile(fileName2)
 
 	repo.StoreSystem(sysName, s)
-	repo.StoreFiles(sysName, []File{f, f2})
+	repo.StoreFiles(sysName, map[string]File{f.Name: f, f2.Name: f2})
 
 	if _, ok := repo.HasFile(fileName, sysName); !ok {
 		t.Error("File could not be found in map.")
@@ -89,8 +89,8 @@ func TestMapRepository_FindFilesAndSystems(t *testing.T) {
 
 	repo.StoreSystem(sysName, s)
 	repo.StoreSystem(sysName2, s2)
-	repo.StoreFiles(sysName, []File{f, f2})
-	repo.StoreFiles(sysName2, []File{f2})
+	repo.StoreFiles(sysName, map[string]File{f.Name: f, f2.Name: f2})
+	repo.StoreFiles(sysName2, map[string]File{f2.Name: f2})
 
 	testFilesAndSystems := repo.FindSystemAndFiles(fileName)
 
@@ -133,7 +133,7 @@ func TestMapRepository_TryStoreFileOnNonExistingSystem(t *testing.T) {
 		t.Error("Expectation not met that repository does not accept files for non existing systems.")
 	}
 
-	if repo.StoreFiles("sys", []File{f}) {
+	if repo.StoreFiles("sys", map[string]File{f.Name: f}) {
 		t.Error("Expectation not met that repository does not accept files for non existing systems.")
 	}
 }

@@ -19,11 +19,10 @@ import (
 )
 
 type LookRouter interface {
-	QueryAllSystemsForFile(fileName string) (files map[string]*System, err error)
-	QueryReportedFiles() (files []utils.File, err error)
-	QueryFiles(systemName string) (files []utils.File, err error)
-	ReportFile(filePath string) error
-	ReportFileR(filePath string) error
-	ReportFolderR(folderPath string) error
-	ReportFolder(folderPath string) error
+	handleQueryAllSystemsForFile(fileName string) (files map[string]*System, err error)
+	handleQueryFiles(systemName string) (files map[string]utils.File, err error)
+	handleReportFile(filePath string) error
+	handleReportFileR(filePath string) error
+	handleReportFolderR(folderPath string) error
+	handleReportFolder(folderPath string) error
 }

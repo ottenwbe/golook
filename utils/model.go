@@ -26,8 +26,8 @@ type File struct {
 	Accessed time.Time `json:"accessed"`
 }
 
-func DecodeFiles(fileReader io.Reader) ([]File, error) {
-	files := make([]File, 0)
+func DecodeFiles(fileReader io.Reader) (map[string]File, error) {
+	files := make(map[string]File, 0)
 	err := json.NewDecoder(fileReader).Decode(&files)
 	return files, err
 }

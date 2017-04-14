@@ -111,15 +111,15 @@ var _ = Describe("The rpc", func() {
 			server := httptest.NewServer(
 				http.HandlerFunc(
 					func(writer http.ResponseWriter, _ *http.Request) {
-						b, _ := json.Marshal([]utils.File{newTestFile()})
+						b, _ := json.Marshal(map[string]utils.File{FILE_NAME: newTestFile()})
 						fmt.Fprint(writer, string(b))
 					}))
 			client.serverUrl = server.URL
 
-			files, err := client.DoGetFiles()
+			files, err := client.DoGetFiles("testSystem")
 			Expect(err).To(BeNil())
 			Expect(len(files)).To(Equal(1))
-			Expect(files[0].Name).To(Equal(FILE_NAME))
+			Expect(files[FILE_NAME].Name).To(Equal(FILE_NAME))
 		})
 	})
 

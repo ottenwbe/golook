@@ -24,7 +24,7 @@ import (
 type DefaultRouter struct {
 }
 
-func (DefaultRouter) QueryAllSystemsForFile(fileName string) (systems map[string]*System, err error) {
+func (DefaultRouter) handleQueryAllSystemsForFile(fileName string) (systems map[string]*System, err error) {
 	if canAnswerQuery() {
 		systems = GoLookRepository.FindSystemAndFiles(fileName)
 	} else {
@@ -33,22 +33,16 @@ func (DefaultRouter) QueryAllSystemsForFile(fileName string) (systems map[string
 	return
 }
 
-func (DefaultRouter) QueryReportedFiles() (files []File, err error) {
-	if false {
-		//files = GoLookRepository.HasFile()
-		//TODO
+func (DefaultRouter) handleQueryFiles(systemName string) (files map[string]File, err error) {
+	if canAnswerQuery() {
+		files, _ = GoLookRepository.GetFilesOfSystem(systemName)
 	} else {
-		files, err = GolookClient.DoGetFiles()
+		files, err = GolookClient.DoGetFiles(systemName)
 	}
 	return
 }
 
-func (DefaultRouter) QueryFiles(systemName string) (files []File, err error) {
-	files, err = GolookClient.DoGetFiles()
-	return
-}
-
-func (DefaultRouter) ReportFile(filePath string) error {
+func (DefaultRouter) handleReportFile(filePath string) error {
 	if f, err := NewFile(filePath); err != nil {
 		return err
 	} else /* report file */ {
@@ -58,7 +52,7 @@ func (DefaultRouter) ReportFile(filePath string) error {
 }
 
 // Report individual files
-func (DefaultRouter) ReportFileR(filePath string) error {
+func (DefaultRouter) handleReportFileR(filePath string) error {
 	if f, err := NewFile(filePath); err != nil {
 		return err
 	} else /* report file */ {
@@ -67,14 +61,14 @@ func (DefaultRouter) ReportFileR(filePath string) error {
 	return nil
 }
 
-func (DefaultRouter) ReportFolderR(folderPath string) error {
+func (DefaultRouter) handleReportFolderR(folderPath string) error {
 	report, err := generateReport(folderPath)
 	GolookClient.DoPutFiles(report)
 	return err
 }
 
 // Report files in a folder and replace all previously reported files
-func (DefaultRouter) ReportFolder(folderPath string) error {
+func (DefaultRouter) handleReportFolder(folderPath string) error {
 	report, err := generateReport(folderPath)
 	GolookClient.DoPostFiles(report)
 	return err

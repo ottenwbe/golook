@@ -66,7 +66,7 @@ func (mock *MockGolookClient) DoPutFiles(files []utils.File) string {
 	return ""
 }
 
-func (mock *MockGolookClient) DoGetFiles() ([]utils.File, error) {
+func (mock *MockGolookClient) DoGetFiles(systemName string) (map[string]utils.File, error) {
 	mock.VisitDoGetFiles = true
-	return []utils.File{}, nil
+	return map[string]utils.File{}, nil
 }

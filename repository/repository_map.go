@@ -40,12 +40,9 @@ func (repo *MapRepository) StoreFile(systemName string, file File) bool {
 	return false
 }
 
-func (repo *MapRepository) StoreFiles(systemName string, files []File) bool {
+func (repo *MapRepository) StoreFiles(systemName string, files map[string]File) bool {
 	if sys, ok := (*repo)[systemName]; ok {
-		sys.Files = make(map[string]File)
-		for _, file := range files {
-			sys.Files[file.Name] = file
-		}
+		sys.Files = files
 		return true
 	}
 	return false
@@ -54,6 +51,13 @@ func (repo *MapRepository) StoreFiles(systemName string, files []File) bool {
 func (repo *MapRepository) GetSystem(systemName string) (sys *System, ok bool) {
 	sys, ok = (*repo)[systemName]
 	return
+}
+
+func (repo *MapRepository) GetFilesOfSystem(systemName string) (map[string]File, bool) {
+	if result, ok := repo.GetSystem(systemName); ok {
+		return result.Files, ok
+	}
+	return map[string]File{}, false
 }
 
 func (repo *MapRepository) HasFile(fileName string, systemName string) (*File, bool) {

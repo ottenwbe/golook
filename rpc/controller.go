@@ -178,7 +178,7 @@ func marshalAndWriteResult(writer http.ResponseWriter, sysFiles map[string]*Syst
 	}
 }
 
-func storeFilesAndWriteResult(system string, files []File, writer http.ResponseWriter) {
+func storeFilesAndWriteResult(system string, files map[string]File, writer http.ResponseWriter) {
 	if GoLookRepository.StoreFiles(system, files) {
 		returnAck(writer)
 	} else {
@@ -187,7 +187,7 @@ func storeFilesAndWriteResult(system string, files []File, writer http.ResponseW
 	}
 }
 
-func decodeFilesAndReportSuccess(writer http.ResponseWriter, reader io.Reader, system *string) ([]File, bool) {
+func decodeFilesAndReportSuccess(writer http.ResponseWriter, reader io.Reader, system *string) (map[string]File, bool) {
 	if files, err := DecodeFiles(reader); err != nil {
 		http.Error(writer, errors.New(nack).Error(), http.StatusBadRequest)
 		log.Printf("Files reported from %s could not be decoded. \n %s", *system, err)

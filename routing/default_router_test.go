@@ -35,42 +35,42 @@ var _ = Describe("The report service", func() {
 
 	It("should call the golook rpc with a given file", func() {
 		RunWithMockedGolookClientF(func() {
-			ctl.ReportFile(FILE_NAME)
+			ctl.handleReportFile(FILE_NAME)
 			Expect(AccessMockedGolookClient().VisitDoPostFile).To(BeTrue())
 		}, FILE_NAME, FOLDER_NAME)
 	})
 
 	It("should NOT call the golook rpc with a non existing file", func() {
 		RunWithMockedGolookClient(func() {
-			ctl.ReportFile(FILE_NAME + ".abc")
+			ctl.handleReportFile(FILE_NAME + ".abc")
 			Expect(AccessMockedGolookClient().VisitDoPostFile).To(BeFalse())
 		})
 	})
 
 	It("should call the golook rpc for a given folder", func() {
 		RunWithMockedGolookClientF(func() {
-			ctl.ReportFolder(FOLDER_NAME)
+			ctl.handleReportFolder(FOLDER_NAME)
 			Expect(AccessMockedGolookClient().VisitDoPostFiles).To(BeTrue())
 		}, FILE_NAME, FOLDER_NAME)
 	})
 
 	It("should NOT call the golook rpc with a non existing file", func() {
 		RunWithMockedGolookClient(func() {
-			ctl.ReportFolder("no_folder")
+			ctl.handleReportFolder("no_folder")
 			Expect(AccessMockedGolookClient().VisitDoPostFile).To(BeFalse())
 		})
 	})
 
 	It("should call the golook rpc with files from existing folder which replace reported files", func() {
 		RunWithMockedGolookClient(func() {
-			ctl.ReportFolderR(FOLDER_NAME)
+			ctl.handleReportFolderR(FOLDER_NAME)
 			Expect(AccessMockedGolookClient().VisitDoPutFiles).To(BeTrue())
 		})
 	})
 
 	It("should NOT call the golook rpc with files from existing folder when folder does not exist", func() {
 		RunWithMockedGolookClient(func() {
-			ctl.ReportFolderR("no_folder")
+			ctl.handleReportFolderR("no_folder")
 			Expect(AccessMockedGolookClient().VisitDoPutFiles).To(BeFalse())
 		})
 	})
@@ -88,7 +88,7 @@ var _ = Describe("The query service", func() {
 
 	It("should call the golook rpc", func() {
 		RunWithMockedGolookClient(func() {
-			_, err := ctl.QueryReportedFiles()
+			_, err := ctl.handleQueryFiles("")
 			Expect(err).To(BeNil())
 			Expect(AccessMockedGolookClient().VisitDoGetFiles).To(BeTrue())
 		})

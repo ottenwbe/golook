@@ -27,39 +27,33 @@ func NewMockedRouter() LookRouter {
 	return &MockedLookController{}
 }
 
-func (mlc *MockedLookController) QueryAllSystemsForFile(fileName string) (files map[string]*System, err error) {
+func (mlc *MockedLookController) handleQueryAllSystemsForFile(fileName string) (files map[string]*System, err error) {
 	log.Debug("Mocked query for all Systems for file.")
 	mlc.Visited = true
 	return nil, nil
 }
 
-func (mlc *MockedLookController) QueryReportedFiles() (files []utils.File, err error) {
-	log.Debug("Mocked reported files.")
+func (mlc *MockedLookController) handleQueryFiles(systemName string) (files map[string]utils.File, err error) {
 	mlc.Visited = true
-	return []utils.File{}, nil
+	return map[string]utils.File{}, nil
 }
 
-func (mlc *MockedLookController) QueryFiles(systemName string) (files []utils.File, err error) {
-	mlc.Visited = true
-	return []utils.File{}, nil
-}
-
-func (mlc *MockedLookController) ReportFile(filePath string) error {
+func (mlc *MockedLookController) handleReportFile(filePath string) error {
 	mlc.Visited = true
 	return nil
 }
 
-func (mlc *MockedLookController) ReportFileR(filePath string) error {
+func (mlc *MockedLookController) handleReportFileR(filePath string) error {
 	mlc.Visited = true
 	return nil
 }
 
-func (mlc *MockedLookController) ReportFolderR(folderPath string) error {
+func (mlc *MockedLookController) handleReportFolderR(folderPath string) error {
 	mlc.Visited = true
 	return nil
 }
 
-func (mlc *MockedLookController) ReportFolder(folderPath string) error {
+func (mlc *MockedLookController) handleReportFolder(folderPath string) error {
 	mlc.Visited = true
 	return nil
 }

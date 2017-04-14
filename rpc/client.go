@@ -34,7 +34,7 @@ type LookupClient interface {
 	DoGetSystem(system string) (*System, error)
 	DoPutSystem(system *System) *System
 	DoDeleteSystem() string
-	DoGetFiles() ([]File, error)
+	DoGetFiles(systemName string) (map[string]File, error)
 	DoQuerySystemsAndFiles(fileName string) (systems map[string]*System, err error)
 }
 
@@ -187,15 +187,13 @@ func (lc *LookupClientData) DoPostFiles(file []File) string {
 	return ""
 }
 
-func (lc *LookupClientData) DoGetFiles() ([]File, error) {
+func (lc *LookupClientData) DoGetFiles(systemName string) (files map[string]File, err error) {
 
 	var (
-		err      error = nil
 		response *http.Response
-		files    []File
 	)
 
-	url := fmt.Sprintf("%s/systems/%s/files", lc.serverUrl, lc.systemName)
+	url := fmt.Sprintf("%s/systems/%s/files", lc.serverUrl, systemName)
 
 	response, err = lc.c.Get(url)
 	if err != nil {

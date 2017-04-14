@@ -28,38 +28,33 @@ var _ = Describe("The mocked router", func() {
 		router = NewMockedRouter().(*MockedLookController)
 	})
 
-	It("should set the valid flag to true after calling QueryAllSystemsForFile", func() {
-		router.QueryAllSystemsForFile("test.txt")
-		Expect(router.Visited).To(BeTrue())
-	})
-
-	It("should set the valid flag to true after calling QueryReportedFiles", func() {
-		router.QueryReportedFiles()
+	It("should set the valid flag to true after calling handleQueryAllSystemsForFile", func() {
+		router.handleQueryAllSystemsForFile("test.txt")
 		Expect(router.Visited).To(BeTrue())
 	})
 
 	It("should set the valid flag to true after calling QueryFiles", func() {
-		router.QueryFiles("system")
+		router.handleQueryFiles("system")
 		Expect(router.Visited).To(BeTrue())
 	})
 
 	It("should set the valid flag to true after calling ReportFolder", func() {
-		router.ReportFolder("folderName")
+		router.handleReportFolder("folderName")
 		Expect(router.Visited).To(BeTrue())
 	})
 
 	It("should set the valid flag to true after calling ReportFolderR", func() {
-		router.ReportFolderR("folderName")
+		router.handleReportFolderR("folderName")
 		Expect(router.Visited).To(BeTrue())
 	})
 
 	It("should set the valid flag to true after calling ReportFileR", func() {
-		router.ReportFileR("file.txt")
+		router.handleReportFileR("file.txt")
 		Expect(router.Visited).To(BeTrue())
 	})
 
 	It("should set the valid flag to true after calling ReportFile", func() {
-		router.ReportFile("file.txt")
+		router.handleReportFile("file.txt")
 		Expect(router.Visited).To(BeTrue())
 	})
 })
