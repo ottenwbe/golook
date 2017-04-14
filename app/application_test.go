@@ -11,7 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package cmd
+package app
 
 import (
 	"fmt"
@@ -19,15 +19,13 @@ import (
 	"os"
 	"testing"
 
-	. "github.com/ottenwbe/golook/global"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-func TestClients(t *testing.T) {
+func TestApplication(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Config Suite")
+	RunSpecs(t, "Application Suite")
 }
 
 var _ = Describe("The main configuration", func() {

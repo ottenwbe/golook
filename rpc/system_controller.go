@@ -19,7 +19,7 @@ import (
 
 	"encoding/json"
 	"errors"
-	. "github.com/ottenwbe/golook/global"
+	. "github.com/ottenwbe/golook/app"
 	. "github.com/ottenwbe/golook/repository"
 	log "github.com/sirupsen/logrus"
 )

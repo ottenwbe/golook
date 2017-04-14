@@ -21,11 +21,11 @@ import (
 var _ = Describe("The mocked router", func() {
 
 	var (
-		router *MockedLookController
+		router *MockedLookRouter
 	)
 
 	BeforeEach(func() {
-		router = NewMockedRouter().(*MockedLookController)
+		router = NewMockedRouter().(*MockedLookRouter)
 	})
 
 	It("should set the valid flag to true after calling handleQueryAllSystemsForFile", func() {

@@ -14,8 +14,8 @@
 package rpc
 
 import (
-	. "github.com/ottenwbe/golook/global"
-	"github.com/ottenwbe/golook/utils"
+	. "github.com/ottenwbe/golook/app"
+	. "github.com/ottenwbe/golook/file_management"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -29,7 +29,7 @@ type MockGolookClient struct {
 	FolderName       string
 }
 
-func (mock *MockGolookClient) DoPostFiles(file []utils.File) string {
+func (mock *MockGolookClient) DoPostFiles(file []File) string {
 	mock.VisitDoPostFiles = true
 	return ""
 }
@@ -55,18 +55,18 @@ func (*MockGolookClient) DoGetHome() string {
 	return ""
 }
 
-func (mock *MockGolookClient) DoPostFile(file *utils.File) string {
+func (mock *MockGolookClient) DoPostFile(file *File) string {
 	log.WithField("called", mock.VisitDoPostFile).WithField("file", *file).Info("Test DoPostFile")
 	mock.VisitDoPostFile = mock.VisitDoPostFile || file != nil && file.Name == mock.FileName
 	return ""
 }
 
-func (mock *MockGolookClient) DoPutFiles(files []utils.File) string {
+func (mock *MockGolookClient) DoPutFiles(files []File) string {
 	mock.VisitDoPutFiles = len(files) > 0
 	return ""
 }
 
-func (mock *MockGolookClient) DoGetFiles(systemName string) (map[string]utils.File, error) {
+func (mock *MockGolookClient) DoGetFiles(systemName string) (map[string]File, error) {
 	mock.VisitDoGetFiles = true
-	return map[string]utils.File{}, nil
+	return map[string]File{}, nil
 }

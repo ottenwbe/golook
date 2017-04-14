@@ -23,8 +23,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	. "github.com/ottenwbe/golook/global"
-	"github.com/ottenwbe/golook/utils"
+	. "github.com/ottenwbe/golook/app"
+	. "github.com/ottenwbe/golook/file_management"
 )
 
 const (
@@ -111,7 +111,7 @@ var _ = Describe("The rpc", func() {
 			server := httptest.NewServer(
 				http.HandlerFunc(
 					func(writer http.ResponseWriter, _ *http.Request) {
-						b, _ := json.Marshal(map[string]utils.File{FILE_NAME: newTestFile()})
+						b, _ := json.Marshal(map[string]File{FILE_NAME: newTestFile()})
 						fmt.Fprint(writer, string(b))
 					}))
 			client.serverUrl = server.URL
@@ -151,8 +151,8 @@ func newTestSystem() *System {
 		UUID:  "1234"}
 }
 
-func newTestFile() utils.File {
-	return utils.File{
+func newTestFile() File {
+	return File{
 		Name: FILE_NAME,
 	}
 }

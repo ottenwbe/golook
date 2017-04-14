@@ -1,5 +1,3 @@
-// +build linux
-
 //Copyright 2016-2017 Beate Ottenwälder
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,30 +11,29 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-
-package utils
+package file_management
 
 import (
-	"os"
-	"path/filepath"
-	"syscall"
+	"encoding/json"
+	"io"
 	"time"
 )
 
-func NewFile(filePath string) (f *File, err error) {
+type File struct {
+	Name     string    `json:"name"`
+	Created  time.Time `json:"created"`
+	Modified time.Time `json:"modified"`
+	Accessed time.Time `json:"accessed"`
+}
 
-	var fi os.FileInfo
+func DecodeFiles(fileReader io.Reader) (map[string]File, error) {
+	files := make(map[string]File, 0)
+	err := json.NewDecoder(fileReader).Decode(&files)
+	return files, err
+}
 
-	f = &File{}
-	fi, err = os.Stat(filePath)
-	if err != nil {
-		return
-	}
-
-	var stat = fi.Sys().(*syscall.Stat_t)
-	f.Accessed = time.Unix(stat.Atim.Sec, stat.Atim.Nsec)
-	f.Created = time.Unix(stat.Ctim.Sec, stat.Ctim.Nsec)
-	f.Modified = time.Unix(stat.Mtim.Sec, stat.Mtim.Nsec)
-	f.Name = filepath.Base(filePath)
-	return
+func DecodeFile(fileReader io.Reader) (File, error) {
+	var file File
+	err := json.NewDecoder(fileReader).Decode(&file)
+	return file, err
 }

@@ -23,7 +23,8 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
-	. "github.com/ottenwbe/golook/global"
+	. "github.com/ottenwbe/golook/app"
+	. "github.com/ottenwbe/golook/file_management"
 	. "github.com/ottenwbe/golook/repository"
 	. "github.com/ottenwbe/golook/utils"
 )

@@ -14,9 +14,9 @@
 package main
 
 import (
-	. "github.com/ottenwbe/golook/cmd"
+	"github.com/ottenwbe/golook/app"
 )
 
 func main() {
-	Run()
+	app.Run()
 }

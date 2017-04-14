@@ -1,4 +1,4 @@
-package global
+package app
 
 import (
 	. "github.com/onsi/ginkgo"

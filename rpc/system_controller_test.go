@@ -17,13 +17,13 @@ import (
 	"github.com/gorilla/mux"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/ottenwbe/golook/global"
+	. "github.com/ottenwbe/golook/app"
 
 	"net/http"
 	"net/http/httptest"
 )
 
-var _ = Describe("The management endpoint", func() {
+var _ = Describe("The file_management endpoint", func() {
 
 	var (
 		rr *httptest.ResponseRecorder

@@ -14,7 +14,7 @@
 package routing
 
 import (
-	. "github.com/ottenwbe/golook/global"
+	. "github.com/ottenwbe/golook/app"
 )
 
 type SystemController struct {

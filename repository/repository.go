@@ -14,8 +14,8 @@
 package repositories
 
 import (
-	. "github.com/ottenwbe/golook/global"
-	. "github.com/ottenwbe/golook/utils"
+	. "github.com/ottenwbe/golook/app"
+	. "github.com/ottenwbe/golook/file_management"
 )
 
 type Repository interface {

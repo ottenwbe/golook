@@ -14,46 +14,46 @@
 package routing
 
 import (
-	. "github.com/ottenwbe/golook/global"
-	"github.com/ottenwbe/golook/utils"
+	. "github.com/ottenwbe/golook/app"
+	. "github.com/ottenwbe/golook/file_management"
 	log "github.com/sirupsen/logrus"
 )
 
-type MockedLookController struct {
+type MockedLookRouter struct {
 	Visited bool
 }
 
 func NewMockedRouter() LookRouter {
-	return &MockedLookController{}
+	return &MockedLookRouter{}
 }
 
-func (mlc *MockedLookController) handleQueryAllSystemsForFile(fileName string) (files map[string]*System, err error) {
+func (mlc *MockedLookRouter) handleQueryAllSystemsForFile(fileName string) (files map[string]*System, err error) {
 	log.Debug("Mocked query for all Systems for file.")
 	mlc.Visited = true
 	return nil, nil
 }
 
-func (mlc *MockedLookController) handleQueryFiles(systemName string) (files map[string]utils.File, err error) {
+func (mlc *MockedLookRouter) handleQueryFiles(systemName string) (files map[string]File, err error) {
 	mlc.Visited = true
-	return map[string]utils.File{}, nil
+	return map[string]File{}, nil
 }
 
-func (mlc *MockedLookController) handleReportFile(filePath string) error {
-	mlc.Visited = true
-	return nil
-}
-
-func (mlc *MockedLookController) handleReportFileR(filePath string) error {
+func (mlc *MockedLookRouter) handleReportFile(filePath string) error {
 	mlc.Visited = true
 	return nil
 }
 
-func (mlc *MockedLookController) handleReportFolderR(folderPath string) error {
+func (mlc *MockedLookRouter) handleReportFileR(filePath string) error {
 	mlc.Visited = true
 	return nil
 }
 
-func (mlc *MockedLookController) handleReportFolder(folderPath string) error {
+func (mlc *MockedLookRouter) handleReportFolderR(folderPath string) error {
+	mlc.Visited = true
+	return nil
+}
+
+func (mlc *MockedLookRouter) handleReportFolder(folderPath string) error {
 	mlc.Visited = true
 	return nil
 }

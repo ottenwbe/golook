@@ -14,13 +14,13 @@
 package routing
 
 import (
-	. "github.com/ottenwbe/golook/global"
-	"github.com/ottenwbe/golook/utils"
+	. "github.com/ottenwbe/golook/app"
+	. "github.com/ottenwbe/golook/file_management"
 )
 
 type LookRouter interface {
 	handleQueryAllSystemsForFile(fileName string) (files map[string]*System, err error)
-	handleQueryFiles(systemName string) (files map[string]utils.File, err error)
+	handleQueryFiles(systemName string) (files map[string]File, err error)
 	handleReportFile(filePath string) error
 	handleReportFileR(filePath string) error
 	handleReportFolderR(folderPath string) error

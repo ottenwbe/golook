@@ -14,9 +14,9 @@
 package routing
 
 import (
-	. "github.com/ottenwbe/golook/global"
+	. "github.com/ottenwbe/golook/app"
+	. "github.com/ottenwbe/golook/file_management"
 	. "github.com/ottenwbe/golook/repository"
-	. "github.com/ottenwbe/golook/utils"
 	"io/ioutil"
 	"os"
 )

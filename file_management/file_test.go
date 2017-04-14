@@ -11,7 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package utils
+package file_management
 
 import (
 	"encoding/json"
@@ -59,27 +59,18 @@ var _ = Describe("The model", func() {
 	})
 })
 
-func newTestFile(fileName string) File {
-	f := File{}
-	f.Name = fileName
-	f.Accessed = time.Now()
-	f.Created = time.Now()
-	f.Modified = time.Now()
-	return f
-}
-
 func PipeWriteFiles(pipeWriter *io.PipeWriter) {
-	b, _ := json.Marshal([]File{newTestFile(testFileName), newTestFile(testFileName)})
+	b, _ := json.Marshal(map[string]File{testFileName: newTestFile(testFileName), testFileName + "2": newTestFile(testFileName)})
 	defer pipeWriter.Close()
 	pipeWriter.Write(b)
 }
 
 func PipeReadFiles(pipeReader *io.PipeReader, c chan bool) {
-	if f, err := DecodeFiles(pipeReader); err == nil && f[0].Name == testFileName {
+	if f, err := DecodeFiles(pipeReader); err == nil && f[testFileName].Name == testFileName {
 		c <- true
 	} else {
 		log.Printf("Error expected nil, got %s", err)
-		log.Printf("File, expected %s got %s", testFileName, f[0].Name)
+		log.Printf("File, expected %s got %s", testFileName, f[testFileName].Name)
 	}
 	c <- false
 }
@@ -98,4 +89,13 @@ func PipeReadFile(pipeReader *io.PipeReader, c chan bool) {
 		log.Printf("File, expected %s got %s", testFileName, f.Name)
 	}
 	c <- false
+}
+
+func newTestFile(fileName string) File {
+	f := File{}
+	f.Name = fileName
+	f.Accessed = time.Now()
+	f.Created = time.Now()
+	f.Modified = time.Now()
+	return f
 }

@@ -11,17 +11,11 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package cmd
+package file_management
 
-import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-)
-
-var _ = Describe("The server configuration", func() {
-	Context("default", func() {
-		It("should return the default address", func() {
-			Expect(addr).To(Equal(":8080"))
-		})
-	})
-})
+type FileManager interface {
+	ReportFile(filePath string, monitor bool) error
+	ReportFileR(filePath string, monitor bool) error
+	ReportFolder(folderPath string, monitor bool) error
+	ReportFolderR(folderPath string, monitor bool) error
+}

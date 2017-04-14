@@ -11,11 +11,11 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package global
+package app
 
 import (
 	"encoding/json"
-	"github.com/ottenwbe/golook/utils"
+	. "github.com/ottenwbe/golook/file_management"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"net"
@@ -24,11 +24,11 @@ import (
 )
 
 type System struct {
-	Name  string                `json:"name"`
-	OS    string                `json:"os"`
-	IP    string                `json:"ip"`
-	UUID  string                `json:"uuid"`
-	Files map[string]utils.File `json:"files"`
+	Name  string          `json:"name"`
+	OS    string          `json:"os"`
+	IP    string          `json:"ip"`
+	UUID  string          `json:"uuid"`
+	Files map[string]File `json:"files"`
 }
 
 func NewSystem() *System {
