@@ -14,6 +14,7 @@
 package repositories
 
 import (
+	. "github.com/ottenwbe/golook/global"
 	. "github.com/ottenwbe/golook/utils"
 	"testing"
 	"time"

@@ -13,7 +13,10 @@
 //limitations under the License.
 package repositories
 
-import . "github.com/ottenwbe/golook/utils"
+import (
+	. "github.com/ottenwbe/golook/global"
+	. "github.com/ottenwbe/golook/utils"
+)
 
 type Repository interface {
 	StoreSystem(systemName string, system *System) bool

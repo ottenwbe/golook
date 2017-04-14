@@ -59,7 +59,7 @@ The execution of unit tests is simplified by a script:
 
 #### Integration tests ####
 
-TODO: Will be executed by executing client and server in Docker containers.
+TODO: Will be implemented by executing client and server in Docker containers.
 
 ## Server API ##
 

@@ -14,6 +14,7 @@
 package routing
 
 import (
+	. "github.com/ottenwbe/golook/global"
 	"github.com/ottenwbe/golook/utils"
 	log "github.com/sirupsen/logrus"
 )
@@ -26,7 +27,7 @@ func NewMockedRouter() LookRouter {
 	return &MockedLookController{}
 }
 
-func (mlc *MockedLookController) QueryAllSystemsForFile(fileName string) (files map[string]*utils.System, err error) {
+func (mlc *MockedLookController) QueryAllSystemsForFile(fileName string) (files map[string]*System, err error) {
 	log.Debug("Mocked query for all Systems for file.")
 	mlc.Visited = true
 	return nil, nil

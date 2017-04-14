@@ -17,26 +17,28 @@ import (
 	"fmt"
 	"os"
 
+	. "github.com/ottenwbe/golook/global"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-const (
-	PROGRAM_NAME = "golook"
-	VERSION      = "v0.1.0-dev"
-)
-
 var RootCmd = &cobra.Command{
-	Use:   PROGRAM_NAME,
-	Short: "Golook Client/Server",
-	Long:  "Golook Client/Server",
+	Use:   APP_NAME,
+	Short: "Golook Broker",
+	Long:  "Golook Broker which implements a Servent (Client/Server) for the distributed file search",
+	Run: func(_ *cobra.Command, _ []string) {
+		log.Info("Starting up Golook...")
+		HttpServer.StartServer(":8080")
+		log.Info("Shutting down server...")
+	},
 }
 
-var cmdVersion = &cobra.Command{
+var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: fmt.Sprintf("Print the version number of %s", PROGRAM_NAME),
-	Long:  fmt.Sprintf("All software has versions. This is %s's", PROGRAM_NAME),
+	Short: fmt.Sprintf("Print the version number of %s.", APP_NAME),
+	Long:  fmt.Sprintf("All software has versions. This is %s's version.", APP_NAME),
 	Run: func(_ *cobra.Command, _ []string) {
 		fmt.Print(VERSION)
 	},
@@ -62,7 +64,7 @@ func init() {
 }
 
 func initMainSubCommands() {
-	RootCmd.AddCommand(cmdVersion)
+	RootCmd.AddCommand(versionCmd)
 }
 
 func initConfig() {

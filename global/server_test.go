@@ -11,37 +11,21 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package repositories
+package global
 
-type RepositoryType int
-
-const ( // iota is reset to 0
-	NO_REPOSITORY  RepositoryType = iota // == 0
-	MAP_REPOSITORY RepositoryType = iota // == 1
+import (
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"testing"
 )
 
-var (
-	repositoryType RepositoryType = MAP_REPOSITORY
-)
-
-func NewRepository() Repository {
-	var repo Repository
-
-	switch repositoryType {
-	case NO_REPOSITORY:
-		repo = nil
-	case MAP_REPOSITORY:
-		tmpRepo := make(MapRepository, 0)
-		repo = &tmpRepo
-	default:
-		repo = nil
-	}
-
-	return repo
+func TestClients(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Server Suite")
 }
 
-var GoLookRepository Repository
-
-func init() {
-	GoLookRepository = NewRepository()
-}
+var _ = Describe(" Server ", func() {
+	It("should not be nil after startup", func() {
+		Expect(HttpServer).ToNot(BeNil())
+	})
+})

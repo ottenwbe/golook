@@ -13,10 +13,13 @@
 //limitations under the License.
 package routing
 
-import "github.com/ottenwbe/golook/utils"
+import (
+	. "github.com/ottenwbe/golook/global"
+	"github.com/ottenwbe/golook/utils"
+)
 
 type LookRouter interface {
-	QueryAllSystemsForFile(fileName string) (files map[string]*utils.System, err error)
+	QueryAllSystemsForFile(fileName string) (files map[string]*System, err error)
 	QueryReportedFiles() (files []utils.File, err error)
 	QueryFiles(systemName string) (files []utils.File, err error)
 	ReportFile(filePath string) error

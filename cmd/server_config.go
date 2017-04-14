@@ -14,7 +14,6 @@
 package cmd
 
 import (
-	"github.com/ottenwbe/golook/rpc"
 	"github.com/spf13/cobra"
 )
 
@@ -25,7 +24,7 @@ var cmdServer = &cobra.Command{
 	Short: "Start as server",
 	Long:  "Start as server",
 	Run: func(_ *cobra.Command, _ []string) {
-		rpc.StartServer(addr)
+		//rpc.StartServer(addr)
 	},
 }
 

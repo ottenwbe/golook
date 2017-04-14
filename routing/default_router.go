@@ -14,23 +14,32 @@
 package routing
 
 import (
+	. "github.com/ottenwbe/golook/global"
+	. "github.com/ottenwbe/golook/repository"
+	. "github.com/ottenwbe/golook/utils"
 	"io/ioutil"
 	"os"
-
-	. "github.com/ottenwbe/golook/rpc"
-	. "github.com/ottenwbe/golook/utils"
 )
 
 type DefaultRouter struct {
 }
 
 func (DefaultRouter) QueryAllSystemsForFile(fileName string) (systems map[string]*System, err error) {
-	systems, err = GolookClient.DoQuerySystemsAndFiles(fileName)
+	if canAnswerQuery() {
+		systems = GoLookRepository.FindSystemAndFiles(fileName)
+	} else {
+		systems, err = GolookClient.DoQuerySystemsAndFiles(fileName)
+	}
 	return
 }
 
 func (DefaultRouter) QueryReportedFiles() (files []File, err error) {
-	files, err = GolookClient.DoGetFiles()
+	if false {
+		//files = GoLookRepository.HasFile()
+		//TODO
+	} else {
+		files, err = GolookClient.DoGetFiles()
+	}
 	return
 }
 
@@ -39,7 +48,6 @@ func (DefaultRouter) QueryFiles(systemName string) (files []File, err error) {
 	return
 }
 
-// Report individual files
 func (DefaultRouter) ReportFile(filePath string) error {
 	if f, err := NewFile(filePath); err != nil {
 		return err
@@ -49,6 +57,7 @@ func (DefaultRouter) ReportFile(filePath string) error {
 	return nil
 }
 
+// Report individual files
 func (DefaultRouter) ReportFileR(filePath string) error {
 	if f, err := NewFile(filePath); err != nil {
 		return err
@@ -58,20 +67,20 @@ func (DefaultRouter) ReportFileR(filePath string) error {
 	return nil
 }
 
-// Report files in a folder and replace all previously reported files
 func (DefaultRouter) ReportFolderR(folderPath string) error {
 	report, err := generateReport(folderPath)
 	GolookClient.DoPutFiles(report)
 	return err
 }
 
-// Report files in a folder
+// Report files in a folder and replace all previously reported files
 func (DefaultRouter) ReportFolder(folderPath string) error {
 	report, err := generateReport(folderPath)
 	GolookClient.DoPostFiles(report)
 	return err
 }
 
+// Report files in a folder
 func generateReport(folderPath string) ([]File, error) {
 
 	var (
@@ -97,4 +106,8 @@ func appendFile(fileToAppend os.FileInfo, appendReport []File) (report []File, e
 		report = append(appendReport, *file)
 	}
 	return
+}
+
+func canAnswerQuery() bool {
+	return GolookClient == nil && GoLookRepository != nil
 }

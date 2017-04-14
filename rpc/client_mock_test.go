@@ -13,27 +13,7 @@
 //limitations under the License.
 package rpc
 
-import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-)
-
-var _ = Describe(" MockGoLookClient ", func() {
-	It("should be set when a function is run in context of 'RunWithMockedGolookClient'", func() {
-		RunWithMockedGolookClient(func() {
-			Expect(testConvertMockGolookClient).ToNot(Panic())
-		})
-	})
-
-	It("should be set when a function is run in context of 'RunWithMockedGolookClientF'", func() {
-		RunWithMockedGolookClientF(func() {
-			Expect(testConvertMockGolookClient).ToNot(Panic())
-			Expect(GolookClient.(*MockGolookClient).fileName).To(Equal("fileName.txt"))
-			Expect(GolookClient.(*MockGolookClient).folderName).To(Equal("folder"))
-		}, "fileName.txt", "folder")
-	})
-})
-
-func testConvertMockGolookClient() {
-	_ = GolookClient.(*MockGolookClient)
-}
+//import (
+//. "github.com/onsi/ginkgo"
+//. "github.com/onsi/gomega"
+//)

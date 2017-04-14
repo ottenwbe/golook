@@ -23,6 +23,7 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
+	. "github.com/ottenwbe/golook/global"
 	. "github.com/ottenwbe/golook/repository"
 	. "github.com/ottenwbe/golook/utils"
 )
@@ -35,12 +36,9 @@ const (
 	filePath   = "file"
 )
 
-var (
-	repository Repository
-)
-
 func init() {
-	repository = NewRepository()
+	HttpServer.RegisterFunction("/", home, "GET")
+	HttpServer.RegisterFunction("/files/{file}", getFile, "GET")
 }
 
 /////////////////////////////////////
@@ -57,7 +55,7 @@ func home(writer http.ResponseWriter, _ *http.Request) {
 func getFile(writer http.ResponseWriter, request *http.Request) {
 	fileName := extractFileFromPath(request)
 
-	sysFiles := repository.FindSystemAndFiles(fileName)
+	sysFiles := GoLookRepository.FindSystemAndFiles(fileName)
 
 	marshalAndWriteResult(writer, sysFiles)
 }
@@ -68,7 +66,7 @@ func getSystemFiles(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 	system := params[systemPath]
 
-	if sys, ok := repository.GetSystem(system); ok && sys != nil {
+	if sys, ok := GoLookRepository.GetSystem(system); ok && sys != nil {
 		marshalFilesAndWriteResult(writer, sys.Files)
 	} else {
 		http.Error(writer, errors.New(nack).Error(), http.StatusNotFound)
@@ -110,26 +108,6 @@ func postFile(writer http.ResponseWriter, request *http.Request) {
 	storeFileAndWriteResult(system, file, writer)
 }
 
-// Endpoint: GET /systems/{system}
-func getSystem(writer http.ResponseWriter, request *http.Request) {
-	system := extractSystemFromPath(request)
-
-	if sys, ok := repository.GetSystem(system); ok {
-		writer = marshalSystemAndWritResult(sys, writer)
-	} else {
-		http.Error(writer, errors.New("{}").Error(), http.StatusNotFound)
-		log.Printf("System %s not found: Returning empty Json", system)
-	}
-}
-
-// Endpoint: DELETE /systems/{system}
-// Deletes system {system} on server
-func delSystem(writer http.ResponseWriter, request *http.Request) {
-	system := extractSystemFromPath(request)
-	repository.DelSystem(system)
-	returnAck(writer)
-}
-
 // Endpoint: PUT /systems
 // Adds / replaces a system on the server
 func putSystem(writer http.ResponseWriter, request *http.Request) {
@@ -161,7 +139,7 @@ func formatAndStoreSystem(system *System, writer *http.ResponseWriter) {
 		systemName = system.UUID
 	}
 
-	repository.StoreSystem(systemName, system)
+	GoLookRepository.StoreSystem(systemName, system)
 	fmt.Fprint(*writer, fmt.Sprintf("{\"id\":\"%s\"}", systemName))
 }
 
@@ -200,19 +178,8 @@ func marshalAndWriteResult(writer http.ResponseWriter, sysFiles map[string]*Syst
 	}
 }
 
-func marshalSystemAndWritResult(sys *System, writer http.ResponseWriter) http.ResponseWriter {
-	str, marshalError := json.Marshal(sys)
-	if marshalError != nil {
-		http.Error(writer, errors.New("{}").Error(), http.StatusNotFound)
-		log.Print("Json could not be marshalled")
-	} else {
-		fmt.Fprint(writer, string(str))
-	}
-	return writer
-}
-
 func storeFilesAndWriteResult(system string, files []File, writer http.ResponseWriter) {
-	if repository.StoreFiles(system, files) {
+	if GoLookRepository.StoreFiles(system, files) {
 		returnAck(writer)
 	} else {
 		http.Error(writer, errors.New(nack).Error(), http.StatusNotFound)
@@ -231,7 +198,7 @@ func decodeFilesAndReportSuccess(writer http.ResponseWriter, reader io.Reader, s
 }
 
 func storeFileAndWriteResult(system string, file File, writer http.ResponseWriter) {
-	if repository.StoreFile(system, file) {
+	if GoLookRepository.StoreFile(system, file) {
 		returnAck(writer)
 	} else {
 		http.Error(writer, errors.New(nack).Error(), http.StatusNotFound)

@@ -14,18 +14,19 @@
 package rpc
 
 import (
-	"fmt"
-	"net/http"
+	. "github.com/ottenwbe/golook/global"
+	. "github.com/ottenwbe/golook/utils"
 
 	log "github.com/sirupsen/logrus"
 
 	"bytes"
 	"encoding/json"
-	. "github.com/ottenwbe/golook/utils"
+	"fmt"
 	"io/ioutil"
+	"net/http"
 )
 
-type LookClient interface {
+type LookupClient interface {
 	DoGetHome() string
 	DoPostFile(file *File) string
 	DoPutFiles(file []File) string
@@ -37,15 +38,13 @@ type LookClient interface {
 	DoQuerySystemsAndFiles(fileName string) (systems map[string]*System, err error)
 }
 
-type LookClientData struct {
+type LookupClientData struct {
 	serverUrl  string
 	systemName string
 	c          *http.Client //TODO: check if http rpc is synchronized
 }
 
-var GolookClient LookClient
-
-func (lc *LookClientData) DoGetHome() string {
+func (lc *LookupClientData) DoGetHome() string {
 
 	response, err := lc.c.Get(lc.serverUrl)
 	if err != nil {
@@ -58,7 +57,7 @@ func (lc *LookClientData) DoGetHome() string {
 	return ""
 }
 
-func (lc *LookClientData) DoGetSystem(system string) (*System, error) {
+func (lc *LookupClientData) DoGetSystem(system string) (*System, error) {
 
 	response, err := lc.c.Get(fmt.Sprintf("%s/systems/%s", lc.serverUrl, system))
 	if err != nil {
@@ -71,7 +70,7 @@ func (lc *LookClientData) DoGetSystem(system string) (*System, error) {
 	}
 }
 
-func (lc *LookClientData) DoPutSystem(system *System) *System {
+func (lc *LookupClientData) DoPutSystem(system *System) *System {
 
 	url := fmt.Sprintf("%s/systems", lc.serverUrl)
 
@@ -94,7 +93,7 @@ func (lc *LookClientData) DoPutSystem(system *System) *System {
 	}
 }
 
-func (lc *LookClientData) DoDeleteSystem() string {
+func (lc *LookupClientData) DoDeleteSystem() string {
 
 	url := fmt.Sprintf("%s/systems/%s", lc.serverUrl, lc.systemName)
 
@@ -114,7 +113,7 @@ func (lc *LookClientData) DoDeleteSystem() string {
 	return ""
 }
 
-func (lc *LookClientData) DoPostFile(file *File) string {
+func (lc *LookupClientData) DoPostFile(file *File) string {
 
 	log.WithField("file", file.Name).Debug("DoPostFile")
 
@@ -140,7 +139,7 @@ func (lc *LookClientData) DoPostFile(file *File) string {
 	return ""
 }
 
-func (lc *LookClientData) DoPutFiles(file []File) string {
+func (lc *LookupClientData) DoPutFiles(file []File) string {
 
 	url := fmt.Sprintf("%s/systems/%s/files", lc.serverUrl, lc.systemName)
 
@@ -162,7 +161,7 @@ func (lc *LookClientData) DoPutFiles(file []File) string {
 	return ""
 }
 
-func (lc *LookClientData) DoPostFiles(file []File) string {
+func (lc *LookupClientData) DoPostFiles(file []File) string {
 
 	log.Infof("DoPostFiles for %d files", len(file))
 
@@ -188,7 +187,7 @@ func (lc *LookClientData) DoPostFiles(file []File) string {
 	return ""
 }
 
-func (lc *LookClientData) DoGetFiles() ([]File, error) {
+func (lc *LookupClientData) DoGetFiles() ([]File, error) {
 
 	var (
 		err      error = nil
@@ -208,18 +207,14 @@ func (lc *LookClientData) DoGetFiles() ([]File, error) {
 	return files, err
 }
 
-func (lc *LookClientData) DoQuerySystemsAndFiles(fileName string) (systems map[string]*System, err error) {
+func (lc *LookupClientData) DoQuerySystemsAndFiles(fileName string) (systems map[string]*System, err error) {
 	_ = &http.Client{}
 	//TODO...
 	return nil, nil
 }
 
-func ConfigLookClient(host string, port int) {
-	GolookClient = NewLookClient(host, port)
-}
-
-func NewLookClient(host string, port int) LookClient {
-	return &LookClientData{
+func NewLookClient(host string, port int) LookupClient {
+	return &LookupClientData{
 		serverUrl:  fmt.Sprintf("%s:%d", host, port),
 		systemName: "",
 		c:          &http.Client{},

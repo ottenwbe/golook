@@ -16,12 +16,15 @@ package rpc
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+
 	"github.com/gorilla/mux"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
+	. "github.com/ottenwbe/golook/global"
 	"github.com/ottenwbe/golook/utils"
-	"net/http"
-	"net/http/httptest"
 )
 
 const (
@@ -29,24 +32,16 @@ const (
 	FILE_NAME = "file.txt"
 )
 
-var _ = Describe(" LookClient ", func() {
-	It("should be configured during construction with host and port", func() {
-		ConfigLookClient("do.test", 8123)
-		Expect(GolookClient.(*LookClientData).serverUrl).To(ContainSubstring("do.test"))
-		Expect(GolookClient.(*LookClientData).serverUrl).To(ContainSubstring("8123"))
-	})
-})
-
 var _ = Describe("The rpc", func() {
 
 	var (
 		server *httptest.Server
-		client *LookClientData
+		client *LookupClientData
 	)
 
 	BeforeEach(func() {
 		tmpClient := NewLookClient("http://127.0.0.1", 8123)
-		client = tmpClient.(*LookClientData)
+		client = tmpClient.(*LookupClientData)
 	})
 
 	AfterEach(func() {
@@ -82,7 +77,7 @@ var _ = Describe("The rpc", func() {
 			testSystem := newTestSystem()
 
 			server = httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
-				receivedSystem, _ := utils.DecodeSystem(req.Body)
+				receivedSystem, _ := DecodeSystem(req.Body)
 				Expect(receivedSystem.Name).To(Equal(testSystem.Name))
 			}))
 			client.serverUrl = server.URL
@@ -147,8 +142,8 @@ var _ = Describe("The rpc", func() {
 
 })
 
-func newTestSystem() *utils.System {
-	return &utils.System{
+func newTestSystem() *System {
+	return &System{
 		Name:  sysName,
 		Files: nil,
 		IP:    "1.1.1.1",

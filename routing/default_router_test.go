@@ -16,7 +16,6 @@ package routing
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/ottenwbe/golook/rpc"
 )
 
 var _ = Describe("The report service", func() {

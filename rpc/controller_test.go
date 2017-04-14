@@ -175,7 +175,7 @@ func getTestSystem(t *testing.T, name string) {
 		"/systems/"+name,
 		nil,
 		"/systems/{system}",
-		getSystem,
+		getSystemP,
 		http.StatusOK,
 		"\"ip\":\"1.1.1.1\"",
 	)
@@ -188,7 +188,7 @@ func getNonExistingTestSystem(t *testing.T, name string) {
 		"/systems/"+name,
 		nil,
 		"/systems/{system}",
-		getSystem,
+		getSystemP,
 		http.StatusNotFound,
 		"{}",
 	)
@@ -201,7 +201,7 @@ func delTestSystem(t *testing.T, name string) {
 		"/systems/"+name,
 		nil,
 		"/systems/{system}",
-		delSystem,
+		delSystemP,
 		http.StatusOK,
 		ack,
 	)

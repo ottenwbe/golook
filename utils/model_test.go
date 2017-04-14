@@ -21,12 +21,10 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
-	"runtime"
 )
 
 const (
 	testFileName = "test.txt"
-	testSysName  = "test"
 )
 
 var _ = Describe("The model", func() {
@@ -51,15 +49,6 @@ var _ = Describe("The model", func() {
 		})
 	})
 
-	Context("System", func() {
-		It("can be marshalled and unmarshalled", func() {
-			go PipeWriteSystem(pipeWriter)
-			go PipeReadSystem(pipeReader, chanbools)
-			result := <-chanbools
-			Expect(result).To(BeTrue())
-		})
-	})
-
 	Context("Files", func() {
 		It("can be marshalled and unmarshalled", func() {
 			go PipeWriteFiles(pipeWriter)
@@ -68,41 +57,7 @@ var _ = Describe("The model", func() {
 			Expect(result).To(BeTrue())
 		})
 	})
-
-	Context("Systems", func() {
-		It("can be marshalled and unmarshalled", func() {
-			go PipeWriteSystems(pipeWriter)
-			go PipeReadSystems(pipeReader, chanbools)
-			result := <-chanbools
-			Expect(result).To(BeTrue())
-		})
-
-		It("a new system is not nil", func() {
-			Expect(NewSystem()).ToNot(BeNil())
-		})
-
-		It("a new system has no uuid be assigned", func() {
-			Expect(systemUuid()).To(Equal(""))
-		})
-
-		It("can be assigned the correct os", func() {
-			Expect(systemOS()).To(Equal(runtime.GOOS))
-		})
-
-	})
-
 })
-
-func newTestSystem(sysName string) *System {
-	s := &System{
-		Name:  sysName,
-		OS:    "Linux",
-		IP:    "localhost",
-		UUID:  "uuid",
-		Files: nil,
-	}
-	return s
-}
 
 func newTestFile(fileName string) File {
 	f := File{}
@@ -111,40 +66,6 @@ func newTestFile(fileName string) File {
 	f.Created = time.Now()
 	f.Modified = time.Now()
 	return f
-}
-
-func PipeWriteSystem(pipeWriter *io.PipeWriter) {
-	b, _ := json.Marshal(newTestSystem(testSysName))
-	defer pipeWriter.Close()
-	pipeWriter.Write(b)
-}
-
-func PipeReadSystem(pipeReader *io.PipeReader, c chan bool) {
-	if s, err := DecodeSystem(pipeReader); err == nil && s.Name == testSysName {
-		c <- true
-	} else {
-		log.Printf("Error expected nil, got %s", err)
-		log.Printf("File, expected %s got %s", testSysName, s.Name)
-	}
-	c <- false
-}
-
-func PipeWriteSystems(pipeWriter *io.PipeWriter) {
-	b, _ := json.Marshal([]*System{
-		newTestSystem(testSysName),
-	})
-	defer pipeWriter.Close()
-	pipeWriter.Write(b)
-}
-
-func PipeReadSystems(pipeReader *io.PipeReader, c chan bool) {
-	if s, err := DecodeSystems(pipeReader); err == nil && s[0].Name == testSysName {
-		c <- true
-	} else {
-		log.Printf("Error expected nil, got %s", err)
-		log.Printf("File, expected %s got %s", testSysName, s[0].Name)
-	}
-	c <- false
 }
 
 func PipeWriteFiles(pipeWriter *io.PipeWriter) {

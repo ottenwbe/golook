@@ -14,45 +14,19 @@
 package rpc
 
 import (
+	. "github.com/ottenwbe/golook/global"
 	"github.com/ottenwbe/golook/utils"
 
 	log "github.com/sirupsen/logrus"
 )
-
-func RunWithMockedGolookClient(mockedFunction func()) {
-	RunWithMockedGolookClientF(mockedFunction, "", "")
-}
-
-func RunWithMockedGolookClientF(mockedFunction func(), fileName string, folderName string) {
-	//ensure that the GolookClient is reset after the function's execution
-	defer func(reset LookClient) {
-		GolookClient = reset
-	}(GolookClient)
-
-	//create a mock rpc
-	GolookClient = &MockGolookClient{
-		VisitDoPostFile:  false,
-		VisitDoPutFiles:  false,
-		VisitDoGetFiles:  false,
-		VisitDoPostFiles: false,
-		fileName:         fileName,
-		folderName:       folderName,
-	}
-
-	mockedFunction()
-}
 
 type MockGolookClient struct {
 	VisitDoPostFile  bool
 	VisitDoPutFiles  bool
 	VisitDoGetFiles  bool
 	VisitDoPostFiles bool
-	fileName         string
-	folderName       string
-}
-
-func AccessMockedGolookClient() *MockGolookClient {
-	return GolookClient.(*MockGolookClient)
+	FileName         string
+	FolderName       string
 }
 
 func (mock *MockGolookClient) DoPostFiles(file []utils.File) string {
@@ -60,15 +34,15 @@ func (mock *MockGolookClient) DoPostFiles(file []utils.File) string {
 	return ""
 }
 
-func (*MockGolookClient) DoQuerySystemsAndFiles(fileName string) (systems map[string]*utils.System, err error) {
+func (*MockGolookClient) DoQuerySystemsAndFiles(fileName string) (systems map[string]*System, err error) {
 	panic("implement me")
 }
 
-func (*MockGolookClient) DoGetSystem(system string) (*utils.System, error) {
+func (*MockGolookClient) DoGetSystem(system string) (*System, error) {
 	panic("implement me")
 }
 
-func (*MockGolookClient) DoPutSystem(system *utils.System) *utils.System {
+func (*MockGolookClient) DoPutSystem(system *System) *System {
 	panic("implement me")
 }
 
@@ -83,7 +57,7 @@ func (*MockGolookClient) DoGetHome() string {
 
 func (mock *MockGolookClient) DoPostFile(file *utils.File) string {
 	log.WithField("called", mock.VisitDoPostFile).WithField("file", *file).Info("Test DoPostFile")
-	mock.VisitDoPostFile = mock.VisitDoPostFile || file != nil && file.Name == mock.fileName
+	mock.VisitDoPostFile = mock.VisitDoPostFile || file != nil && file.Name == mock.FileName
 	return ""
 }
 

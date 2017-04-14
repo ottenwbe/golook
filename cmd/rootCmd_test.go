@@ -15,11 +15,14 @@ package cmd
 
 import (
 	"fmt"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	. "github.com/ottenwbe/golook/global"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 func TestClients(t *testing.T) {
@@ -47,7 +50,7 @@ func versionFromCommand() string {
 	}
 	os.Stdout = w
 
-	cmdVersion.Run(nil, []string{})
+	versionCmd.Run(nil, []string{})
 
 	w.Close()
 	b, err := ioutil.ReadAll(r)

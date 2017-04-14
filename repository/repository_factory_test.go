@@ -33,6 +33,7 @@ var _ = Describe("The repository factory", func() {
 		repositoryType = MAP_REPOSITORY
 		repo := NewRepository()
 		Expect(repo).ToNot(BeNil())
+		//TODO: Check if type is correct
 		//Expect(reflect.TypeOf(repo).Name()).To(Equal(reflect.TypeOf(MapRepository{}).Name()))
 	})
 })
