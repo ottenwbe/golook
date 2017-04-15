@@ -22,25 +22,9 @@ import (
 	"github.com/spf13/viper"
 )
 
-var RootCmd = &cobra.Command{
-	Use:   APP_NAME,
-	Short: "Golook Broker",
-	Long:  "Golook Broker which implements a Servent (Client/Server) for the distributed file search",
-	Run: func(_ *cobra.Command, _ []string) {
-		log.Info("Starting up Golook...")
-		HttpServer.StartServer(":8080")
-		log.Info("Shutting down server...")
-	},
-}
-
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: fmt.Sprintf("Print the version number of %s.", APP_NAME),
-	Long:  fmt.Sprintf("All software has versions. This is %s's version.", APP_NAME),
-	Run: func(_ *cobra.Command, _ []string) {
-		fmt.Print(VERSION)
-	},
-}
+var (
+	uplinkAddr string
+)
 
 func Run() {
 	if err := RootCmd.Execute(); err != nil {
@@ -48,8 +32,29 @@ func Run() {
 	}
 }
 
+var RootCmd = &cobra.Command{
+	Use:   GOLOOK_NAME,
+	Short: "Golook Broker",
+	Long:  "Golook Broker which implements a Servent (Client/Server) for the distributed file search",
+	Run: func(_ *cobra.Command, _ []string) {
+		log.Info("Starting up Golook...")
+		HttpServer.StartServer(uplinkAddr)
+		log.Info("Shutting down server...")
+	},
+}
+
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: fmt.Sprintf("Print the version number of %s.", GOLOOK_NAME),
+	Long:  fmt.Sprintf("All software has versions. This is %s's version.", GOLOOK_NAME),
+	Run: func(_ *cobra.Command, _ []string) {
+		fmt.Print(VERSION)
+	},
+}
+
 func init() {
 
+	initFlags()
 	initMainSubCommands()
 	initConfig()
 
@@ -59,6 +64,10 @@ func init() {
 		log.WithError(err).Infof("Config file could not be found, default is created as, %s", CFG_FILE)
 		os.Create(CFG_FILE)
 	}
+}
+
+func initFlags() {
+	RootCmd.Flags().StringVarP(&uplinkAddr, "uplink", "u", ":8080", "(optional) Default uplink address.")
 }
 
 func initMainSubCommands() {

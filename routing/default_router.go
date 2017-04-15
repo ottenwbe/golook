@@ -17,14 +17,13 @@ import (
 	. "github.com/ottenwbe/golook/app"
 	. "github.com/ottenwbe/golook/file_management"
 	. "github.com/ottenwbe/golook/repository"
-	"io/ioutil"
-	"os"
+	. "github.com/ottenwbe/golook/utils"
 )
 
 type DefaultRouter struct {
 }
 
-func (DefaultRouter) handleQueryAllSystemsForFile(fileName string) (systems map[string]*System, err error) {
+func (*DefaultRouter) handleQueryAllSystemsForFile(fileName string) (systems map[string]*System, err error) {
 	if canAnswerQuery() {
 		systems = GoLookRepository.FindSystemAndFiles(fileName)
 	} else {
@@ -33,7 +32,7 @@ func (DefaultRouter) handleQueryAllSystemsForFile(fileName string) (systems map[
 	return
 }
 
-func (DefaultRouter) handleQueryFiles(systemName string) (files map[string]File, err error) {
+func (*DefaultRouter) handleQueryFiles(systemName string) (files map[string]File, err error) {
 	if canAnswerQuery() {
 		files, _ = GoLookRepository.GetFilesOfSystem(systemName)
 	} else {
@@ -42,64 +41,46 @@ func (DefaultRouter) handleQueryFiles(systemName string) (files map[string]File,
 	return
 }
 
-func (DefaultRouter) handleReportFile(filePath string) error {
-	if f, err := NewFile(filePath); err != nil {
-		return err
-	} else /* report file */ {
-		GolookClient.DoPostFile(f)
+func (*DefaultRouter) handleReportFile(system string, filePath string) error {
+	if GolookSystem.UUID == system {
+		return DefaultFileManager{}.ReportFile(filePath, false)
+	} else {
+		//Route Files to uplink
+		//GolookClient.DoPostFile()
 	}
 	return nil
 }
 
 // Report individual files
-func (DefaultRouter) handleReportFileR(filePath string) error {
-	if f, err := NewFile(filePath); err != nil {
-		return err
-	} else /* report file */ {
-		GolookClient.DoPutFiles([]File{*f})
+func (*DefaultRouter) handleReportFileR(system string, filePath string) error {
+	if GolookSystem.UUID == system {
+		return DefaultFileManager{}.ReportFileR(filePath, false)
+	} else {
+		//Register System with uplink
+		// GolookClient.Do
 	}
 	return nil
 }
 
-func (DefaultRouter) handleReportFolderR(folderPath string) error {
-	report, err := generateReport(folderPath)
-	GolookClient.DoPutFiles(report)
-	return err
+func (*DefaultRouter) handleReportFolderR(system string, folderPath string) error {
+	if GolookSystem.UUID == system {
+		return DefaultFileManager{}.ReportFolderR(folderPath, false)
+	} else {
+		//Register System with uplink
+		// GolookClient.Do
+	}
+	return nil
 }
 
 // Report files in a folder and replace all previously reported files
-func (DefaultRouter) handleReportFolder(folderPath string) error {
-	report, err := generateReport(folderPath)
-	GolookClient.DoPostFiles(report)
-	return err
-}
-
-// Report files in a folder
-func generateReport(folderPath string) ([]File, error) {
-
-	var (
-		files     []os.FileInfo
-		report    []File = make([]File, 0)
-		returnErr error  = nil
-	)
-
-	files, returnErr = ioutil.ReadDir(folderPath)
-	if returnErr != nil {
-		return report, returnErr
+func (*DefaultRouter) handleReportFolder(system string, folderPath string) error {
+	if GolookSystem.UUID == system {
+		return DefaultFileManager{}.ReportFolder(folderPath, false)
+	} else {
+		//Register System with uplink
+		// GolookClient.Do
 	}
-
-	for idx := range files {
-		report, returnErr = appendFile(files[idx], report)
-	}
-	return report, returnErr
-}
-
-func appendFile(fileToAppend os.FileInfo, appendReport []File) (report []File, err error) {
-	var file *File = nil
-	if file, err = NewFile(fileToAppend.Name()); err == nil && !fileToAppend.IsDir() {
-		report = append(appendReport, *file)
-	}
-	return
+	return nil
 }
 
 func canAnswerQuery() bool {

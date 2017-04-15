@@ -11,20 +11,33 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package repositories
+package routing
 
-import (
-	. "github.com/ottenwbe/golook/app"
-	. "github.com/ottenwbe/golook/utils"
-)
+import "github.com/bamzi/jobrunner"
 
-type Repository interface {
-	StoreSystem(systemName string, system *System) bool
-	GetSystem(systemName string) (*System, bool)
-	GetFilesOfSystem(systemName string) (map[string]File, bool)
-	DelSystem(systemName string)
-	HasFile(fileName string, systemName string) (*File, bool)
-	StoreFile(systemName string, file File) bool
-	StoreFiles(systemName string, files map[string]File) bool
-	FindSystemAndFiles(findString string) map[string]*System
+// Schedule Type
+type ScheduledRouter interface {
+	Start()
+}
+
+type DefaultScheduler struct {
+	frequency string
+}
+
+func NewScheduledRouter() ScheduledRouter {
+	return &DefaultScheduler{
+		frequency: "@every 5min60s",
+	}
+}
+
+func (s *DefaultScheduler) Start() {
+	jobrunner.Start() // optional: jobrunner.Start(pool int, concurrent int) (10, 1)
+	jobrunner.Schedule(s.frequency, ScheduledJob{})
+}
+
+type ScheduledJob struct{}
+
+// ScheduledRouter.Run() will get triggered automatically.
+func (ScheduledJob) Run() {
+	//TODO: route things
 }

@@ -24,7 +24,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	. "github.com/ottenwbe/golook/app"
-	. "github.com/ottenwbe/golook/file_management"
+	. "github.com/ottenwbe/golook/utils"
 )
 
 const (

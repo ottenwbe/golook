@@ -15,14 +15,28 @@ package routing
 
 import (
 	. "github.com/ottenwbe/golook/app"
-	. "github.com/ottenwbe/golook/file_management"
+	. "github.com/ottenwbe/golook/utils"
 )
 
 type LookRouter interface {
 	handleQueryAllSystemsForFile(fileName string) (files map[string]*System, err error)
 	handleQueryFiles(systemName string) (files map[string]File, err error)
-	handleReportFile(filePath string) error
-	handleReportFileR(filePath string) error
-	handleReportFolderR(folderPath string) error
-	handleReportFolder(folderPath string) error
+
+	handleReportFile(system string, filePath string) error
+	handleReportFileR(system string, filePath string) error
+	handleReportFolderR(system string, folderPath string) error
+	handleReportFolder(system string, folderPath string) error
+
+	handleFileDeletion(system string, filePath string) error
+	handleFolderDeletion(system string, filePath string) error
+}
+
+type ReportRouter interface {
+	handleSystemReport(system string) error
+	handleSystemDeletion(system string) error
+}
+
+type SystemRouter interface {
+	handleSystemReport(system string) error
+	handleSystemDeletion(system string) error
 }

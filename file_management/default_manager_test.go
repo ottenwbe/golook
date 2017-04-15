@@ -11,4 +11,17 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package cmd
+package file_management
+
+import (
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+)
+
+var _ = Describe("DefaultManager", func() {
+	It("should report a message", func() {
+		d := DefaultFileManager{}
+		err := d.ReportFolder("", false)
+		Expect(err).To(BeNil())
+	})
+})

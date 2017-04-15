@@ -21,5 +21,5 @@ import (
 
 func TestClients(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Communication Suite")
+	RunSpecs(t, "RPC Client Suite")
 }

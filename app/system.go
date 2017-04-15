@@ -15,7 +15,7 @@ package app
 
 import (
 	"encoding/json"
-	. "github.com/ottenwbe/golook/file_management"
+	. "github.com/ottenwbe/golook/utils"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"net"
@@ -126,4 +126,10 @@ func getIP() string {
 
 func logError(err error) {
 	log.WithError(err).Error("Error when instantiating System")
+}
+
+var GolookSystem *System
+
+func init() {
+	GolookSystem = NewSystem()
 }

@@ -6,25 +6,25 @@ import (
 )
 
 const (
-	APP_NAME = "golook"
-	VERSION  = "v0.1.0-dev"
+	GOLOOK_NAME = "golook"
+	VERSION     = "v0.1.0-dev"
 )
 
-type AppInfo struct {
+type Info struct {
 	App     string  `json:"app"`
 	Version string  `json:"version"`
 	System  *System `json:"system"`
 }
 
-func NewAppInfo() *AppInfo {
-	return &AppInfo{
-		App:     APP_NAME,
+func NewAppInfo() *Info {
+	return &Info{
+		App:     GOLOOK_NAME,
 		Version: VERSION,
 		System:  NewSystem(),
 	}
 }
 
-func EncodeAppInfo(info *AppInfo) string {
+func EncodeAppInfo(info *Info) string {
 	b, err := json.Marshal(info)
 	if err != nil {
 		logrus.WithError(err).Error("Could not encode app info.")

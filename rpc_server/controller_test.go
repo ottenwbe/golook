@@ -11,7 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package rpc
+package rpc_server
 
 import (
 	"bytes"
@@ -25,7 +25,7 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
-	. "github.com/ottenwbe/golook/file_management"
+	. "github.com/ottenwbe/golook/utils"
 )
 
 const systemName = "testSystem"

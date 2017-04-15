@@ -11,20 +11,15 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package repositories
+package rpc_server
 
 import (
-	. "github.com/ottenwbe/golook/app"
-	. "github.com/ottenwbe/golook/utils"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"testing"
 )
 
-type Repository interface {
-	StoreSystem(systemName string, system *System) bool
-	GetSystem(systemName string) (*System, bool)
-	GetFilesOfSystem(systemName string) (map[string]File, bool)
-	DelSystem(systemName string)
-	HasFile(fileName string, systemName string) (*File, bool)
-	StoreFile(systemName string, file File) bool
-	StoreFiles(systemName string, files map[string]File) bool
-	FindSystemAndFiles(findString string) map[string]*System
+func TestClients(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "RPC Server Suite")
 }
