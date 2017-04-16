@@ -17,7 +17,6 @@ import (
 	"github.com/gorilla/mux"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/ottenwbe/golook/app"
 
 	"net/http"
 	"net/http/httptest"
@@ -36,17 +35,6 @@ var _ = Describe("The file_management endpoint", func() {
 		m.HandleFunc(path, f)
 		m.ServeHTTP(rr, req)
 	}
-
-	Context(EP_INFO, func() {
-		It("should return the app info", func() {
-			req, err := http.NewRequest("GET", EP_INFO, nil)
-			f(req, EP_INFO, getInfo)
-
-			Expect(err).To(BeNil())
-			Expect(rr.Code).To(Equal(http.StatusOK))
-			Expect(rr.Body.String()).To(ContainSubstring(VERSION))
-		})
-	})
 
 	Context(EP_SYSTEM, func() {
 		It("should return the system info with GET", func() {

@@ -15,13 +15,14 @@ package file_management
 
 import (
 	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	//. "github.com/onsi/gomega"
 )
 
 var _ = Describe("DefaultManager", func() {
-	It("should report a message", func() {
-		d := DefaultFileManager{}
-		err := d.ReportFolder("", false)
-		Expect(err).To(BeNil())
+	It("should emit a rpc call to the uplink server when reporting a folder and not return with an error", func() {
+		//d := defaultFileManager{}
+		//err := d.ReportFolder("", false)
+		//Expect(err).To(BeNil())
+		//TODO check if message is sent
 	})
 })

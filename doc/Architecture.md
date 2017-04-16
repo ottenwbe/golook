@@ -2,13 +2,13 @@
 
 ## System Architecture ##
 
-* CLI: 
-    * Interface for users. 
-    * Uplink to one broker in order to report and query for file locations.
-* Golook Broker: 
+* Golook CLI (see https://github.com/ottenwbe/golook-cli): 
+    * Interface for users to report and query for files
+    * Uplink to one broker which typically runs locally on the same host as the cli
+* Golook Broker (see https://github.com/ottenwbe/golook): 
     * Hierarchical Infrastructure
     * Caches file locations for downlink server
     * Handle queries for files
-    * Client for further uplink servers
+    * Client to further uplink servers
     
 ## Software Architecture ##

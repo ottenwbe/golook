@@ -1,3 +1,5 @@
+// +build linux
+
 //Copyright 2016-2017 Beate Ottenwälder
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,15 +13,36 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package rpc
+
+package models
 
 import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"testing"
+	"os"
+	"path/filepath"
+	"syscall"
+	"time"
 )
 
-func TestClients(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "RPC Client Suite")
+func NewFile(filePath string) (f *File, err error) {
+
+	var fi os.FileInfo
+	var fileName string
+	fi, err = os.Stat(filePath)
+	if err != nil {
+		return
+	}
+	var stat = fi.Sys().(*syscall.Stat_t)
+	fileName, err = filepath.Abs(filePath)
+	if err != nil {
+		return
+	}
+
+	f = &File{
+		Name:     fileName,
+		ShortName: filepath.Base(filePath),
+		Created:  time.Unix(stat.Ctim.Sec, stat.Ctim.Nsec),
+		Modified: time.Unix(stat.Mtim.Sec, stat.Mtim.Nsec),
+		Accessed: time.Unix(stat.Atim.Sec, stat.Atim.Nsec),
+	}
+	return
 }

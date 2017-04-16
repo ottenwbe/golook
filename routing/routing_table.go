@@ -14,7 +14,7 @@
 package routing
 
 import (
-	. "github.com/ottenwbe/golook/rpc"
+	. "github.com/ottenwbe/golook/rpc_client"
 )
 
 var (
@@ -40,7 +40,7 @@ func RunWithMockedGolookClientF(mockedFunction func(), fileName string, folderNa
 		GolookClient = reset
 	}(GolookClient)
 
-	//create a mock rpc
+	//create a mock rpc_client
 	GolookClient = &MockGolookClient{
 		VisitDoPostFile:  false,
 		VisitDoPutFiles:  false,

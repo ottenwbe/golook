@@ -1,3 +1,5 @@
+// +build windows
+
 //Copyright 2016-2017 Beate Ottenwälder
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,37 +13,36 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package app
+
+package models
 
 import (
-	"encoding/json"
-	"github.com/sirupsen/logrus"
+	"os"
+	"path/filepath"
+	"syscall"
+	"time"
 )
 
-const (
-	GOLOOK_NAME = "golook"
-	VERSION     = "v0.1.0-dev"
-)
+func NewFile(filePath string) (f *File, err error) {
+	var fi os.FileInfo
+	var fileName string
 
-type Info struct {
-	App     string  `json:"app"`
-	Version string  `json:"version"`
-	System  *System `json:"system"`
-}
-
-func NewAppInfo() *Info {
-	return &Info{
-		App:     GOLOOK_NAME,
-		Version: VERSION,
-		System:  NewSystem(),
-	}
-}
-
-func EncodeAppInfo(info *Info) string {
-	b, err := json.Marshal(info)
+	fi, err = os.Stat(filePath)
 	if err != nil {
-		logrus.WithError(err).Error("Could not encode app info.")
-		return "{}"
+		return
 	}
-	return string(b)
+	var stat = fi.Sys().(*syscall.Win32FileAttributeData)
+	fileName, err = filepath.Abs(filePath)
+	if err != nil {
+		return
+	}
+
+	f = &File{
+		Name:     fileName,
+		ShortName: filepath.Base(filePath),
+		Created:  time.Unix(0, stat.LastAccessTime.Nanoseconds()),
+		Modified: time.Unix(0, stat.LastWriteTime.Nanoseconds()),
+		Accessed: time.Unix(0, stat.CreationTime.Nanoseconds()),
+	}
+	return
 }

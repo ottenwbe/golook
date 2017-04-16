@@ -14,5 +14,6 @@
 package routing
 
 func NewRouter() LookRouter {
-	return &DefaultRouter{}
+	//return &DefaultRouter{}
+	return nil
 }

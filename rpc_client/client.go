@@ -11,11 +11,11 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package rpc
+package rpc_client
 
 import (
 	. "github.com/ottenwbe/golook/app"
-	. "github.com/ottenwbe/golook/utils"
+	. "github.com/ottenwbe/golook/models"
 
 	log "github.com/sirupsen/logrus"
 
@@ -41,7 +41,7 @@ type LookupClient interface {
 type LookupClientData struct {
 	serverUrl  string
 	systemName string
-	c          *http.Client //TODO: check if http rpc is synchronized
+	c          *http.Client //TODO: check if http rpc_client is synchronized
 }
 
 func (lc *LookupClientData) DoGetHome() string {

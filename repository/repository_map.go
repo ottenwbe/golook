@@ -15,7 +15,7 @@ package repositories
 
 import (
 	. "github.com/ottenwbe/golook/app"
-	. "github.com/ottenwbe/golook/utils"
+	. "github.com/ottenwbe/golook/models"
 	"strings"
 )
 

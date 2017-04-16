@@ -15,9 +15,8 @@ package routing
 
 import (
 	. "github.com/ottenwbe/golook/app"
-	. "github.com/ottenwbe/golook/file_management"
 	. "github.com/ottenwbe/golook/repository"
-	. "github.com/ottenwbe/golook/utils"
+	. "github.com/ottenwbe/golook/models"
 )
 
 type DefaultRouter struct {
@@ -43,7 +42,7 @@ func (*DefaultRouter) handleQueryFiles(systemName string) (files map[string]File
 
 func (*DefaultRouter) handleReportFile(system string, filePath string) error {
 	if GolookSystem.UUID == system {
-		return DefaultFileManager{}.ReportFile(filePath, false)
+		//return DefaultFileManager{}.ReportFile(filePath, false)
 	} else {
 		//Route Files to uplink
 		//GolookClient.DoPostFile()
@@ -54,7 +53,7 @@ func (*DefaultRouter) handleReportFile(system string, filePath string) error {
 // Report individual files
 func (*DefaultRouter) handleReportFileR(system string, filePath string) error {
 	if GolookSystem.UUID == system {
-		return DefaultFileManager{}.ReportFileR(filePath, false)
+		//return DefaultFileManager{}.ReportFileR(filePath, false)
 	} else {
 		//Register System with uplink
 		// GolookClient.Do
@@ -64,7 +63,7 @@ func (*DefaultRouter) handleReportFileR(system string, filePath string) error {
 
 func (*DefaultRouter) handleReportFolderR(system string, folderPath string) error {
 	if GolookSystem.UUID == system {
-		return DefaultFileManager{}.ReportFolderR(folderPath, false)
+		//return DefaultFileManager{}.ReportFolderR(folderPath, false)
 	} else {
 		//Register System with uplink
 		// GolookClient.Do
@@ -75,7 +74,7 @@ func (*DefaultRouter) handleReportFolderR(system string, folderPath string) erro
 // Report files in a folder and replace all previously reported files
 func (*DefaultRouter) handleReportFolder(system string, folderPath string) error {
 	if GolookSystem.UUID == system {
-		return DefaultFileManager{}.ReportFolder(folderPath, false)
+		//return DefaultFileManager{}.ReportFolder(folderPath, false)
 	} else {
 		//Register System with uplink
 		// GolookClient.Do

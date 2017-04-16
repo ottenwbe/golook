@@ -11,36 +11,15 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package utils
+package rpc_client
 
 import (
-	"fmt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"path/filepath"
+	"testing"
 )
 
-var _ = Describe("The file's", func() {
-
-	const FILE_NAME = "file_io_test.go"
-
-	It("metadata of file file_io_test.go can be read", func() {
-		fp, errFilePath := filepath.Abs(FILE_NAME)
-
-		file, errFile := NewFile(fp)
-
-		Expect(errFilePath).To(BeNil())
-		Expect(errFile).To(BeNil())
-		Expect(file).To(Not(BeNil()))
-		Expect(file.Name).To(Equal(FILE_NAME))
-	})
-
-	It("non existing file is not read", func() {
-		fp := fmt.Sprintf("%s_does_not_exist", FILE_NAME)
-
-		_, errFile := NewFile(fp)
-
-		Expect(errFile).ToNot(BeNil())
-	})
-
-})
+func TestClients(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "RPC Client Suite")
+}

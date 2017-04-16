@@ -11,25 +11,14 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package utils
+package models
 
 import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	"github.com/satori/go.uuid"
 )
 
-var _ = Describe("uuids", func() {
-
-	var (
-		uuid1, uuid2 string
-	)
-
-	BeforeEach(func() {
-		uuid1 = NewUUID()
-		uuid2 = NewUUID()
-	})
-
-	It("generated at random should differ", func() {
-		Expect(uuid1).ToNot(Equal(uuid2))
-	})
-})
+// Facade for uuid
+func NewUUID() string {
+	uuid := uuid.NewV4()
+	return uuid.String()
+}

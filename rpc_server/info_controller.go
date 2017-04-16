@@ -11,12 +11,35 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package file_management
+package rpc_server
 
-type FileManager interface {
-	ReportFile(filePath string, monitor bool) error
-	ReportFileR(filePath string, monitor bool) error
-	ReportFolder(folderPath string, monitor bool) error
-	ReportFolderR(folderPath string, monitor bool) error
+import (
+	"net/http"
+	"fmt"
+
+	. "github.com/ottenwbe/golook/app"
+)
+
+const (
+	EP_INFO   = "/info"
+)
+
+
+func init() {
+	HttpServer.RegisterFunction("/", getHome, http.MethodGet)
+	HttpServer.RegisterFunction(EP_INFO, getInfo, http.MethodGet)
+}
+
+
+// Endpoint: GET /
+func getHome(writer http.ResponseWriter, _ *http.Request) {
+	ReturnAck(writer)
+}
+
+// Endpoint: GET /info
+func getInfo(writer http.ResponseWriter, _ *http.Request) {
+	info := NewAppInfo()
+	result := EncodeAppInfo(info)
+	fmt.Fprintln(writer, result)
 }
 

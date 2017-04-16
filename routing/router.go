@@ -15,7 +15,7 @@ package routing
 
 import (
 	. "github.com/ottenwbe/golook/app"
-	. "github.com/ottenwbe/golook/utils"
+	. "github.com/ottenwbe/golook/models"
 )
 
 type LookRouter interface {

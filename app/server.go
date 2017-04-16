@@ -21,6 +21,7 @@ import (
 )
 
 type lookSever struct {
+	address string
 	server *http.Server
 	router *mux.Router
 }
@@ -29,14 +30,17 @@ var (
 	HttpServer *lookSever
 )
 
-func (s *lookSever) StartServer(address string) {
-	s.server = &http.Server{Addr: address, Handler: s.router}
+func (s *lookSever) StartServer() {
+	s.server = &http.Server{Addr: s.address, Handler: s.router}
 	// start the httpServer and listen
 	log.Fatal(s.server.ListenAndServe())
 }
 
 //func (s *lookSever) StopServer() error {
 //TODO: wait for graceful shutdown in go 1.8
+// 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+//	defer cancel()
+//	s.server.Shutdown(ctx)
 //}
 
 func (s *lookSever) RegisterFunction(path string, f func(http.ResponseWriter, *http.Request), method string) {
@@ -47,5 +51,10 @@ func init() {
 	HttpServer = &lookSever{
 		server: nil,
 		router: mux.NewRouter().StrictSlash(true),
+		address: "",
 	}
+
+	//NOTE: Requires that HTTPServer is instantiated!
+	RootCmd.Flags().StringVarP(&HttpServer.address, "httpserver", "s", ":8383", "(optional) Default address of the http server. Default: ':8383'")
 }
+

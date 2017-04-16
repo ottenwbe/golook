@@ -22,10 +22,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var (
-	uplinkAddr string
-)
-
 func Run() {
 	if err := RootCmd.Execute(); err != nil {
 		log.WithError(err).Fatal("Executing root command failed")
@@ -38,7 +34,7 @@ var RootCmd = &cobra.Command{
 	Long:  "Golook Broker which implements a Servent (Client/Server) for the distributed file search",
 	Run: func(_ *cobra.Command, _ []string) {
 		log.Info("Starting up Golook...")
-		HttpServer.StartServer(uplinkAddr)
+		HttpServer.StartServer()
 		log.Info("Shutting down server...")
 	},
 }
@@ -67,7 +63,7 @@ func init() {
 }
 
 func initFlags() {
-	RootCmd.Flags().StringVarP(&uplinkAddr, "uplink", "u", ":8080", "(optional) Default uplink address.")
+
 }
 
 func initMainSubCommands() {

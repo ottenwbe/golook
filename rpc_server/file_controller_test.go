@@ -25,7 +25,7 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
-	. "github.com/ottenwbe/golook/utils"
+	. "github.com/ottenwbe/golook/models"
 )
 
 const systemName = "testSystem"
@@ -38,9 +38,9 @@ func TestHome(t *testing.T) {
 		"/",
 		nil,
 		"/",
-		home,
+		getHome,
 		http.StatusOK,
-		ack,
+		Ack,
 	)
 }
 
@@ -105,7 +105,7 @@ func TestPutFileWithWrongJson(t *testing.T) {
 		"/systems/{system}/files/{file}",
 		postFile,
 		http.StatusBadRequest,
-		nack,
+		Nack,
 	)
 }
 
@@ -130,7 +130,7 @@ func TestPostFiles_EarlyExitWithEmptyBody(t *testing.T) {
 		"/systems/{system}/file/{file}",
 		postFile,
 		http.StatusBadRequest,
-		nack,
+		Nack,
 	)
 }
 
@@ -139,7 +139,7 @@ func TestPostFiles_EarlyExitWithEmptyBody(t *testing.T) {
 /////////////////////////
 
 func createTestFile() *File {
-	f, err := NewFile("controller_test.go")
+	f, err := NewFile("file_controller_test.go")
 	if err != nil {
 		log.WithError(err).Fatal("Test file cannot be read")
 	}
@@ -203,7 +203,7 @@ func delTestSystem(t *testing.T, name string) {
 		"/systems/{system}",
 		delSystemP,
 		http.StatusOK,
-		ack,
+		Ack,
 	)
 }
 
@@ -216,7 +216,7 @@ func getTestFileForNotExistingSystem(t *testing.T, systemName string, filename s
 		"/systems/{system}/files/{file}",
 		getSystemFiles,
 		http.StatusNotFound,
-		nack,
+		Nack,
 	)
 }
 
@@ -257,7 +257,7 @@ func putFaultyTestFiles(t *testing.T, systemName string, files []byte) {
 		"/systems/{system}/files",
 		putFiles,
 		http.StatusBadRequest,
-		nack,
+		Nack,
 	)
 }
 

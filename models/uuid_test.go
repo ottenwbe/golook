@@ -11,12 +11,25 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package file_management
+package models
 
-type FileManager interface {
-	ReportFile(filePath string, monitor bool) error
-	ReportFileR(filePath string, monitor bool) error
-	ReportFolder(folderPath string, monitor bool) error
-	ReportFolderR(folderPath string, monitor bool) error
-}
+import (
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+)
 
+var _ = Describe("uuids", func() {
+
+	var (
+		uuid1, uuid2 string
+	)
+
+	BeforeEach(func() {
+		uuid1 = NewUUID()
+		uuid2 = NewUUID()
+	})
+
+	It("generated at random should differ", func() {
+		Expect(uuid1).ToNot(Equal(uuid2))
+	})
+})

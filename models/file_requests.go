@@ -1,5 +1,3 @@
-// +build windows
-
 //Copyright 2016-2017 Beate Ottenwälder
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,28 +12,10 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-package utils
+package models
 
-import (
-	"os"
-	"path/filepath"
-	"syscall"
-	"time"
-)
-
-func NewFile(filePath string) (f *File, err error) {
-	var fi os.FileInfo
-
-	f = &File{}
-	fi, err = os.Stat(filePath)
-	if err != nil {
-		return
-	}
-
-	stat := fi.Sys().(*syscall.Win32FileAttributeData)
-	f.Accessed = time.Unix(0, stat.LastAccessTime.Nanoseconds())
-	f.Created = time.Unix(0, stat.LastWriteTime.Nanoseconds())
-	f.Modified = time.Unix(0, stat.CreationTime.Nanoseconds())
-	f.Name = filepath.Base(filePath)
-	return
+type FileReport struct {
+	Path     string `json:"name"`
+	Monitor  bool   `json:"monitor"`
+	Replace  bool   `json:"replace"`
 }

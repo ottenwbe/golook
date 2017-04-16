@@ -1,5 +1,3 @@
-// +build linux
-
 //Copyright 2016-2017 Beate Ottenwälder
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,30 +11,31 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-
-package utils
+package rpc_server
 
 import (
-	"os"
-	"path/filepath"
-	"syscall"
-	"time"
+	"net/http"
+
+	. "github.com/ottenwbe/golook/app"
+	. "github.com/ottenwbe/golook/repository"
 )
 
-func NewFile(filePath string) (f *File, err error) {
+const (
+	EP_FILES = "/files"
+)
 
-	var fi os.FileInfo
-	fi, err = os.Stat(filePath)
-	if err != nil {
-		return
-	}
-	var stat = fi.Sys().(*syscall.Stat_t)
-
-	f = &File{
-		Name:     filepath.Base(filePath),
-		Created:  time.Unix(stat.Ctim.Sec, stat.Ctim.Nsec),
-		Modified: time.Unix(stat.Mtim.Sec, stat.Mtim.Nsec),
-		Accessed: time.Unix(stat.Atim.Sec, stat.Atim.Nsec),
-	}
-	return
+func init() {
+	HttpServer.RegisterFunction(EP_FILES+"/{file}", getFile, http.MethodGet)
 }
+
+// Endpoint: GET /files/{file}
+// Get all systems that have matching files to {file}. In addition return information about matching files.
+func getFile(writer http.ResponseWriter, request *http.Request) {
+	fileName := extractFileFromPath(request)
+
+	sysFiles := GoLookRepository.FindSystemAndFiles(fileName)
+
+	marshalAndWriteResult(writer, sysFiles)
+}
+
+

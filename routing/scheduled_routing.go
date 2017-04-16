@@ -13,31 +13,6 @@
 //limitations under the License.
 package routing
 
-import "github.com/bamzi/jobrunner"
 
-// Schedule Type
-type ScheduledRouter interface {
-	Start()
-}
 
-type DefaultScheduler struct {
-	frequency string
-}
 
-func NewScheduledRouter() ScheduledRouter {
-	return &DefaultScheduler{
-		frequency: "@every 5min60s",
-	}
-}
-
-func (s *DefaultScheduler) Start() {
-	jobrunner.Start() // optional: jobrunner.Start(pool int, concurrent int) (10, 1)
-	jobrunner.Schedule(s.frequency, ScheduledJob{})
-}
-
-type ScheduledJob struct{}
-
-// ScheduledRouter.Run() will get triggered automatically.
-func (ScheduledJob) Run() {
-	//TODO: route things
-}

@@ -15,15 +15,15 @@ package file_management
 
 import (
 	. "github.com/ottenwbe/golook/routing"
-	. "github.com/ottenwbe/golook/utils"
+	. "github.com/ottenwbe/golook/models"
 	"io/ioutil"
 	"os"
 )
 
-type DefaultFileManager struct {
-}
+type defaultFileManager struct {}
 
-func (*DefaultFileManager) ReportFile(filePath string, monitor bool) error {
+
+func (*defaultFileManager) ReportFile(filePath string, monitor bool) error {
 	if f, err := NewFile(filePath); err != nil {
 		return err
 	} else /* report file */ {
@@ -32,7 +32,7 @@ func (*DefaultFileManager) ReportFile(filePath string, monitor bool) error {
 	return nil
 }
 
-func (*DefaultFileManager) ReportFileR(filePath string, monitor bool) error {
+func (*defaultFileManager) ReportFileR(filePath string, monitor bool) error {
 	if f, err := NewFile(filePath); err != nil {
 		return err
 	} else /* report file */ {
@@ -41,13 +41,13 @@ func (*DefaultFileManager) ReportFileR(filePath string, monitor bool) error {
 	}
 }
 
-func (*DefaultFileManager) ReportFolder(folderPath string, monitor bool) error {
+func (*defaultFileManager) ReportFolder(folderPath string, monitor bool) error {
 	report, err := generateReport(folderPath)
 	GolookClient.DoPutFiles(report)
 	return err
 }
 
-func (*DefaultFileManager) ReportFolderR(folderPath string, monitor bool) error {
+func (*defaultFileManager) ReportFolderR(folderPath string, monitor bool) error {
 	report, err := generateReport(folderPath)
 	GolookClient.DoPostFiles(report)
 	return err

@@ -11,7 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package rpc
+package rpc_client
 
 import (
 	"encoding/json"
@@ -24,7 +24,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	. "github.com/ottenwbe/golook/app"
-	. "github.com/ottenwbe/golook/utils"
+	. "github.com/ottenwbe/golook/models"
 )
 
 const (
@@ -32,7 +32,7 @@ const (
 	FILE_NAME = "file.txt"
 )
 
-var _ = Describe("The rpc", func() {
+var _ = Describe("The rpc_client", func() {
 
 	var (
 		server *httptest.Server

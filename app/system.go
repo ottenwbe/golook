@@ -15,7 +15,7 @@ package app
 
 import (
 	"encoding/json"
-	. "github.com/ottenwbe/golook/utils"
+	. "github.com/ottenwbe/golook/models"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"net"

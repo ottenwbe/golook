@@ -15,7 +15,7 @@ package routing
 
 import (
 	. "github.com/ottenwbe/golook/app"
-	. "github.com/ottenwbe/golook/utils"
+	. "github.com/ottenwbe/golook/models"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -23,8 +23,19 @@ type MockedLookRouter struct {
 	Visited bool
 }
 
+
+
 func NewMockedRouter() LookRouter {
-	return &MockedLookRouter{}
+	//return &MockedLookRouter{}
+	return nil
+}
+
+func (*MockedLookRouter) handleFileDeletion(system string, filePath string) error {
+	panic("implement me")
+}
+
+func (*MockedLookRouter) handleFolderDeletion(system string, filePath string) error {
+	panic("implement me")
 }
 
 func (mlc *MockedLookRouter) handleQueryAllSystemsForFile(fileName string) (files map[string]*System, err error) {

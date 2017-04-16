@@ -33,42 +33,42 @@ var _ = Describe("The report service", func() {
 		ctl = NewRouter()
 	})
 
-	It("should call the golook rpc with a given file", func() {
+	It("should call the golook rpc_client with a given file", func() {
 		RunWithMockedGolookClientF(func() {
 			ctl.handleReportFile(FILE_NAME)
 			Expect(AccessMockedGolookClient().VisitDoPostFile).To(BeTrue())
 		}, FILE_NAME, FOLDER_NAME)
 	})
 
-	It("should NOT call the golook rpc with a non existing file", func() {
+	It("should NOT call the golook rpc_client with a non existing file", func() {
 		RunWithMockedGolookClient(func() {
 			ctl.handleReportFile(FILE_NAME + ".abc")
 			Expect(AccessMockedGolookClient().VisitDoPostFile).To(BeFalse())
 		})
 	})
 
-	It("should call the golook rpc for a given folder", func() {
+	It("should call the golook rpc_client for a given folder", func() {
 		RunWithMockedGolookClientF(func() {
 			ctl.handleReportFolder(FOLDER_NAME)
 			Expect(AccessMockedGolookClient().VisitDoPostFiles).To(BeTrue())
 		}, FILE_NAME, FOLDER_NAME)
 	})
 
-	It("should NOT call the golook rpc with a non existing file", func() {
+	It("should NOT call the golook rpc_client with a non existing file", func() {
 		RunWithMockedGolookClient(func() {
 			ctl.handleReportFolder("no_folder")
 			Expect(AccessMockedGolookClient().VisitDoPostFile).To(BeFalse())
 		})
 	})
 
-	It("should call the golook rpc with files from existing folder which replace reported files", func() {
+	It("should call the golook rpc_client with files from existing folder which replace reported files", func() {
 		RunWithMockedGolookClient(func() {
 			ctl.handleReportFolderR(FOLDER_NAME)
 			Expect(AccessMockedGolookClient().VisitDoPutFiles).To(BeTrue())
 		})
 	})
 
-	It("should NOT call the golook rpc with files from existing folder when folder does not exist", func() {
+	It("should NOT call the golook rpc_client with files from existing folder when folder does not exist", func() {
 		RunWithMockedGolookClient(func() {
 			ctl.handleReportFolderR("no_folder")
 			Expect(AccessMockedGolookClient().VisitDoPutFiles).To(BeFalse())
@@ -86,7 +86,7 @@ var _ = Describe("The query service", func() {
 		ctl = NewRouter()
 	})
 
-	It("should call the golook rpc", func() {
+	It("should call the golook rpc_client", func() {
 		RunWithMockedGolookClient(func() {
 			_, err := ctl.handleQueryFiles("")
 			Expect(err).To(BeNil())

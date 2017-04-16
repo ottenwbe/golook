@@ -11,29 +11,9 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package utils
+package rpc_client
 
-import (
-	"encoding/json"
-	"io"
-	"time"
-)
-
-type File struct {
-	Name     string    `json:"name"`
-	Created  time.Time `json:"created"`
-	Modified time.Time `json:"modified"`
-	Accessed time.Time `json:"accessed"`
-}
-
-func DecodeFiles(fileReader io.Reader) (map[string]File, error) {
-	files := make(map[string]File, 0)
-	err := json.NewDecoder(fileReader).Decode(&files)
-	return files, err
-}
-
-func DecodeFile(fileReader io.Reader) (File, error) {
-	var file File
-	err := json.NewDecoder(fileReader).Decode(&file)
-	return file, err
-}
+//import (
+//. "github.com/onsi/ginkgo"
+//. "github.com/onsi/gomega"
+//)
