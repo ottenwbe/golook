@@ -30,72 +30,88 @@ const (
 var _ = Describe("The model", func() {
 
 	var (
-		chanbools  chan bool
-		pipeReader *io.PipeReader
-		pipeWriter *io.PipeWriter
+		fileChannel chan *File
+		pipeReader  *io.PipeReader
+		pipeWriter  *io.PipeWriter
 	)
 
 	BeforeEach(func() {
-		chanbools = make(chan bool)
+		fileChannel = make(chan *File)
 		pipeReader, pipeWriter = io.Pipe()
 	})
 
 	Context("File", func() {
-		It("can be marshalled and unmarshalled", func() {
-			go PipeWriteFile(pipeWriter)
-			go PipeReadFile(pipeReader, chanbools)
-			result := <-chanbools
-			Expect(result).To(BeTrue())
+		It("can be marshalled and unmarshalled, however, meta information is ignored", func() {
+			go PipeWriteFile(pipeWriter, newTestFile(testFileName))
+			go PipeReadFile(pipeReader, fileChannel)
+
+			result := <-fileChannel
+
+			Expect(result).ToNot(BeNil())
+			Expect(result.Name).To(Equal(expectedResultFile(testFileName).Name))
+			Expect(result.Meta).To(Equal(expectedResultFile(testFileName).Meta))
 		})
 	})
 
 	Context("Files", func() {
-		It("can be marshalled and unmarshalled", func() {
-			go PipeWriteFiles(pipeWriter)
-			go PipeReadFiles(pipeReader, chanbools)
-			result := <-chanbools
-			Expect(result).To(BeTrue())
+		It("can be marshalled and unmarshalled, however, meta information is ignored", func() {
+			go PipeWriteFiles(pipeWriter, map[string]File{testFileName: newTestFile(testFileName), testFileName + "2": newTestFile(testFileName + "2")})
+			go PipeReadFiles(pipeReader, fileChannel)
+
+			result := <-fileChannel
+
+			Expect(result).ToNot(BeNil())
+			Expect(result.Name).To(Equal(expectedResultFile(testFileName).Name))
+			Expect(result.Meta).To(Equal(expectedResultFile(testFileName).Meta))
 		})
 	})
 })
 
-func PipeWriteFiles(pipeWriter *io.PipeWriter) {
-	b, _ := json.Marshal(map[string]File{testFileName: newTestFile(testFileName), testFileName + "2": newTestFile(testFileName)})
+func PipeWriteFiles(pipeWriter *io.PipeWriter, files map[string]File) {
+	b, _ := json.Marshal(files)
 	defer pipeWriter.Close()
 	pipeWriter.Write(b)
 }
 
-func PipeReadFiles(pipeReader *io.PipeReader, c chan bool) {
+func PipeReadFiles(pipeReader *io.PipeReader, c chan *File) {
 	if f, err := DecodeFiles(pipeReader); err == nil && f[testFileName].Name == testFileName {
-		c <- true
+		tmpF := f[testFileName]
+		c <- &tmpF
 	} else {
 		log.Printf("Error expected nil, got %s", err)
 		log.Printf("File, expected %s got %s", testFileName, f[testFileName].Name)
 	}
-	c <- false
+	c <- nil
 }
 
-func PipeWriteFile(pipeWriter *io.PipeWriter) {
-	b, _ := json.Marshal(newTestFile(testFileName))
+func PipeWriteFile(pipeWriter *io.PipeWriter, file File) {
+	b, _ := json.Marshal(file)
 	defer pipeWriter.Close()
 	pipeWriter.Write(b)
 }
 
-func PipeReadFile(pipeReader *io.PipeReader, c chan bool) {
-	if f, err := DecodeFile(pipeReader); err == nil && f.Name == testFileName {
-		c <- true
+func PipeReadFile(pipeReader *io.PipeReader, c chan *File) {
+	if f, err := DecodeFile(pipeReader); err == nil && f.Name == testFileName && f.Meta.Monitor == false {
+		c <- &f
 	} else {
 		log.Printf("Error expected nil, got %s", err)
 		log.Printf("File, expected %s got %s", testFileName, f.Name)
 	}
-	c <- false
+	c <- nil
 }
 
 func newTestFile(fileName string) File {
 	f := File{}
 	f.Name = fileName
-	f.Accessed = time.Now()
-	f.Created = time.Now()
-	f.Modified = time.Now()
+	f.Accessed = time.Time{}
+	f.Created = time.Time{}
+	f.Modified = time.Time{}
+	f.Meta.Monitor = true
+	return f
+}
+
+func expectedResultFile(fileName string) File {
+	f := newTestFile(fileName)
+	f.Meta.Monitor = false
 	return f
 }

@@ -3,10 +3,22 @@
 	"ignore": "",
 	"package": [
 		{
+			"checksumSHA1": "LXl9eaV0VwdbuIdKRQLo4YQOupA=",
+			"path": "github.com/bamzi/jobrunner",
+			"revision": "273175f8b6ebabab8a639a4e6260a5c50fbf016a",
+			"revisionTime": "2016-10-19T14:30:21Z"
+		},
+		{
 			"checksumSHA1": "OMI48BRRergrB45tZq7PG/hVRuY=",
 			"path": "github.com/fsnotify/fsnotify",
 			"revision": "ff7bc41d4007f67e5456703c34342df4e0113f64",
 			"revisionTime": "2017-03-21T12:55:22Z"
+		},
+		{
+			"checksumSHA1": "IfGkrs5CT7omaPWIqNGWy0byzXM=",
+			"path": "github.com/geofffranks/spruce/log",
+			"revision": "0eb8a91a8eaad2fbd6a7e4a1cf3cb0508b688ec1",
+			"revisionTime": "2017-03-03T15:23:22Z"
 		},
 		{
 			"checksumSHA1": "Thg9sicXr23/02y0VqmmJoEZIzI=",
@@ -79,6 +91,13 @@
 			"path": "github.com/hashicorp/hcl/testhelper",
 			"revision": "630949a3c5fa3c613328e1b8256052cbc2327c9b",
 			"revisionTime": "2017-02-17T16:47:38Z"
+		},
+		{
+			"checksumSHA1": "qt9AtSGLIyVzsUF6YhPkP6NDszc=",
+			"origin": "github.com/geofffranks/spruce/vendor/github.com/jtolds/gls",
+			"path": "github.com/jtolds/gls",
+			"revision": "0eb8a91a8eaad2fbd6a7e4a1cf3cb0508b688ec1",
+			"revisionTime": "2017-03-03T15:23:22Z"
 		},
 		{
 			"checksumSHA1": "1QUxidfi1Sg8RnjjOUOHuiKHc9o=",
@@ -327,6 +346,48 @@
 			"revisionTime": "2017-03-17T14:32:14Z"
 		},
 		{
+			"checksumSHA1": "4NWbPV/a5lyfaet00itIAJes0+o=",
+			"origin": "github.com/geofffranks/spruce/vendor/github.com/smartystreets/assertions",
+			"path": "github.com/smartystreets/assertions",
+			"revision": "0eb8a91a8eaad2fbd6a7e4a1cf3cb0508b688ec1",
+			"revisionTime": "2017-03-03T15:23:22Z"
+		},
+		{
+			"checksumSHA1": "Vzb+dEH/LTYbvr8RXHmt6xJHz04=",
+			"origin": "github.com/geofffranks/spruce/vendor/github.com/smartystreets/assertions/internal/go-render/render",
+			"path": "github.com/smartystreets/assertions/internal/go-render/render",
+			"revision": "0eb8a91a8eaad2fbd6a7e4a1cf3cb0508b688ec1",
+			"revisionTime": "2017-03-03T15:23:22Z"
+		},
+		{
+			"checksumSHA1": "QCsUvPHx/Ifqm+sJmocjSvePAIc=",
+			"origin": "github.com/geofffranks/spruce/vendor/github.com/smartystreets/assertions/internal/oglematchers",
+			"path": "github.com/smartystreets/assertions/internal/oglematchers",
+			"revision": "0eb8a91a8eaad2fbd6a7e4a1cf3cb0508b688ec1",
+			"revisionTime": "2017-03-03T15:23:22Z"
+		},
+		{
+			"checksumSHA1": "/mwAihy9AmznMzmbPQ5nWJXBiRU=",
+			"origin": "github.com/geofffranks/spruce/vendor/github.com/smartystreets/goconvey/convey",
+			"path": "github.com/smartystreets/goconvey/convey",
+			"revision": "0eb8a91a8eaad2fbd6a7e4a1cf3cb0508b688ec1",
+			"revisionTime": "2017-03-03T15:23:22Z"
+		},
+		{
+			"checksumSHA1": "9LakndErFi5uCXtY1KWl0iRnT4c=",
+			"origin": "github.com/geofffranks/spruce/vendor/github.com/smartystreets/goconvey/convey/gotest",
+			"path": "github.com/smartystreets/goconvey/convey/gotest",
+			"revision": "0eb8a91a8eaad2fbd6a7e4a1cf3cb0508b688ec1",
+			"revisionTime": "2017-03-03T15:23:22Z"
+		},
+		{
+			"checksumSHA1": "FWDhk37bhAwZ2363D/L2xePwR64=",
+			"origin": "github.com/geofffranks/spruce/vendor/github.com/smartystreets/goconvey/convey/reporting",
+			"path": "github.com/smartystreets/goconvey/convey/reporting",
+			"revision": "0eb8a91a8eaad2fbd6a7e4a1cf3cb0508b688ec1",
+			"revisionTime": "2017-03-03T15:23:22Z"
+		},
+		{
 			"checksumSHA1": "xtOIPINGIazWcbrv6YfagdVZfE8=",
 			"path": "github.com/spf13/afero",
 			"revision": "9be650865eab0c12963d8753212f4f9c66cdcf12",
@@ -369,6 +430,12 @@
 			"revisionTime": "2017-03-15T13:43:09Z"
 		},
 		{
+			"checksumSHA1": "SyxZ8CZf/F2fKmdPk7y8ICVL1eg=",
+			"path": "github.com/ybbus/jsonrpc",
+			"revision": "a34aaad062320b7b1c4644f8f7371646f264e21d",
+			"revisionTime": "2017-04-04T06:29:47Z"
+		},
+		{
 			"checksumSHA1": "uJ12+5J5K0egflT72RWxUfcBXD0=",
 			"path": "golang.org/x/sys/unix",
 			"revision": "99f16d856c9836c42d24e7ab64ea72916925fa97",
@@ -403,6 +470,12 @@
 			"path": "golang.org/x/text/unicode/norm",
 			"revision": "b00b5aff2fd772bedad89f1cf227f624c7660c2f",
 			"revisionTime": "2017-03-22T10:25:50Z"
+		},
+		{
+			"checksumSHA1": "EmHd3g+8DGunL4ZwNcnmHDzwSdg=",
+			"path": "gopkg.in/robfig/cron.v2",
+			"revision": "be2e0b0deed5a68ffee390b4583a13aff8321535",
+			"revisionTime": "2015-01-07T22:02:07Z"
 		},
 		{
 			"checksumSHA1": "6ayQfXNKiuxyorGv9Xk7Ixeyu2M=",

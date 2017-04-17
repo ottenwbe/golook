@@ -24,7 +24,7 @@ type Repository interface {
 	GetFilesOfSystem(systemName string) (map[string]File, bool)
 	DelSystem(systemName string)
 	HasFile(fileName string, systemName string) (*File, bool)
-	StoreFile(systemName string, file File) bool
+	StoreFile(systemName string, file *File, meta FileMeta) bool
 	StoreFiles(systemName string, files map[string]File) bool
 	FindSystemAndFiles(findString string) map[string]*System
 }

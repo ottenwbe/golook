@@ -14,15 +14,76 @@
 package file_management
 
 import (
+	. "github.com/ottenwbe/golook/routing"
+
 	. "github.com/onsi/ginkgo"
-	//. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("DefaultManager", func() {
+
+	const (
+		TEST_FOLDER = "../file_management"
+		TEST_FILE   = "default_manager_test.go"
+	)
+
 	It("should emit a rpc call to the uplink server when reporting a folder and not return with an error", func() {
-		//d := defaultFileManager{}
-		//err := d.ReportFolder("", false)
-		//Expect(err).To(BeNil())
-		//TODO check if message is sent
+		RunWithMockedGolookClient(func() {
+			d := defaultFileManager{}
+			err := d.ReportFolder(TEST_FOLDER, false)
+			Expect(err).To(BeNil())
+			Expect(AccessMockedGolookClient().VisitDoPostFiles).To(BeTrue())
+		})
+	})
+
+	It("should emit a rpc call to the uplink server when replacing reported files with a folder", func() {
+		RunWithMockedGolookClient(func() {
+			d := defaultFileManager{}
+			err := d.ReportFolderR(TEST_FOLDER, false)
+			Expect(err).To(BeNil())
+			Expect(AccessMockedGolookClient().VisitDoPutFiles).To(BeTrue())
+		})
+	})
+
+	It("should emit a rpc call to the uplink server when reporting a file", func() {
+		RunWithMockedGolookClientF(func() {
+			d := defaultFileManager{}
+			err := d.ReportFile(TEST_FILE, false)
+			Expect(err).To(BeNil())
+			Expect(AccessMockedGolookClient().VisitDoPostFile).To(BeTrue())
+		}, TEST_FILE, TEST_FOLDER)
+	})
+
+	It("should emit a rpc call to the uplink server when replacing a file", func() {
+		RunWithMockedGolookClientF(func() {
+			d := defaultFileManager{}
+			err := d.ReportFileR(TEST_FILE, false)
+			Expect(err).To(BeNil())
+			Expect(AccessMockedGolookClient().VisitDoPutFiles).To(BeTrue())
+		}, TEST_FILE, TEST_FOLDER)
+	})
+
+	It("should return an error when a folder does not exist", func() {
+		RunWithMockedGolookClientF(func() {
+			d := defaultFileManager{}
+			err := d.ReportFolder("no_folder", false)
+			Expect(err).ToNot(BeNil())
+		}, TEST_FILE, TEST_FOLDER)
+	})
+
+	It("should return an error when a file does not exist which should be reported", func() {
+		RunWithMockedGolookClientF(func() {
+			d := defaultFileManager{}
+			err := d.ReportFile("no_file.txt", false)
+			Expect(err).ToNot(BeNil())
+		}, TEST_FILE, TEST_FOLDER)
+	})
+
+	It("should return an error when a file does not exist which should replace the reported files", func() {
+		RunWithMockedGolookClientF(func() {
+			d := defaultFileManager{}
+			err := d.ReportFileR("no_file.txt", false)
+			Expect(err).ToNot(BeNil())
+		}, TEST_FILE, TEST_FOLDER)
 	})
 })

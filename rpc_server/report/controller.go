@@ -15,6 +15,7 @@ package report
 
 import (
 	"encoding/json"
+	"errors"
 	. "github.com/ottenwbe/golook/app"
 	. "github.com/ottenwbe/golook/file_management"
 	. "github.com/ottenwbe/golook/models"
@@ -33,37 +34,39 @@ func init() {
 
 // Endpoint: /report/file
 func putFile(writer http.ResponseWriter, request *http.Request) {
-	if ! IsValidRequest(request) {
-		ReturnNackAndLog(writer, "No valid request for: /report/file", http.StatusBadRequest)
-		return
-	}
 
-	var fileReport *FileReport
-	err := json.NewDecoder(request.Body).Decode(fileReport)
+	fileReport, err := extractReport(request)
 
 	if err != nil {
-		ReturnNackAndLogError(writer, "FileReport could not decoded in controller for: /report/file.", err, http.StatusBadRequest)
-		return
+		ReturnNackAndLogError(writer, "No valid request for: /report/file", err, http.StatusBadRequest)
+	} else {
+		HandleFileReport(fileReport)
+		ReturnAck(writer)
 	}
-
-	HandleFileReport(fileReport)
-	ReturnAck(writer)
 }
 
 // Endpoint: /report/folder
 func putFolder(writer http.ResponseWriter, request *http.Request) {
+
+	folderReport, err := extractReport(request)
+
+	if err != nil {
+		ReturnNackAndLogError(writer, "No valid request for: /report/folder", err, http.StatusBadRequest)
+	} else {
+		HandleFolderReport(folderReport)
+		ReturnAck(writer)
+	}
+}
+
+func extractReport(request *http.Request) (*FileReport, error) {
 	if !IsValidRequest(request) {
-		ReturnNackAndLog(writer, "No valid request for: /report/folder", http.StatusBadRequest)
-		return
+		return nil, errors.New("No valid request")
 	}
 
 	var fileReport *FileReport
 	err := json.NewDecoder(request.Body).Decode(fileReport)
 	if err != nil {
-		ReturnNackAndLogError(writer, "FileReport could not decoded in controller for: /report/folder.", err, http.StatusBadRequest)
-		return
+		return nil, err
 	}
-
-	HandleFolderReport(fileReport)
-	ReturnAck(writer)
+	return fileReport, nil
 }

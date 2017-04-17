@@ -18,6 +18,7 @@ import (
 	. "github.com/ottenwbe/golook/models"
 
 	log "github.com/sirupsen/logrus"
+	"path/filepath"
 )
 
 type MockGolookClient struct {
@@ -56,13 +57,14 @@ func (*MockGolookClient) DoGetHome() string {
 }
 
 func (mock *MockGolookClient) DoPostFile(file *File) string {
-	log.WithField("called", mock.VisitDoPostFile).WithField("file", *file).Info("Test DoPostFile")
-	mock.VisitDoPostFile = mock.VisitDoPostFile || file != nil && file.Name == mock.FileName
+	mock.VisitDoPostFile = mock.VisitDoPostFile || file != nil && filepath.Base(file.Name) == filepath.Base(mock.FileName)
+	log.WithField("called", mock.VisitDoPostFile).WithField("file", *file).Info("Mocked DoPostFile")
 	return ""
 }
 
 func (mock *MockGolookClient) DoPutFiles(files []File) string {
 	mock.VisitDoPutFiles = len(files) > 0
+	log.WithField("called", mock.VisitDoPutFiles).WithField("numFiles", len(files)).Info("Mocked DoPutFiles")
 	return ""
 }
 

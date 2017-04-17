@@ -25,6 +25,11 @@ type File struct {
 	Created   time.Time `json:"created"`
 	Modified  time.Time `json:"modified"`
 	Accessed  time.Time `json:"accessed"`
+	Meta      FileMeta  `json:"-"`
+}
+
+type FileMeta struct {
+	Monitor bool
 }
 
 func DecodeFiles(fileReader io.Reader) (map[string]File, error) {

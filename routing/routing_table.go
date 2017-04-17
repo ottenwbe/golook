@@ -17,38 +17,38 @@ import (
 	. "github.com/ottenwbe/golook/rpc_client"
 )
 
-var (
-	GolookClient LookupClient
-	//Downlink     []LookupClient //TODO store downlink information
-)
-
 func ConfigLookClient(host string, port int) {
-	GolookClient = NewLookClient(host, port)
+	routeTable.put(NilKey(), NewLookClient(host, port))
+}
+
+func AccessLookupClient() LookupClient {
+	return routeTable.get(NilKey())
 }
 
 func AccessMockedGolookClient() *MockGolookClient {
-	return GolookClient.(*MockGolookClient)
+	return routeTable.get(NilKey()).(*MockGolookClient)
 }
 
+//TODO: move back to client
 func RunWithMockedGolookClient(mockedFunction func()) {
 	RunWithMockedGolookClientF(mockedFunction, "", "")
 }
 
 func RunWithMockedGolookClientF(mockedFunction func(), fileName string, folderName string) {
-	//ensure that the GolookClient is reset after the function's execution
+	//ensure that the golookClient is reset after the function's execution
 	defer func(reset LookupClient) {
-		GolookClient = reset
-	}(GolookClient)
+		routeTable.put(NilKey(), reset)
+	}(AccessLookupClient())
 
 	//create a mock rpc_client
-	GolookClient = &MockGolookClient{
+	routeTable.put(NilKey(), &MockGolookClient{
 		VisitDoPostFile:  false,
 		VisitDoPutFiles:  false,
 		VisitDoGetFiles:  false,
 		VisitDoPostFiles: false,
 		FileName:         fileName,
 		FolderName:       folderName,
-	}
+	})
 
 	mockedFunction()
 }
@@ -56,8 +56,8 @@ func RunWithMockedGolookClientF(mockedFunction func(), fileName string, folderNa
 /*var _ = Describe(" LookupClient ", func() {
 	It("should be configured during construction with host and port", func() {
 		ConfigLookClient("do.test", 8123)
-		Expect(GolookClient.(*LookupClientData).serverUrl).To(ContainSubstring("do.test"))
-		Expect(GolookClient.(*LookupClientData).serverUrl).To(ContainSubstring("8123"))
+		Expect(golookClient.(*LookupRPCClient).serverUrl).To(ContainSubstring("do.test"))
+		Expect(golookClient.(*LookupRPCClient).serverUrl).To(ContainSubstring("8123"))
 	})
 })
 
@@ -71,14 +71,14 @@ var _ = Describe(" MockGoLookClient ", func() {
 	It("should be set when a function is run in context of 'RunWithMockedGolookClientF'", func() {
 		RunWithMockedGolookClientF(func() {
 			Expect(testConvertMockGolookClient).ToNot(Panic())
-			Expect(GolookClient.(*MockGolookClient).fileName).To(Equal("fileName.txt"))
-			Expect(GolookClient.(*MockGolookClient).folderName).To(Equal("folder"))
+			Expect(golookClient.(*MockGolookClient).fileName).To(Equal("fileName.txt"))
+			Expect(golookClient.(*MockGolookClient).folderName).To(Equal("folder"))
 		}, "fileName.txt", "folder")
 	})
 })
 
 func testConvertMockGolookClient() {
-	_ = GolookClient.(*MockGolookClient)
+	_ = golookClient.(*MockGolookClient)
 }
 
 */

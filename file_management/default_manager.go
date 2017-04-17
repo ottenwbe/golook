@@ -14,46 +14,50 @@
 package file_management
 
 import (
-	. "github.com/ottenwbe/golook/routing"
+	. "github.com/ottenwbe/golook/app"
 	. "github.com/ottenwbe/golook/models"
+	. "github.com/ottenwbe/golook/repository"
+	. "github.com/ottenwbe/golook/routing"
+
 	"io/ioutil"
 	"os"
 )
 
-type defaultFileManager struct {}
-
+type defaultFileManager struct{}
 
 func (*defaultFileManager) ReportFile(filePath string, monitor bool) error {
-	if f, err := NewFile(filePath); err != nil {
+	if file, err := NewFile(filePath); err != nil {
 		return err
 	} else /* report file */ {
-		GolookClient.DoPostFile(f)
+		GoLookRepository.StoreFile(GolookSystem.Name, file, FileMeta{Monitor: false})
+		golookClient.DoPostFile(file)
 	}
 	return nil
 }
 
 func (*defaultFileManager) ReportFileR(filePath string, monitor bool) error {
-	if f, err := NewFile(filePath); err != nil {
+	if file, err := NewFile(filePath); err != nil {
 		return err
 	} else /* report file */ {
-		GolookClient.DoPutFiles([]File{*f})
+		GoLookRepository.StoreFile(GolookSystem.Name, file, FileMeta{Monitor: false})
+		golookClient.DoPutFiles([]File{*file})
 		return nil
 	}
 }
 
 func (*defaultFileManager) ReportFolder(folderPath string, monitor bool) error {
 	report, err := generateReport(folderPath)
-	GolookClient.DoPutFiles(report)
+	golookClient.DoPostFiles(report)
 	return err
 }
 
 func (*defaultFileManager) ReportFolderR(folderPath string, monitor bool) error {
 	report, err := generateReport(folderPath)
-	GolookClient.DoPostFiles(report)
+	golookClient.DoPutFiles(report)
 	return err
 }
 
-// Report files in a folder
+// Generate a []File array from files in a folder
 func generateReport(folderPath string) ([]File, error) {
 
 	var (

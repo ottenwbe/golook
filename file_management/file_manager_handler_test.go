@@ -22,11 +22,11 @@ import (
 	"github.com/ottenwbe/golook/models"
 )
 
-var _ = Describe("The file manager's router", func() {
+var _ = Describe("The file manager's handler", func() {
 
 	Context("initialization", func() {
 
-		var(
+		var (
 			testFM FileManager = nil
 		)
 

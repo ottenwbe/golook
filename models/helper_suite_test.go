@@ -21,5 +21,5 @@ import (
 
 func TestModels(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Helper Suite")
+	RunSpecs(t, "Model Suite")
 }

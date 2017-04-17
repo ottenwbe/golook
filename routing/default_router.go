@@ -15,8 +15,8 @@ package routing
 
 import (
 	. "github.com/ottenwbe/golook/app"
-	. "github.com/ottenwbe/golook/repository"
 	. "github.com/ottenwbe/golook/models"
+	. "github.com/ottenwbe/golook/repository"
 )
 
 type DefaultRouter struct {
@@ -26,7 +26,7 @@ func (*DefaultRouter) handleQueryAllSystemsForFile(fileName string) (systems map
 	if canAnswerQuery() {
 		systems = GoLookRepository.FindSystemAndFiles(fileName)
 	} else {
-		systems, err = GolookClient.DoQuerySystemsAndFiles(fileName)
+		systems, err = golookClient.DoQuerySystemsAndFiles(fileName)
 	}
 	return
 }
@@ -35,7 +35,7 @@ func (*DefaultRouter) handleQueryFiles(systemName string) (files map[string]File
 	if canAnswerQuery() {
 		files, _ = GoLookRepository.GetFilesOfSystem(systemName)
 	} else {
-		files, err = GolookClient.DoGetFiles(systemName)
+		files, err = golookClient.DoGetFiles(systemName)
 	}
 	return
 }
@@ -45,7 +45,7 @@ func (*DefaultRouter) handleReportFile(system string, filePath string) error {
 		//return DefaultFileManager{}.ReportFile(filePath, false)
 	} else {
 		//Route Files to uplink
-		//GolookClient.DoPostFile()
+		//golookClient.DoPostFile()
 	}
 	return nil
 }
@@ -56,7 +56,7 @@ func (*DefaultRouter) handleReportFileR(system string, filePath string) error {
 		//return DefaultFileManager{}.ReportFileR(filePath, false)
 	} else {
 		//Register System with uplink
-		// GolookClient.Do
+		// golookClient.Do
 	}
 	return nil
 }
@@ -66,7 +66,7 @@ func (*DefaultRouter) handleReportFolderR(system string, folderPath string) erro
 		//return DefaultFileManager{}.ReportFolderR(folderPath, false)
 	} else {
 		//Register System with uplink
-		// GolookClient.Do
+		// golookClient.Do
 	}
 	return nil
 }
@@ -77,11 +77,11 @@ func (*DefaultRouter) handleReportFolder(system string, folderPath string) error
 		//return DefaultFileManager{}.ReportFolder(folderPath, false)
 	} else {
 		//Register System with uplink
-		// GolookClient.Do
+		// golookClient.Do
 	}
 	return nil
 }
 
 func canAnswerQuery() bool {
-	return GolookClient == nil && GoLookRepository != nil
+	return golookClient == nil && GoLookRepository != nil
 }

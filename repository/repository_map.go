@@ -29,12 +29,15 @@ func (repo *MapRepository) StoreSystem(systemName string, system *System) bool {
 	return false
 }
 
-func (repo *MapRepository) StoreFile(systemName string, file File) bool {
+func (repo *MapRepository) StoreFile(systemName string, file *File, meta FileMeta) bool {
 	if sys, ok := (*repo)[systemName]; ok {
 		if sys.Files == nil {
 			sys.Files = make(map[string]File)
 		}
-		sys.Files[file.Name] = file
+		//TODO: cleaner solution required
+		storedFile := *file
+		storedFile.Meta = meta
+		sys.Files[file.Name] = *file
 		return true
 	}
 	return false

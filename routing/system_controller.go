@@ -30,11 +30,11 @@ func NewSystemController(uplink string) *SystemController {
 }
 
 func (sc *SystemController) Connect() {
-	GolookClient.DoPutSystem(sc.system)
+	golookClient.DoPutSystem(sc.system)
 }
 
 func (sc *SystemController) ConnectWith(uplinkHost string) {
-	GolookClient.DoPutSystem(sc.system)
+	golookClient.DoPutSystem(sc.system)
 }
 
 func (sc *SystemController) Disconnect(uplinkHost string) {

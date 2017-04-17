@@ -13,146 +13,208 @@
 //limitations under the License.
 package rpc_client
 
-import (
-	"encoding/json"
-	"fmt"
-	"net/http"
-	"net/http/httptest"
+// Tests based on https://github.com/ybbus/jsonrpc/blob/master/jsonrpc_test.go
 
-	"github.com/gorilla/mux"
+import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	. "github.com/ottenwbe/golook/app"
 	. "github.com/ottenwbe/golook/models"
+
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 )
 
-const (
-	sysName   = "system"
-	FILE_NAME = "file.txt"
-)
+type TestParams struct {
+	A int    `json:"a"`
+	B string `json:"b"`
+}
 
 var _ = Describe("The rpc_client", func() {
 
 	var (
-		server *httptest.Server
-		client *LookupClientData
+		requestChan chan string
+		httpServer  *httptest.Server
+		lookClient  LookupClient
 	)
 
 	BeforeEach(func() {
-		tmpClient := NewLookClient("http://127.0.0.1", 8123)
-		client = tmpClient.(*LookupClientData)
+
+		requestChan = make(chan string, 1)
+
+		httpServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			data, _ := ioutil.ReadAll(r.Body)
+			defer r.Body.Close()
+			// put request and body to channel for the client to investigate them
+			requestChan <- string(data)
+
+			b, _ := json.Marshal(RequestMessage{Method: "test", Content: "1-2-3"})
+			fmt.Fprintf(w, `{"jsonrpc":"2.0","result":%s,"id":0}`, string(b))
+		}))
+
+		lookClient = NewLookClient(httpServer.URL)
 	})
 
 	AfterEach(func() {
-		// ensure that the close method is executed and not forgotten
-		server.Close()
-		client = nil
+		httpServer.Close()
 	})
 
-	Context(" System Methods ", func() {
-		It("should return a valid system with Get", func() {
-			server = httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
-				s := newTestSystem()
-				bytes, _ := json.Marshal(s)
-				fmt.Fprintln(writer, string(bytes))
-			}))
-			client.serverUrl = server.URL
+	It("should format the encapsulated RequestMessage to json", func() {
+		expectedContent, _ := json.Marshal(TestParams{A: 1, B: "test"}) //TODO: err
 
-			result, err := client.DoGetSystem(sysName)
-			Expect(err).To(BeNil())
-			Expect(result).To(Not(BeNil()))
-			Expect(result.Name).To(Equal(sysName))
-		})
+		result, err := lookClient.Call("testMethod", TestParams{A: 1, B: "test"})
+		res := <-requestChan
 
-		It("should return a nil system with Get when the server does not exist", func() {
-			client.serverUrl = "/"
-			result, err := client.DoGetSystem(sysName)
-			Expect(result).To(BeNil())
-			Expect(err).ToNot(BeNil())
-		})
+		Expect(res).To(ContainSubstring(strings.Replace(string(expectedContent), "\"", "\\\"", -1)))
 
-		It("should send a valid system to the server with Put", func() {
-
-			testSystem := newTestSystem()
-
-			server = httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
-				receivedSystem, _ := DecodeSystem(req.Body)
-				Expect(receivedSystem.Name).To(Equal(testSystem.Name))
-			}))
-			client.serverUrl = server.URL
-
-			result := client.DoPutSystem(testSystem)
-
-			Expect(result).To(Not(BeNil()))
-		})
-
-		It("should transfer the delete request for a specific system to the server with DELETE", func() {
-
-			testSystemName := "testSystem"
-
-			server = httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
-				params := mux.Vars(req)
-				system := params["system"]
-				Expect(system).To(Equal(testSystemName))
-			}))
-			server.URL = "/systems/{system}"
-			client.serverUrl = server.URL
-			client.systemName = testSystemName
-
-			result := client.DoDeleteSystem()
-
-			Expect(result).To(Not(BeNil()))
-		})
+		Expect(err).To(BeNil())
+		Expect(result).To(Equal("1-2-3"))
 	})
-
-	Context(" File Methods ", func() {
-		It("should return a valid set of files with Get", func() {
-			server := httptest.NewServer(
-				http.HandlerFunc(
-					func(writer http.ResponseWriter, _ *http.Request) {
-						b, _ := json.Marshal(map[string]File{FILE_NAME: newTestFile()})
-						fmt.Fprint(writer, string(b))
-					}))
-			client.serverUrl = server.URL
-
-			files, err := client.DoGetFiles("testSystem")
-			Expect(err).To(BeNil())
-			Expect(len(files)).To(Equal(1))
-			Expect(files[FILE_NAME].Name).To(Equal(FILE_NAME))
-		})
-	})
-
-	Context("Get Home", func() {
-
-		const testString = "TestString"
-
-		It("should pass the string which was sent by a server to the calle of DoGetHome()", func() {
-
-			server := httptest.NewServer(
-				http.HandlerFunc(
-					func(writer http.ResponseWriter, _ *http.Request) {
-						fmt.Fprintln(writer, testString)
-					}))
-			client.serverUrl = server.URL
-
-			Expect(client.DoGetHome()).To(Equal(testString + "\n"))
-		})
-	})
-
 })
 
-func newTestSystem() *System {
-	return &System{
-		Name:  sysName,
-		Files: nil,
-		IP:    "1.1.1.1",
-		OS:    "linux",
-		UUID:  "1234"}
-}
-
-func newTestFile() File {
-	return File{
-		Name: FILE_NAME,
-	}
-}
+//	"encoding/json"
+//	"fmt"
+//	"net/http"
+//	"net/http/httptest"
+//
+//	"github.com/gorilla/mux"
+//	. "github.com/onsi/ginkgo"
+//	. "github.com/onsi/gomega"
+//
+//	. "github.com/ottenwbe/golook/app"
+//	. "github.com/ottenwbe/golook/models"
+//)
+//
+//const (
+//	sysName   = "system"
+//	FILE_NAME = "file.txt"
+//)
+//
+//var _ = Describe("The rpc_client", func() {
+//
+//	var (
+//		server *httptest.Server
+//		client *LookupRPCClient
+//	)
+//
+//	BeforeEach(func() {
+//		tmpClient := NewLookClient("http://127.0.0.1", 8123)
+//		client = tmpClient.(*LookupRPCClient)
+//	})
+//
+//	AfterEach(func() {
+//		// ensure that the close method is executed and not forgotten
+//		server.Close()
+//		client = nil
+//	})
+//
+//	Context(" System Methods ", func() {
+//		It("should return a valid system with Get", func() {
+//			server = httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+//				s := newTestSystem()
+//				bytes, _ := json.Marshal(s)
+//				fmt.Fprintln(writer, string(bytes))
+//			}))
+//			client.serverUrl = server.URL
+//
+//			result, err := client.DoGetSystem(sysName)
+//			Expect(err).To(BeNil())
+//			Expect(result).To(Not(BeNil()))
+//			Expect(result.Name).To(Equal(sysName))
+//		})
+//
+//		It("should return a nil system with Get when the server does not exist", func() {
+//			client.serverUrl = "/"
+//			result, err := client.DoGetSystem(sysName)
+//			Expect(result).To(BeNil())
+//			Expect(err).ToNot(BeNil())
+//		})
+//
+//		It("should send a valid system to the server with Put", func() {
+//
+//			testSystem := newTestSystem()
+//
+//			server = httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
+//				receivedSystem, _ := DecodeSystem(req.Body)
+//				Expect(receivedSystem.Name).To(Equal(testSystem.Name))
+//			}))
+//			client.serverUrl = server.URL
+//
+//			result := client.DoPutSystem(testSystem)
+//
+//			Expect(result).To(Not(BeNil()))
+//		})
+//
+//		It("should transfer the delete request for a specific system to the server with DELETE", func() {
+//
+//			testSystemName := "testSystem"
+//
+//			server = httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
+//				params := mux.Vars(req)
+//				system := params["system"]
+//				Expect(system).To(Equal(testSystemName))
+//			}))
+//			server.URL = "/systems/{system}"
+//			client.serverUrl = server.URL
+//			client.systemName = testSystemName
+//
+//			result := client.DoDeleteSystem()
+//
+//			Expect(result).To(Not(BeNil()))
+//		})
+//	})
+//
+//	Context(" File Methods ", func() {
+//		It("should return a valid set of files with Get", func() {
+//			server := httptest.NewServer(
+//				http.HandlerFunc(
+//					func(writer http.ResponseWriter, _ *http.Request) {
+//						b, _ := json.Marshal(map[string]File{FILE_NAME: newTestFile()})
+//						fmt.Fprint(writer, string(b))
+//					}))
+//			client.serverUrl = server.URL
+//
+//			files, err := client.DoGetFiles("testSystem")
+//			Expect(err).To(BeNil())
+//			Expect(len(files)).To(Equal(1))
+//			Expect(files[FILE_NAME].Name).To(Equal(FILE_NAME))
+//		})
+//	})
+//
+//	Context("Get Home", func() {
+//
+//		const testString = "TestString"
+//
+//		It("should pass the string which was sent by a server to the calle of DoGetHome()", func() {
+//
+//			server := httptest.NewServer(
+//				http.HandlerFunc(
+//					func(writer http.ResponseWriter, _ *http.Request) {
+//						fmt.Fprintln(writer, testString)
+//					}))
+//			client.serverUrl = server.URL
+//
+//			Expect(client.DoGetHome()).To(Equal(testString + "\n"))
+//		})
+//	})
+//
+//})
+//
+//func newTestSystem() *System {
+//	return &System{
+//		Name:  sysName,
+//		Files: nil,
+//		IP:    "1.1.1.1",
+//		OS:    "linux",
+//		UUID:  "1234"}
+//}
+//
+//func newTestFile() File {
+//	return File{
+//		Name: FILE_NAME,
+//	}
+//}
