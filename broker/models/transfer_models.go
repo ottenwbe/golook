@@ -11,12 +11,16 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package main
+package models
 
-import (
-	"github.com/ottenwbe/golook/broker/cmd"
-)
+type FileTransfer struct {
+	Files   map[string]*File
+	Replace bool
+	System  string
+}
 
-func main() {
-	cmd.Run()
+type SystemTransfer struct {
+	Uuid       string
+	System     *System
+	IsDeletion bool
 }

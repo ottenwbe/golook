@@ -11,12 +11,12 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package main
+package models
 
-import (
-	"github.com/ottenwbe/golook/broker/cmd"
-)
-
-func main() {
-	cmd.Run()
+type System struct {
+	Name  string           `json:"name"`
+	OS    string           `json:"os"`
+	IP    string           `json:"ip"`
+	UUID  string           `json:"uuid"`
+	Files map[string]*File `json:"files"`
 }

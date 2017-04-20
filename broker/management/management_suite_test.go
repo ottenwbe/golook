@@ -11,12 +11,15 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package main
+package management
 
 import (
-	"github.com/ottenwbe/golook/broker/cmd"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"testing"
 )
 
-func main() {
-	cmd.Run()
+func TestFileManagement(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "File Management Test Suite")
 }

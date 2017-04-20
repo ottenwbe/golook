@@ -11,12 +11,24 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package main
+package cmd
 
 import (
-	"github.com/ottenwbe/golook/broker/cmd"
+	. "github.com/ottenwbe/golook/broker/runtime"
+
+	"fmt"
+	"github.com/spf13/cobra"
 )
 
-func main() {
-	cmd.Run()
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: fmt.Sprintf("Print the version number of %s.", GOLOOK_NAME),
+	Long:  fmt.Sprintf("All software has versions. This is %s's version.", GOLOOK_NAME),
+	Run: func(_ *cobra.Command, _ []string) {
+		fmt.Print(VERSION)
+	},
+}
+
+func init() {
+	RootCmd.AddCommand(versionCmd)
 }

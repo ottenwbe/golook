@@ -11,12 +11,29 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package main
+package runtime
 
 import (
-	"github.com/ottenwbe/golook/broker/cmd"
+	. "github.com/ottenwbe/golook/broker/models"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-func main() {
-	cmd.Run()
-}
+var _ = Describe(" AppInfo ", func() {
+
+	var info *AppInfo
+
+	BeforeEach(func() {
+		info = NewAppInfo()
+	})
+
+	It("should comprise the current app version by default", func() {
+		Expect(info.Version).To(Equal(VERSION))
+	})
+
+	It("should comprise the current system by default", func() {
+		Expect(info.System).ToNot(BeNil())
+		Expect(*info.System).To(Equal(*NewSystem()))
+	})
+})

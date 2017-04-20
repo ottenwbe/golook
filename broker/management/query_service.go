@@ -11,12 +11,15 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package main
+package management
 
-import (
-	"github.com/ottenwbe/golook/broker/cmd"
-)
+import "github.com/ottenwbe/golook/broker/routing"
 
-func main() {
-	cmd.Run()
+type FileQueryTransfer struct {
+	searchString string
+}
+
+func MakeFileQuery(searchString string) interface{} {
+	fq := FileQueryTransfer{searchString: searchString}
+	return routing.GoLookRouter.Route(routing.SysKey(), FILE_QUERY, fq)
 }

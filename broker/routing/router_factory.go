@@ -11,12 +11,19 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package main
+package routing
 
-import (
-	"github.com/ottenwbe/golook/broker/cmd"
-)
+import "github.com/ottenwbe/golook/broker/communication"
 
-func main() {
-	cmd.Run()
+var GoLookRouter = NewRouter()
+
+func NewRouter() Router {
+	return &BroadcastRouter{
+		routeTable:   DefaultRouteTable{},
+		routeHandler: HandlerTable{},
+	}
+}
+
+func init() {
+	communication.RouteLayerRegistrar.RegisterDefaultClient(GoLookRouter)
 }

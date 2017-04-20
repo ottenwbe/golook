@@ -11,12 +11,33 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package main
+package runtime
 
 import (
-	"github.com/ottenwbe/golook/broker/cmd"
+	"encoding/json"
+	"github.com/sirupsen/logrus"
+
+	. "github.com/ottenwbe/golook/broker/models"
 )
 
-func main() {
-	cmd.Run()
+const (
+	GOLOOK_NAME = "golook"
+	VERSION     = "v0.1.0-dev"
+)
+
+func NewAppInfo() *AppInfo {
+	return &AppInfo{
+		App:     GOLOOK_NAME,
+		Version: VERSION,
+		System:  NewSystem(),
+	}
+}
+
+func EncodeAppInfo(info *AppInfo) string {
+	b, err := json.Marshal(info)
+	if err != nil {
+		logrus.WithError(err).Error("Could not encode app info.")
+		return "{}"
+	}
+	return string(b)
 }

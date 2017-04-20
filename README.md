@@ -1,6 +1,6 @@
 # golook
 
-# The whole project is WIP. More info is coming soon #
+# The whole project is WIP---Work in Progress. More info is coming soon 
 
 [![Build Status](https://travis-ci.org/ottenwbe/golook.svg?branch=development)](https://travis-ci.org/ottenwbe/golook)
 [![codecov](https://codecov.io/gh/ottenwbe/golook/branch/master/graph/badge.svg)](https://codecov.io/gh/ottenwbe/golook)
@@ -16,7 +16,7 @@ Client and server communicate via an Rest API.
 If you are like me, you have multiple machines connected in your local network, i.e., laptops, servers, nas, raspi etc.
 Many of the files on these machines are versioned in a (git) repository, tracked by a configuration management system, or are backed up. 
 However, from time to time I wonder where a specific file is, i.e., where I downloaded the latest Linux Image.
-At this point, I recalled the distributed file search algorithms, i.e., Chord and Can.
+At this point, I recalled the distributed file search algorithms, i.e., Chord, Tapestry, and Can.
 
 So I decided to implement a simple distributed file search. And as a benefit I have the opportunity to learn go.   
 
@@ -49,6 +49,21 @@ For development the following dependencies are needed.
     
     go get github.com/kardianos/govendor
 
+### Structure ###
+    .
+    ├── doc                 // main documenation node    
+    ├── broker              // main source node
+    │   ├── cmd             // commands and configuration    
+    │   ├── api             // http api of the golook broker (e.g., towards the golook cli)
+    │   ├── communication   // communication substrate (e.g., json rpc communication)
+    │   ├── routing         // routing layer     
+    │   ├── management      // management layer 
+    │   ├── repository      // repository 
+    │   ├── runtime         // runtime components
+    │   └── models          // common models for all layers
+    └── test                // docker files for (integration) testing
+        └── integration
+
 ### Tests ###
 
 #### Unit tests ####
@@ -61,17 +76,11 @@ The execution of unit tests is simplified by a script:
 
 TODO: Will be implemented by executing client and server in Docker containers.
 
-## Server API ##
+## Broker API ##
 
 | Path  | Method  | Purpose  |   
 |---|---|---|
-| /  | "GET" | Returns the current version of the server  |   
-| /files/{file} |  "GET" |  Get all systems that host a specific file |  
-| /systems/{system}/files  |  "GET" | Get all files of a system | 
-| /systems/{system}/files/{file}  |  "POST" | Report a distinct file |
-| /systems/{system}/files  |  "PUT" | Replace all reported files |
-| /systems/{system} |  "GET" | Get details about a system  |
-| /systems |  "PUT" |  Report a new system |
-| /systems/{system} |  "DELETE" |  Delete a system |
- 
- 
+| /info  | "GET" | Returns the current version of the server  |   
+| /file/{file} |  "GET" |  Get all systems that host a specific file |  
+| /file |  "PUT" | The broker should report a file |
+| /folder |  "PUT" | The broker should report all files in a folder  |

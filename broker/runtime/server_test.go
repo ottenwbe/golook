@@ -11,12 +11,15 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package main
+package runtime
 
 import (
-	"github.com/ottenwbe/golook/broker/cmd"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-func main() {
-	cmd.Run()
-}
+var _ = Describe(" Server ", func() {
+	It("should not be nil after startup", func() {
+		Expect(HttpServer).ToNot(BeNil())
+	})
+})

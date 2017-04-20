@@ -13,33 +13,33 @@
 //limitations under the License.
 package rpc_server
 
-import (
-	"net/http"
-	"fmt"
-
-	. "github.com/ottenwbe/golook/app"
-)
-
-const (
-	EP_INFO   = "/info"
-)
-
-
-func init() {
-	HttpServer.RegisterFunction("/", getHome, http.MethodGet)
-	HttpServer.RegisterFunction(EP_INFO, getInfo, http.MethodGet)
-}
-
-
-// Endpoint: GET /
-func getHome(writer http.ResponseWriter, _ *http.Request) {
-	ReturnAck(writer)
-}
-
-// Endpoint: GET /info
-func getInfo(writer http.ResponseWriter, _ *http.Request) {
-	info := NewAppInfo()
-	result := EncodeAppInfo(info)
-	fmt.Fprintln(writer, result)
-}
-
+//
+//import (
+//	"net/http"
+//	"fmt"
+//
+//	. "github.com/ottenwbe/golook/app"
+//)
+//
+//const (
+//	EP_INFO   = "/info"
+//)
+//
+//
+//func init() {
+//	HttpServer.RegisterFunction("/", getHome, http.MethodGet)
+//	HttpServer.RegisterFunction(EP_INFO, getInfo, http.MethodGet)
+//}
+//
+//
+//// Endpoint: GET /
+//func getHome(writer http.ResponseWriter, _ *http.Request) {
+//	ReturnAck(writer)
+//}
+//
+//// Endpoint: GET /info
+//func getInfo(writer http.ResponseWriter, _ *http.Request) {
+//	info := NewAppInfo()
+//	result := EncodeAppInfo(info)
+//	fmt.Fprintln(writer, result)
+//}

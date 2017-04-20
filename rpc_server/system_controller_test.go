@@ -13,37 +13,38 @@
 //limitations under the License.
 package rpc_server
 
-import (
-	"github.com/gorilla/mux"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-
-	"net/http"
-	"net/http/httptest"
-)
-
-var _ = Describe("The file_management endpoint", func() {
-
-	var (
-		rr *httptest.ResponseRecorder
-		m  *mux.Router
-	)
-
-	f := func(req *http.Request, path string, f func(http.ResponseWriter, *http.Request)) {
-		rr = httptest.NewRecorder()
-		m = mux.NewRouter()
-		m.HandleFunc(path, f)
-		m.ServeHTTP(rr, req)
-	}
-
-	Context(EP_SYSTEM, func() {
-		It("should return the system info with GET", func() {
-			req, err := http.NewRequest("GET", EP_SYSTEM, nil)
-			f(req, EP_SYSTEM, getSystem)
-
-			Expect(err).To(BeNil())
-			Expect(rr.Code).To(Equal(http.StatusOK))
-			Expect(rr.Body.String()).To(ContainSubstring("os"))
-		})
-	})
-})
+//
+//import (
+//	"github.com/gorilla/mux"
+//	. "github.com/onsi/ginkgo"
+//	. "github.com/onsi/gomega"
+//
+//	"net/http"
+//	"net/http/httptest"
+//)
+//
+//var _ = Describe("The management endpoint", func() {
+//
+//	var (
+//		rr *httptest.ResponseRecorder
+//		m  *mux.Router
+//	)
+//
+//	f := func(req *http.Request, path string, f func(http.ResponseWriter, *http.Request)) {
+//		rr = httptest.NewRecorder()
+//		m = mux.NewRouter()
+//		m.HandleFunc(path, f)
+//		m.ServeHTTP(rr, req)
+//	}
+//
+//	Context(EP_SYSTEM, func() {
+//		It("should return the system info with GET", func() {
+//			req, err := http.NewRequest("GET", EP_SYSTEM, nil)
+//			f(req, EP_SYSTEM, getSystem)
+//
+//			Expect(err).To(BeNil())
+//			Expect(rr.Code).To(Equal(http.StatusOK))
+//			Expect(rr.Body.String()).To(ContainSubstring("os"))
+//		})
+//	})
+//})

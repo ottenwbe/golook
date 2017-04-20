@@ -13,29 +13,28 @@
 //limitations under the License.
 package rpc_server
 
-import (
-	"net/http"
-
-	. "github.com/ottenwbe/golook/app"
-	. "github.com/ottenwbe/golook/repository"
-)
-
-const (
-	EP_FILES = "/files"
-)
-
-func init() {
-	HttpServer.RegisterFunction(EP_FILES+"/{file}", getFile, http.MethodGet)
-}
-
-// Endpoint: GET /files/{file}
-// Get all systems that have matching files to {file}. In addition return information about matching files.
-func getFile(writer http.ResponseWriter, request *http.Request) {
-	fileName := extractFileFromPath(request)
-
-	sysFiles := GoLookRepository.FindSystemAndFiles(fileName)
-
-	marshalAndWriteResult(writer, sysFiles)
-}
-
-
+//
+//import (
+//	"net/http"
+//
+//	. "github.com/ottenwbe/golook/app"
+//	. "github.com/ottenwbe/golook/repository"
+//)
+//
+//const (
+//	EP_FILES = "/files"
+//)
+//
+//func init() {
+//	HttpServer.RegisterFunction(EP_FILES+"/{file}", getFile, http.MethodGet)
+//}
+//
+//// Endpoint: GET /files/{file}
+//// Get all systems that have matching files to {file}. In addition return information about matching files.
+//func getFile(writer http.ResponseWriter, request *http.Request) {
+//	fileName := extractFileFromPath(request)
+//
+//	sysFiles := GoLookRepository.FindSystemAndFiles(fileName)
+//
+//	marshalAndWriteResult(writer, sysFiles)
+//}

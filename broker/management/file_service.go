@@ -11,12 +11,38 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package main
+package management
 
 import (
-	"github.com/ottenwbe/golook/broker/cmd"
+	. "github.com/ottenwbe/golook/broker/models"
+
+	log "github.com/sirupsen/logrus"
 )
 
-func main() {
-	cmd.Run()
+func MakeFileReport(fileReport *FileReport) {
+
+	if fileReport == nil {
+		log.Error("Ignoring empty file api.")
+		return
+	}
+
+	routeFile(fileReport.Path, fileReport.Replace)
+
+	if fileReport.Monitor {
+		AddFileMonitor(fileReport.Path)
+	}
+}
+
+func MakeFolderReport(folderReport *FileReport) {
+
+	if folderReport == nil {
+		log.Error("Ignoring empty folder api.")
+		return
+	}
+
+	routeFolder(folderReport.Path, folderReport.Replace)
+
+	if folderReport.Monitor {
+		AddFileMonitor(folderReport.Path)
+	}
 }

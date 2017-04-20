@@ -11,12 +11,16 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package main
+package repositories
 
 import (
-	"github.com/ottenwbe/golook/broker/cmd"
+	. "github.com/ottenwbe/golook/broker/models"
 )
 
-func main() {
-	cmd.Run()
+type Repository interface {
+	StoreSystem(systemName string, system *System) bool
+	GetSystem(systemName string) (*System, bool)
+	DelSystem(systemName string)
+	StoreFiles(systemName string, files map[string]*File) bool
+	FindSystemAndFiles(findString string) map[string]*System
 }
