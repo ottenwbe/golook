@@ -19,7 +19,18 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func MakeFileReport(fileReport *FileReport) {
+type ReportService interface {
+	MakeFileReport(fileReport *FileReport)
+	MakeFolderReport(folderReport *FileReport)
+}
+
+func NewReportService() ReportService {
+	return &reportService{}
+}
+
+type reportService struct{}
+
+func (*reportService) MakeFileReport(fileReport *FileReport) {
 
 	if fileReport == nil {
 		log.Error("Ignoring empty file api.")
@@ -33,7 +44,7 @@ func MakeFileReport(fileReport *FileReport) {
 	}
 }
 
-func MakeFolderReport(folderReport *FileReport) {
+func (*reportService) MakeFolderReport(folderReport *FileReport) {
 
 	if folderReport == nil {
 		log.Error("Ignoring empty folder api.")

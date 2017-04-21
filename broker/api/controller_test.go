@@ -14,12 +14,14 @@
 package api
 
 import (
+	"net/http"
+	"net/http/httptest"
+
+	. "github.com/ottenwbe/golook/broker/runtime"
+
 	"github.com/gorilla/mux"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
-	"net/http"
-	"net/http/httptest"
 )
 
 var _ = Describe("The management endpoint", func() {
@@ -36,25 +38,44 @@ var _ = Describe("The management endpoint", func() {
 		m.ServeHTTP(rr, req)
 	}
 
-	Context("/file", func() {
-		It("should return a 400 and nack, when body is empty", func() {
-			req, err := http.NewRequest(http.MethodPut, "/file", nil)
-			testHttpCall(req, "/file", putFile)
+	Context(INFO_EP, func() {
+
+		It("should return the current app info", func() {
+			req, err := http.NewRequest(http.MethodPut, INFO_EP, nil)
+			testHttpCall(req, INFO_EP, getInfo)
 
 			Expect(err).To(BeNil())
-			Expect(rr.Code).To(Equal(http.StatusBadRequest))
-			Expect(rr.Body.String()).To(ContainSubstring(Nack))
+			Expect(rr.Code).To(Equal(http.StatusOK))
+			Expect(rr.Body.String()).To(Equal(EncodeAppInfo(NewAppInfo())))
 		})
 	})
 
-	Context("/folder", func() {
-		It("should return a 400 and nack, when body is empty", func() {
-			req, err := http.NewRequest(http.MethodPut, "/folder", nil)
-			testHttpCall(req, "/folder", putFolder)
+	//TODO context per http metho
+	Context(FILE_EP, func() {
+
+		It("should return an error 400 and nack, when body is empty", func() {
+			req, err := http.NewRequest(http.MethodPut, FILE_EP, nil)
+			testHttpCall(req, FILE_EP, putFile)
 
 			Expect(err).To(BeNil())
 			Expect(rr.Code).To(Equal(http.StatusBadRequest))
-			Expect(rr.Body.String()).To(ContainSubstring(Nack))
+			Expect(rr.Body.String()).To(ContainSubstring(NACK))
+		})
+
+		type tesRPs struct{}
+
+		It("...", func() {
+		})
+	})
+
+	Context(FOLDER_EP, func() {
+		It("should return an error 400 and nack, when body is empty", func() {
+			req, err := http.NewRequest(http.MethodPut, FOLDER_EP, nil)
+			testHttpCall(req, FOLDER_EP, putFolder)
+
+			Expect(err).To(BeNil())
+			Expect(rr.Code).To(Equal(http.StatusBadRequest))
+			Expect(rr.Body.String()).To(ContainSubstring(NACK))
 		})
 	})
 })

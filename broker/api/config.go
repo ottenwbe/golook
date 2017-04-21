@@ -11,24 +11,28 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package management
+package api
 
 import (
-	. "github.com/ottenwbe/golook/broker/models"
-	. "github.com/ottenwbe/golook/broker/routing"
+	"net/http"
+
+	. "github.com/ottenwbe/golook/broker/runtime"
 )
 
-type QueryService interface {
-	MakeFileQuery(searchString string) interface{}
-}
+/*
 
-func NewQueryService() QueryService {
-	return &queryService{}
-}
+ */
 
-type queryService struct{}
+const (
+	FILE_EP       = "/file"
+	FILE_QUERY_EP = FILE_EP + "/{file}"
+	FOLDER_EP     = "/folder"
+	INFO_EP       = "/info"
+)
 
-func (*queryService) MakeFileQuery(searchString string) interface{} {
-	fq := FileQueryTransfer{SearchString: searchString}
-	return GoLookRouter.Route(SysKey(), FILE_QUERY, fq)
+func ConfigApi() {
+	HttpServer.RegisterFunction(FILE_QUERY_EP, putFile, http.MethodPut)
+	HttpServer.RegisterFunction(FILE_EP, getFiles, http.MethodGet)
+	HttpServer.RegisterFunction(FOLDER_EP, putFolder, http.MethodPut)
+	HttpServer.RegisterFunction(INFO_EP, getInfo, http.MethodGet)
 }

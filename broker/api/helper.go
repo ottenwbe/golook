@@ -13,48 +13,46 @@
 //limitations under the License.
 package api
 
-/*
-	Common (helper) functions and constants, required by all controllers.
-*/
-
 import (
 	"errors"
 	"fmt"
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
+	. "github.com/ottenwbe/golook/broker/models"
 
+	"encoding/json"
 	"github.com/gorilla/mux"
-)
-
-const (
-	Nack = "{Nack}"
-	Ack  = "{Ack}"
-
-	systemPath = "system"
-	filePath   = "file"
+	log "github.com/sirupsen/logrus"
 )
 
 /*
-	Helpers Functions for controller
+	Common (helper) functions and constants, required by all controllers.
 */
 
-func IsValidRequest(request *http.Request) bool {
+const (
+	NACK = "{NACK}"
+	ACK  = "{ACK}"
+
+	systemPath = "system"
+	FILE_PATH  = "file"
+)
+
+func isValidRequest(request *http.Request) bool {
 	return (request != nil) && (request.Body != nil)
 }
 
-func ReturnAck(writer http.ResponseWriter) (int, error) {
-	return fmt.Fprint(writer, Ack)
+func returnAck(writer http.ResponseWriter) (int, error) {
+	return fmt.Fprint(writer, ACK)
 }
 
-func ReturnNackAndLog(writer http.ResponseWriter, errorString string, status int) {
-	log.Print(errorString)
-	http.Error(writer, errors.New(Nack).Error(), status)
+func returnNackAndLog(writer http.ResponseWriter, errorString string, status int) {
+	log.Error(errorString)
+	http.Error(writer, errors.New(NACK).Error(), status)
 }
 
-func ReturnNackAndLogError(writer http.ResponseWriter, errorString string, err error, status int) {
+func returnNackAndLogError(writer http.ResponseWriter, errorString string, err error, status int) {
 	log.WithError(err).Print(errorString)
-	http.Error(writer, errors.New(Nack).Error(), status)
+	http.Error(writer, errors.New(NACK).Error(), status)
 }
 
 //func extractSystemFromPath(request *http.Request) string {
@@ -65,6 +63,19 @@ func ReturnNackAndLogError(writer http.ResponseWriter, errorString string, err e
 
 func extractFileFromPath(request *http.Request) string {
 	params := mux.Vars(request)
-	fileName := params[filePath]
+	fileName := params[FILE_PATH]
 	return fileName
+}
+
+func extractReport(request *http.Request) (*FileReport, error) {
+	if !isValidRequest(request) {
+		return nil, errors.New("No valid request")
+	}
+
+	var fileReport *FileReport
+	err := json.NewDecoder(request.Body).Decode(fileReport)
+	if err != nil {
+		return nil, err
+	}
+	return fileReport, nil
 }

@@ -24,3 +24,7 @@ type SystemTransfer struct {
 	System     *System
 	IsDeletion bool
 }
+
+type FileQueryTransfer struct {
+	SearchString string
+}

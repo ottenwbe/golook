@@ -22,11 +22,13 @@ import (
 	"path/filepath"
 )
 
-var _ = Describe("The file service", func() {
+var _ = Describe("The report service", func() {
+
+	var rs = NewReportService()
 
 	It("ignores nil file reports", func() {
 		routing.RunWithMockedRouter(func() {
-			MakeFileReport(nil)
+			rs.MakeFileReport(nil)
 			Expect(routing.AccessMockedRouter().Visited).To(BeZero())
 		})
 	})
@@ -34,7 +36,7 @@ var _ = Describe("The file service", func() {
 	It("adds files which sepecify a monitoring flag to the file monitor", func() {
 		routing.RunWithMockedRouter(func() {
 			testFileName := "test_add_remove.txt"
-			MakeFileReport(
+			rs.MakeFileReport(
 				&models.FileReport{
 					Path:    testFileName,
 					Monitor: true,
@@ -51,7 +53,7 @@ var _ = Describe("The file service", func() {
 	It("does not add file reports without monitoring flag to the file monitor", func() {
 		routing.RunWithMockedRouter(func() {
 			testFileName := "test_add_remove.txt"
-			MakeFileReport(
+			rs.MakeFileReport(
 				&models.FileReport{
 					Path:    testFileName,
 					Monitor: false,
@@ -68,7 +70,7 @@ var _ = Describe("The file service", func() {
 
 	It("ignores nil folder reports", func() {
 		routing.RunWithMockedRouter(func() {
-			MakeFolderReport(nil)
+			rs.MakeFolderReport(nil)
 			Expect(routing.AccessMockedRouter().Visited).To(BeZero())
 		})
 	})
@@ -76,7 +78,7 @@ var _ = Describe("The file service", func() {
 	It("does add folders specifying the monitor flag to the monitor and ignores invalid folders", func() {
 		routing.RunWithMockedRouter(func() {
 			folderName := "test_add_remove"
-			MakeFolderReport(
+			rs.MakeFolderReport(
 				&models.FileReport{
 					Path:    folderName,
 					Monitor: true,
@@ -94,7 +96,7 @@ var _ = Describe("The file service", func() {
 	It("does add folders specifying the monitor flag to the file monitor", func() {
 		routing.RunWithMockedRouter(func() {
 			folderName, _ := filepath.Abs(".")
-			MakeFolderReport(
+			rs.MakeFolderReport(
 				&models.FileReport{
 					Path:    folderName,
 					Monitor: false,

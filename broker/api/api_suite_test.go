@@ -22,5 +22,5 @@ import (
 
 func TestApi(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Api Controller Suite")
+	RunSpecs(t, "Api Test Suite")
 }

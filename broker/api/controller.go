@@ -14,29 +14,25 @@
 package api
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
-	. "github.com/ottenwbe/golook/broker/management"
-	. "github.com/ottenwbe/golook/broker/models"
-	. "github.com/ottenwbe/golook/broker/runtime"
 	"net/http"
+
+	. "github.com/ottenwbe/golook/broker/management"
+	. "github.com/ottenwbe/golook/broker/runtime"
 )
 
-func ConfigApi() {
-	HttpServer.RegisterFunction("/file/{file}", putFile, http.MethodPut)
-	HttpServer.RegisterFunction("/file", getFiles, http.MethodGet)
-	HttpServer.RegisterFunction("/folder", putFolder, http.MethodPut)
-	HttpServer.RegisterFunction("/info", getInfo, http.MethodGet)
-}
+var (
+	queryService  = NewQueryService()
+	reportService = NewReportService()
+)
 
 // Endpoint: GET /file
 func getFiles(writer http.ResponseWriter, request *http.Request) {
 	file := extractFileFromPath(request)
 
-	MakeFileQuery(file)
+	queryService.MakeFileQuery(file)
 
-	ReturnAck(writer)
+	returnAck(writer)
 }
 
 // Endpoint: GET /info
@@ -50,10 +46,10 @@ func putFile(writer http.ResponseWriter, request *http.Request) {
 	fileReport, err := extractReport(request)
 
 	if err != nil {
-		ReturnNackAndLogError(writer, "No valid request for: /api/file", err, http.StatusBadRequest)
+		returnNackAndLogError(writer, "No valid request for: /file", err, http.StatusBadRequest)
 	} else {
-		MakeFileReport(fileReport)
-		ReturnAck(writer)
+		reportService.MakeFileReport(fileReport)
+		returnAck(writer)
 	}
 }
 
@@ -63,22 +59,9 @@ func putFolder(writer http.ResponseWriter, request *http.Request) {
 	folderReport, err := extractReport(request)
 
 	if err != nil {
-		ReturnNackAndLogError(writer, "No valid request for: /api/folder", err, http.StatusBadRequest)
+		returnNackAndLogError(writer, "No valid request for: /folder", err, http.StatusBadRequest)
 	} else {
-		MakeFolderReport(folderReport)
-		ReturnAck(writer)
+		reportService.MakeFolderReport(folderReport)
+		returnAck(writer)
 	}
-}
-
-func extractReport(request *http.Request) (*FileReport, error) {
-	if !IsValidRequest(request) {
-		return nil, errors.New("No valid request")
-	}
-
-	var fileReport *FileReport
-	err := json.NewDecoder(request.Body).Decode(fileReport)
-	if err != nil {
-		return nil, err
-	}
-	return fileReport, nil
 }
