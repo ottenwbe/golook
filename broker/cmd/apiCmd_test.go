@@ -11,20 +11,17 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package routing
+package cmd
 
-import "github.com/ottenwbe/golook/broker/communication"
+import (
+	"github.com/ottenwbe/golook/broker/api"
 
-//var GoLookRouter = NewRouter()
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+)
 
-func NewRouter(name string) Router {
-	result := &BroadcastRouter{
-		routeTable:   DefaultRouteTable{},
-		routeHandler: HandlerTable{},
-		name:         name,
-	}
-
-	communication.RouteLayerRegistrar.RegisterClient(name, result)
-
-	return result
-}
+var _ = Describe("The api command", func() {
+	It("should return the supported api versions", func() {
+		Expect(stringFromStdIn(func() { apiCmd.Run(nil, []string{}) })).To(ContainSubstring(api.API_VERSION))
+	})
+})

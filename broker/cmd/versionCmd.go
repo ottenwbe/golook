@@ -25,7 +25,7 @@ var versionCmd = &cobra.Command{
 	Short: fmt.Sprintf("Print the version number of %s.", GOLOOK_NAME),
 	Long:  fmt.Sprintf("All software has versions. This is %s's version.", GOLOOK_NAME),
 	Run: func(_ *cobra.Command, _ []string) {
-		fmt.Print(VERSION)
+		fmt.Println(VERSION)
 	},
 }
 

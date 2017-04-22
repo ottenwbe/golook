@@ -42,14 +42,14 @@ var _ = Describe("Marshalling a message", func() {
 
 var _ = Describe("The encapsulated message", func() {
 	It("should comprise a method name and the content after its creation", func() {
-		m, err := NewRpcMessage("method", "msg")
+		m, err := NewRpcMessage("index", "method", "msg")
 		Expect(err).To(BeNil())
 		Expect(m.Method).To(Equal("method"))
 		Expect(len(m.Content)).ToNot(BeZero())
 	})
 
 	It("should support to get the encapsulated method", func() {
-		m, err := NewRpcMessage("method", "msg")
+		m, err := NewRpcMessage("index", "method", "msg")
 
 		var s string
 		m.GetEncapsulated(&s)

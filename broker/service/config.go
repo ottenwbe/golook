@@ -11,20 +11,11 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package management
+package service
 
-//
-import (
-	"github.com/bamzi/jobrunner"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+import . "github.com/ottenwbe/golook/broker/routing"
+
+var (
+	systemIndex = NewRouter("system")
+	fileIndex   = NewRouter("file")
 )
-
-var _ = Describe("The system service", func() {
-
-	It("has jobs scheduled", func() {
-		//At least one entry is made
-		Expect(len(jobrunner.Entries()) >= 1).To(BeTrue())
-	})
-
-})

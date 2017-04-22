@@ -19,11 +19,13 @@ import (
 
 type RequestMessage struct {
 	Method  string `json:"encapsulatedMethod"`
+	Index   string `json:"index"`
 	Content string `json:"content"` //TODO: Change to []byte?
 }
 
 type ResponseMessage struct {
 	Content string `json:"content"` //TODO: Change to []byte?
+	Index   string `json:"index"`
 }
 
 func Marshal(message interface{}) (interface{}, error) {
@@ -51,12 +53,12 @@ func Unmarshal(message interface{}, result interface{}) error {
 	return nil
 }
 
-func NewRpcMessage(method string, message interface{}) (*RequestMessage, error) {
+func NewRpcMessage(index string, method string, message interface{}) (*RequestMessage, error) {
 	m, err := MarshalS(message)
 	if err != nil {
 		return nil, err
 	}
-	return &RequestMessage{method, m}, nil
+	return &RequestMessage{Method: method, Index: index, Content: m}, nil
 }
 
 /*

@@ -70,7 +70,7 @@ var _ = Describe("The rpc client", func() {
 	It("should format the encapsulated RequestMessage to json", func() {
 		expectedContent, _ := json.Marshal(TestParams{A: 1, B: "test"}) //TODO: err
 
-		result, err := lookClient.Call("testMethod", TestParams{A: 1, B: "test"})
+		result, err := lookClient.Call("", "testMethod", TestParams{A: 1, B: "test"})
 
 		Expect(err).To(BeNil())
 		// get the body which has been received by the server
@@ -80,7 +80,7 @@ var _ = Describe("The rpc client", func() {
 	})
 
 	It("should return an error when an invalid type should be transferred as content, e.g. a channel", func() {
-		_, err := lookClient.Call("no method", make(chan bool))
+		_, err := lookClient.Call("", "no method", make(chan bool))
 		Expect(err).ToNot(BeNil())
 	})
 

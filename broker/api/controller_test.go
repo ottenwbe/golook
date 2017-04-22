@@ -17,8 +17,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 
+	"github.com/ottenwbe/golook/broker/models"
 	. "github.com/ottenwbe/golook/broker/runtime"
 
+	"bytes"
+	"encoding/json"
 	"github.com/gorilla/mux"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -29,14 +32,27 @@ var _ = Describe("The management endpoint", func() {
 	var (
 		rr *httptest.ResponseRecorder
 		m  *mux.Router
+
+		testHttpCall = func(req *http.Request, path string, f func(http.ResponseWriter, *http.Request)) {
+			rr = httptest.NewRecorder()
+			m = mux.NewRouter()
+			m.HandleFunc(path, f)
+			m.ServeHTTP(rr, req)
+		}
+
+		savedReportService = reportService
+		savedQuerySerice   = queryService
 	)
 
-	testHttpCall := func(req *http.Request, path string, f func(http.ResponseWriter, *http.Request)) {
-		rr = httptest.NewRecorder()
-		m = mux.NewRouter()
-		m.HandleFunc(path, f)
-		m.ServeHTTP(rr, req)
-	}
+	BeforeEach(func() {
+		reportService = &testService{}
+		queryService = &testService{}
+	})
+
+	AfterEach(func() {
+		reportService = savedReportService
+		queryService = savedQuerySerice
+	})
 
 	Context(INFO_EP, func() {
 
@@ -62,9 +78,46 @@ var _ = Describe("The management endpoint", func() {
 			Expect(rr.Body.String()).To(ContainSubstring(NACK))
 		})
 
-		type tesRPs struct{}
+		It("should return an error 400 and nack, when the body is invalid", func() {
+			b := []byte("{invalid}")
 
-		It("...", func() {
+			req, err := http.NewRequest(http.MethodPut, FILE_EP, bytes.NewBuffer(b))
+			testHttpCall(req, FILE_EP, putFile)
+
+			Expect(err).To(BeNil())
+			Expect(reportService.(*testService).fileReport).To(BeNil())
+			Expect(rr.Code).To(Equal(http.StatusBadRequest))
+			Expect(rr.Body.String()).To(ContainSubstring(NACK))
+		})
+
+		It("should call the report service to report the file", func() {
+
+			fp := &models.FileReport{
+				Path:    "test.txt",
+				Monitor: false,
+				Replace: false,
+			}
+
+			b, _ := json.Marshal(fp)
+			req, err := http.NewRequest(http.MethodPut, FILE_EP, bytes.NewBuffer(b))
+			testHttpCall(req, FILE_EP, putFile)
+
+			Expect(err).To(BeNil())
+			Expect(rr.Code).To(Equal(http.StatusOK))
+			Expect(rr.Body.String()).To(Equal(ACK))
+			Expect(*reportService.(*testService).fileReport).To(Equal(*fp))
+
+		})
+
+		It("should call the query service", func() {
+
+			req, err := http.NewRequest(http.MethodPut, FILE_EP+"/test.txt", nil)
+			testHttpCall(req, FILE_QUERY_EP, getFiles)
+
+			Expect(err).To(BeNil())
+			Expect(rr.Code).To(Equal(http.StatusOK))
+			Expect(rr.Body.String()).To(Equal("{}"))
+			Expect(queryService.(*testService).searchString).To(Equal("test.txt"))
 		})
 	})
 
@@ -77,5 +130,45 @@ var _ = Describe("The management endpoint", func() {
 			Expect(rr.Code).To(Equal(http.StatusBadRequest))
 			Expect(rr.Body.String()).To(ContainSubstring(NACK))
 		})
+
+		It("should call the report service to report the folder", func() {
+
+			testFileReport := &models.FileReport{
+				Path:    "a_folder",
+				Monitor: false,
+				Replace: false,
+			}
+			expectedFileReport := *testFileReport
+
+			b, _ := json.Marshal(testFileReport)
+			req, err := http.NewRequest(http.MethodPut, FOLDER_EP, bytes.NewBuffer(b))
+			testHttpCall(req, FOLDER_EP, putFolder)
+
+			Expect(err).To(BeNil())
+			Expect(rr.Code).To(Equal(http.StatusOK))
+			Expect(rr.Body.String()).To(Equal(ACK))
+			Expect(*reportService.(*testService).folderReport).To(Equal(expectedFileReport))
+
+		})
+
 	})
 })
+
+type testService struct {
+	searchString string
+	fileReport   *models.FileReport
+	folderReport *models.FileReport
+}
+
+func (ts *testService) MakeFileQuery(searchString string) interface{} {
+	ts.searchString = searchString
+	return "{}"
+}
+
+func (ts *testService) MakeFileReport(fileReport *models.FileReport) {
+	ts.fileReport = fileReport
+}
+
+func (ts *testService) MakeFolderReport(folderReport *models.FileReport) {
+	ts.folderReport = folderReport
+}

@@ -44,20 +44,20 @@ func NewMockedRouter() Router {
 	return &MockedLookRouter{}
 }
 
-func AccessMockedRouter() *MockedLookRouter {
-	return GoLookRouter.(*MockedLookRouter)
+func AccessMockedRouter(r Router) *MockedLookRouter {
+	return r.(*MockedLookRouter)
 }
 
 var mockMutex = &sync.Mutex{}
 
-func RunWithMockedRouter(f func()) Router {
+func RunWithMockedRouter(r interface{}, f func()) interface{} {
 	mockMutex.Lock()
 	// ensure that router is reset
-	defer func(tmpRouter Router) {
-		GoLookRouter = tmpRouter
+	defer func(tmpRouter interface{}) {
+		r = tmpRouter
 		mockMutex.Unlock()
-	}(GoLookRouter)
-	GoLookRouter = NewMockedRouter()
+	}(r)
+	r = NewMockedRouter()
 
 	f()
 
@@ -65,5 +65,5 @@ func RunWithMockedRouter(f func()) Router {
 		logrus.Errorf("Recovered in RunWithMockedRouter: %s", r)
 	}
 
-	return GoLookRouter
+	return r
 }

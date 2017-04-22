@@ -21,16 +21,20 @@ type RouteLayerCallbackClient interface {
 }
 
 type RegisteredRouteLayers struct {
-	callback RouteLayerCallbackClient
+	callback map[string]RouteLayerCallbackClient
 }
 
-func (r *RegisteredRouteLayers) RegisterDefaultClient(client RouteLayerCallbackClient) {
-	r.callback = client
+func (r *RegisteredRouteLayers) RegisterClient(index string, client RouteLayerCallbackClient) {
+	r.callback[index] = client
 }
 
-func ToRouteLayer(method string, message interface{}) interface{} {
-	if RouteLayerRegistrar.callback != nil {
-		return RouteLayerRegistrar.callback.Handle(method, message)
+func (r *RegisteredRouteLayers) RemoveClient(index string, client RouteLayerCallbackClient) {
+	delete(r.callback, index)
+}
+
+func ToRouteLayer(key string, method string, message interface{}) interface{} {
+	if reg, ok := RouteLayerRegistrar.callback[key]; ok && reg != nil {
+		return reg.Handle(method, message)
 	} else {
 		logrus.Error("Method dropped before handing over to route layer. No route layer defined.")
 		return nil
@@ -38,4 +42,4 @@ func ToRouteLayer(method string, message interface{}) interface{} {
 
 }
 
-var RouteLayerRegistrar *RegisteredRouteLayers = &RegisteredRouteLayers{callback: nil}
+var RouteLayerRegistrar *RegisteredRouteLayers = &RegisteredRouteLayers{callback: make(map[string]RouteLayerCallbackClient)}

@@ -24,10 +24,15 @@ import (
  */
 
 const (
-	FILE_EP       = "/file"
-	FILE_QUERY_EP = FILE_EP + "/{file}"
-	FOLDER_EP     = "/folder"
-	INFO_EP       = "/info"
+	API_VERSION = "/v1"
+
+	systemPath = "system"
+	FILE_PATH  = "file"
+
+	FILE_EP       = API_VERSION + "/file"
+	FILE_QUERY_EP = FILE_EP + "/{" + FILE_PATH + "}"
+	FOLDER_EP     = API_VERSION + "/folder"
+	INFO_EP       = API_VERSION + "/info"
 )
 
 func ConfigApi() {

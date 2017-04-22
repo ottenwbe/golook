@@ -17,7 +17,7 @@ import (
 	"fmt"
 	"net/http"
 
-	. "github.com/ottenwbe/golook/broker/management"
+	. "github.com/ottenwbe/golook/broker/service"
 	. "github.com/ottenwbe/golook/broker/runtime"
 )
 
@@ -30,9 +30,9 @@ var (
 func getFiles(writer http.ResponseWriter, request *http.Request) {
 	file := extractFileFromPath(request)
 
-	queryService.MakeFileQuery(file)
+	result := queryService.MakeFileQuery(file)
 
-	returnAck(writer)
+	fmt.Fprint(writer, result)
 }
 
 // Endpoint: GET /info

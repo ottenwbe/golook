@@ -11,12 +11,11 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package management
+package service
 
 import (
 	. "github.com/ottenwbe/golook/broker/models"
 	. "github.com/ottenwbe/golook/broker/repository"
-	. "github.com/ottenwbe/golook/broker/routing"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -40,5 +39,5 @@ func handleFileQuery(params interface{}) interface{} {
 }
 
 func init() {
-	GoLookRouter.HandlerFunction(FILE_QUERY, handleFileQuery)
+	systemIndex.HandlerFunction(FILE_QUERY, handleFileQuery)
 }

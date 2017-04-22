@@ -11,31 +11,33 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package management
+package service
 
 import (
-	"github.com/bamzi/jobrunner"
 	. "github.com/ottenwbe/golook/broker/models"
-	. "github.com/ottenwbe/golook/broker/routing"
-	. "github.com/ottenwbe/golook/broker/runtime"
+	. "github.com/ottenwbe/golook/broker/repository"
+	log "github.com/sirupsen/logrus"
 )
 
+const (
+	SYSTEM_REPORT = "system_report"
+)
+
+func handleSystemReport(params interface{}) interface{} {
+
+	var systemMessage SystemTransfer
+	if err := Unmarshal(params, &systemMessage); err == nil {
+		if systemMessage.IsDeletion {
+			GoLookRepository.StoreSystem(systemMessage.Uuid, systemMessage.System)
+		} else {
+			GoLookRepository.DelSystem(systemMessage.Uuid)
+		}
+	} else {
+		log.WithError(err).Error("Could not handle system report")
+	}
+	return nil
+}
+
 func init() {
-	jobrunner.Start() // optional: jobrunner.Start(pool int, concurrent int) (10, 1)
-	jobrunner.Schedule("@every 5m0s", RouteJob{})
-	jobrunner.Now(RouteJob{})
-}
-
-// Job Specific Definition
-type RouteJob struct {
-}
-
-// RouteJob.Run() will get triggered automatically.
-func (r RouteJob) Run() {
-	routeSystem(false)
-}
-
-func routeSystem(isDeletion bool) {
-	s := SystemTransfer{Uuid: GolookSystem.UUID, System: GolookSystem, IsDeletion: isDeletion}
-	GoLookRouter.Route(SysKey(), SYSTEM_REPORT, s)
+	systemIndex.HandlerFunction(SYSTEM_REPORT, handleSystemReport)
 }

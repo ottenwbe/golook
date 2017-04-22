@@ -96,6 +96,7 @@ type BroadcastRouter struct {
 	RouteLayerCallbackClient
 	routeTable   DefaultRouteTable //= DefaultRouteTable{}
 	routeHandler HandlerTable      //= HandlerTable{}
+	name         string
 }
 
 func (router BroadcastRouter) HandlerFunction(name string, handler func(params interface{}) interface{}) {
@@ -107,7 +108,7 @@ func (router BroadcastRouter) Route(_ Key, method string, message interface{}) (
 	// broadcast to all registered uplink clients
 	for _, client := range router.routeTable.uplinkClients {
 		// Make the call
-		tmpRes, err := client.Call(method, message)
+		tmpRes, err := client.Call(router.name, method, message)
 		if tmpRes != nil && err == nil {
 			result = tmpRes
 		} else if err != nil {

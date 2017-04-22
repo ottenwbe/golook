@@ -38,8 +38,8 @@ func NewLookupRPCClient(url string) LookupClient {
 	}
 }
 
-func (lc *LookupRPCClient) Call(method string, message interface{}) (interface{}, error) {
-	m, err := NewRpcMessage(method, message)
+func (lc *LookupRPCClient) Call(index string, method string, message interface{}) (interface{}, error) {
+	m, err := NewRpcMessage(index, method, message)
 	if err != nil {
 		return nil, err
 	}

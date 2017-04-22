@@ -23,9 +23,6 @@ import (
 
 type (
 	RpcHandler struct{}
-	RpcResult  struct {
-		Message string `json:"message"`
-	}
 )
 
 var _ (jsonrpc.Handler) = (*RpcHandler)(nil)
@@ -37,7 +34,7 @@ func (h *RpcHandler) ServeJSONRPC(c context.Context, params *json.RawMessage) (i
 		return nil, err
 	}
 
-	return ToRouteLayer(p.Method, p.Content), nil
+	return ToRouteLayer(p.Index, p.Method, p.Content), nil
 
 }
 

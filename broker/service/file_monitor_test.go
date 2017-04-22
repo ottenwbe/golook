@@ -11,7 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package management
+package service
 
 import (
 	. "github.com/onsi/ginkgo"
@@ -53,7 +53,8 @@ var _ = Describe("The file monitor", func() {
 		It("does not monitor files when the monitor is stopped", func() {
 			StopMonitor()
 			defer StartMonitor()
-			routing.RunWithMockedRouter(func() {
+			routing.RunWithMockedRouter(systemIndex, func() {
+				systemIndex = routing.NewMockedRouter()
 
 				// Monitor the current directory for changes
 				currentDirectory, _ := filepath.Abs(".")
@@ -71,13 +72,15 @@ var _ = Describe("The file monitor", func() {
 				}
 
 				Expect(watcher).ToNot(BeNil())
-				Expect(routing.AccessMockedRouter().Visited).To(BeZero())
+				Expect(routing.AccessMockedRouter(systemIndex).Visited).To(BeZero())
 			})
 		})
 
 		It("is triggered by adding and removing a file", func() {
 
-			routing.RunWithMockedRouter(func() {
+			routing.RunWithMockedRouter(systemIndex, func() {
+				systemIndex = routing.NewMockedRouter()
+
 				// Monitor the current directory for changes
 				currentDirectory, _ := filepath.Abs(".")
 				AddFileMonitor(currentDirectory)
@@ -97,7 +100,7 @@ var _ = Describe("The file monitor", func() {
 				numEvents := 0
 				elapsed := time.Now().Second()
 				for numEvents < 1 && time.Now().Second()-elapsed < 1 {
-					numEvents = routing.AccessMockedRouter().Visited
+					numEvents = routing.AccessMockedRouter(systemIndex).Visited
 				}
 
 				Expect(watcher).ToNot(BeNil())

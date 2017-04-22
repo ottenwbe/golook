@@ -30,24 +30,24 @@ func (t *testRouteLayerClient) Handle(method string, m interface{}) interface{} 
 var _ = Describe("The route layer callback registrar", func() {
 
 	It("buffer added callbacks", func() {
-		RouteLayerRegistrar.RegisterDefaultClient(&testRouteLayerClient{})
+		RouteLayerRegistrar.RegisterClient("test1", &testRouteLayerClient{})
 		Expect(RouteLayerRegistrar.callback).ToNot(BeNil())
 	})
 
 	It("calls the route layer when tasked to do so", func() {
 		t := &testRouteLayerClient{}
-		RouteLayerRegistrar.RegisterDefaultClient(t)
+		RouteLayerRegistrar.RegisterClient("test", t)
 
-		res := ToRouteLayer("test", "msg")
+		res := ToRouteLayer("test", "test", "msg")
 
 		Expect(t.message).To(Equal("msg"))
 		Expect(res.(string)).To(Equal("test"))
 	})
 
 	It("rejects messages if the route layer is not active", func() {
-		RouteLayerRegistrar.RegisterDefaultClient(nil)
+		RouteLayerRegistrar.RegisterClient("atest", nil)
 
-		res := ToRouteLayer("test", "msg")
+		res := ToRouteLayer("atest", "test", "msg")
 
 		Expect(res).To(BeNil())
 	})

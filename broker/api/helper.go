@@ -32,9 +32,6 @@ import (
 const (
 	NACK = "{NACK}"
 	ACK  = "{ACK}"
-
-	systemPath = "system"
-	FILE_PATH  = "file"
 )
 
 func isValidRequest(request *http.Request) bool {
@@ -45,10 +42,10 @@ func returnAck(writer http.ResponseWriter) (int, error) {
 	return fmt.Fprint(writer, ACK)
 }
 
-func returnNackAndLog(writer http.ResponseWriter, errorString string, status int) {
-	log.Error(errorString)
-	http.Error(writer, errors.New(NACK).Error(), status)
-}
+//func returnNackAndLog(writer http.ResponseWriter, errorString string, status int) {
+//	log.Error(errorString)
+//	http.Error(writer, errors.New(NACK).Error(), status)
+//}
 
 func returnNackAndLogError(writer http.ResponseWriter, errorString string, err error, status int) {
 	log.WithError(err).Print(errorString)
@@ -72,7 +69,7 @@ func extractReport(request *http.Request) (*FileReport, error) {
 		return nil, errors.New("No valid request")
 	}
 
-	var fileReport *FileReport
+	var fileReport *FileReport = &FileReport{}
 	err := json.NewDecoder(request.Body).Decode(fileReport)
 	if err != nil {
 		return nil, err

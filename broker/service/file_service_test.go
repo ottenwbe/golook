@@ -11,7 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package management
+package service
 
 //
 import (
@@ -27,14 +27,18 @@ var _ = Describe("The report service", func() {
 	var rs = NewReportService()
 
 	It("ignores nil file reports", func() {
-		routing.RunWithMockedRouter(func() {
+		routing.RunWithMockedRouter(systemIndex, func() {
+			systemIndex = routing.NewMockedRouter()
+
 			rs.MakeFileReport(nil)
-			Expect(routing.AccessMockedRouter().Visited).To(BeZero())
+			Expect(routing.AccessMockedRouter(systemIndex).Visited).To(BeZero())
 		})
 	})
 
 	It("adds files which sepecify a monitoring flag to the file monitor", func() {
-		routing.RunWithMockedRouter(func() {
+		routing.RunWithMockedRouter(systemIndex, func() {
+			systemIndex = routing.NewMockedRouter()
+
 			testFileName := "test_add_remove.txt"
 			rs.MakeFileReport(
 				&models.FileReport{
@@ -46,12 +50,14 @@ var _ = Describe("The report service", func() {
 			defer RemoveFileMonitor(testFileName)
 
 			Expect(watchedFiles[testFileName]).To(BeTrue())
-			Expect(routing.AccessMockedRouter().Visited >= 1).To(BeTrue())
+			Expect(routing.AccessMockedRouter(systemIndex).Visited >= 1).To(BeTrue())
 		})
 	})
 
 	It("does not add file reports without monitoring flag to the file monitor", func() {
-		routing.RunWithMockedRouter(func() {
+		routing.RunWithMockedRouter(systemIndex, func() {
+			systemIndex = routing.NewMockedRouter()
+
 			testFileName := "test_add_remove.txt"
 			rs.MakeFileReport(
 				&models.FileReport{
@@ -64,19 +70,23 @@ var _ = Describe("The report service", func() {
 
 			_, ok := watchedFiles[testFileName]
 			Expect(ok).To(BeFalse())
-			Expect(routing.AccessMockedRouter().Visited >= 1).To(BeTrue())
+			Expect(routing.AccessMockedRouter(systemIndex).Visited >= 1).To(BeTrue())
 		})
 	})
 
 	It("ignores nil folder reports", func() {
-		routing.RunWithMockedRouter(func() {
+		routing.RunWithMockedRouter(systemIndex, func() {
+			systemIndex = routing.NewMockedRouter()
+
 			rs.MakeFolderReport(nil)
-			Expect(routing.AccessMockedRouter().Visited).To(BeZero())
+			Expect(routing.AccessMockedRouter(systemIndex).Visited).To(BeZero())
 		})
 	})
 
 	It("does add folders specifying the monitor flag to the monitor and ignores invalid folders", func() {
-		routing.RunWithMockedRouter(func() {
+		routing.RunWithMockedRouter(systemIndex, func() {
+			systemIndex = routing.NewMockedRouter()
+
 			folderName := "test_add_remove"
 			rs.MakeFolderReport(
 				&models.FileReport{
@@ -89,12 +99,14 @@ var _ = Describe("The report service", func() {
 
 			_, ok := watchedFiles[folderName]
 			Expect(ok).To(BeTrue())
-			Expect(routing.AccessMockedRouter().Visited).To(BeZero())
+			Expect(routing.AccessMockedRouter(systemIndex).Visited).To(BeZero())
 		})
 	})
 
 	It("does add folders specifying the monitor flag to the file monitor", func() {
-		routing.RunWithMockedRouter(func() {
+		routing.RunWithMockedRouter(systemIndex, func() {
+			systemIndex = routing.NewMockedRouter()
+
 			folderName, _ := filepath.Abs(".")
 			rs.MakeFolderReport(
 				&models.FileReport{
@@ -107,7 +119,7 @@ var _ = Describe("The report service", func() {
 
 			_, ok := watchedFiles[folderName]
 			Expect(ok).To(BeFalse())
-			Expect(routing.AccessMockedRouter().Visited).To(Equal(1))
+			Expect(routing.AccessMockedRouter(systemIndex).Visited).To(Equal(1))
 		})
 	})
 

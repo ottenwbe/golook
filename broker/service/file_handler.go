@@ -11,34 +11,28 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package management
+package service
 
 import (
 	. "github.com/ottenwbe/golook/broker/models"
 	. "github.com/ottenwbe/golook/broker/repository"
-	. "github.com/ottenwbe/golook/broker/routing"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 const (
-	SYSTEM_REPORT = "system_report"
+	FILE_REPORT = "file_report"
 )
 
-func handleSystemReport(params interface{}) interface{} {
-
-	var systemMessage SystemTransfer
-	if err := Unmarshal(params, &systemMessage); err == nil {
-		if systemMessage.IsDeletion {
-			GoLookRepository.StoreSystem(systemMessage.Uuid, systemMessage.System)
-		} else {
-			GoLookRepository.DelSystem(systemMessage.Uuid)
-		}
+func handleFileReport(params interface{}) interface{} {
+	var fileMessage FileTransfer
+	if err := Unmarshal(params, &fileMessage); err == nil {
+		GoLookRepository.StoreFiles(fileMessage.System, fileMessage.Files)
 	} else {
-		log.WithError(err).Error("Could not handle system report")
+		logrus.WithError(err).Error("Could not handle file report")
 	}
 	return nil
 }
 
 func init() {
-	GoLookRouter.HandlerFunction(SYSTEM_REPORT, handleSystemReport)
+	systemIndex.HandlerFunction(FILE_REPORT, handleFileReport)
 }

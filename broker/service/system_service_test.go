@@ -11,20 +11,20 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package routing
+package service
 
-import "github.com/ottenwbe/golook/broker/communication"
+//
+import (
+	"github.com/bamzi/jobrunner"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+)
 
-//var GoLookRouter = NewRouter()
+var _ = Describe("The system service", func() {
 
-func NewRouter(name string) Router {
-	result := &BroadcastRouter{
-		routeTable:   DefaultRouteTable{},
-		routeHandler: HandlerTable{},
-		name:         name,
-	}
+	It("has jobs scheduled", func() {
+		//At least one entry is made
+		Expect(len(jobrunner.Entries()) >= 1).To(BeTrue())
+	})
 
-	communication.RouteLayerRegistrar.RegisterClient(name, result)
-
-	return result
-}
+})

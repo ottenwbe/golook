@@ -11,7 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package management
+package service
 
 import (
 	log "github.com/sirupsen/logrus"
@@ -40,7 +40,7 @@ func routeFile(filePath string, replace bool) {
 	}
 
 	/* api file */
-	GoLookRouter.Route(SysKey(), FILE_REPORT, message)
+	systemIndex.Route(SysKey(), FILE_REPORT, message)
 }
 
 func routeFolder(folderPath string, replace bool) {
@@ -56,7 +56,7 @@ func routeFolder(folderPath string, replace bool) {
 		return
 	}
 
-	GoLookRouter.Route(SysKey(), FILE_REPORT, message)
+	systemIndex.Route(SysKey(), FILE_REPORT, message)
 }
 
 // Generate a []File array from files in a folder

@@ -14,5 +14,5 @@
 package communication
 
 type LookupClient interface {
-	Call(method string, message interface{}) (interface{}, error)
+	Call(routeLayerKey string, method string, message interface{}) (interface{}, error)
 }

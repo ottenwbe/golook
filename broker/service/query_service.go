@@ -11,29 +11,24 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package management
+package service
 
 import (
 	. "github.com/ottenwbe/golook/broker/models"
-	. "github.com/ottenwbe/golook/broker/repository"
 	. "github.com/ottenwbe/golook/broker/routing"
-	"github.com/sirupsen/logrus"
 )
 
-const (
-	FILE_REPORT = "file_report"
-)
-
-func handleFileReport(params interface{}) interface{} {
-	var fileMessage FileTransfer
-	if err := Unmarshal(params, &fileMessage); err == nil {
-		GoLookRepository.StoreFiles(fileMessage.System, fileMessage.Files)
-	} else {
-		logrus.WithError(err).Error("Could not handle file report")
-	}
-	return nil
+type QueryService interface {
+	MakeFileQuery(searchString string) interface{}
 }
 
-func init() {
-	GoLookRouter.HandlerFunction(FILE_REPORT, handleFileReport)
+func NewQueryService() QueryService {
+	return &queryService{}
+}
+
+type queryService struct{}
+
+func (*queryService) MakeFileQuery(searchString string) interface{} {
+	fq := FileQueryTransfer{SearchString: searchString}
+	return systemIndex.Route(SysKey(), FILE_QUERY, fq)
 }

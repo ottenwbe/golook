@@ -14,49 +14,16 @@
 package cmd
 
 import (
-	"fmt"
-	"io/ioutil"
-	"os"
-	"testing"
+	. "github.com/ottenwbe/golook/broker/runtime"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
-	. "github.com/ottenwbe/golook/broker/runtime"
 )
-
-func TestApplication(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Cmd Suite")
-}
 
 var _ = Describe("The main configuration", func() {
 	Context("default", func() {
 		It("should return the current version", func() {
-			Expect(versionFromCommand()).To(Equal(VERSION))
+			Expect(stringFromStdIn(func() { versionCmd.Run(nil, []string{}) })).To(Equal(VERSION + "\n"))
 		})
 	})
 })
-
-//https://play.golang.org/p/fXpK0ZhXXf
-func versionFromCommand() string {
-
-	defer func(reset *os.File) {
-		os.Stdout = reset
-	}(os.Stdout)
-	r, w, errPipe := os.Pipe()
-	if errPipe != nil {
-		return fmt.Sprintf("Pipe Error: %s", errPipe)
-	}
-	os.Stdout = w
-
-	versionCmd.Run(nil, []string{})
-
-	w.Close()
-	b, err := ioutil.ReadAll(r)
-	if err != nil {
-		return fmt.Sprintf("Read Error: %s", err)
-	}
-
-	return string(b)
-}

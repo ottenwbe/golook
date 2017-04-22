@@ -56,3 +56,16 @@ func (s *lookSever) RegisterFunction(path string, f func(http.ResponseWriter, *h
 	log.Infof("Register http endpoint: %s", path)
 	s.router.HandleFunc(path, f).Methods(method)
 }
+
+func (s *lookSever) RegisteredEndpoints() []string {
+	result := []string{}
+
+	s.router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+		if s, err := route.GetPathTemplate(); err == nil {
+			result = append(result, s)
+		}
+		return nil
+	})
+
+	return result
+}
