@@ -28,17 +28,6 @@ func (repo *MapRepository) StoreSystem(systemName string, system *System) bool {
 	return false
 }
 
-/*func (repo *MapRepository) StoreFile(systemName string, file *File) bool {
-	if sys, ok := (*repo)[systemName]; ok {
-		if sys.Files == nil {
-			sys.Files = make(map[string]*File)
-		}
-		addFileToSystem(file, sys)
-		return true
-	}
-	return false
-}*/
-
 func (repo *MapRepository) StoreFiles(systemName string, files map[string]*File) bool {
 	if sys, ok := (*repo)[systemName]; ok {
 		for _, file := range files {
@@ -53,23 +42,6 @@ func (repo *MapRepository) GetSystem(systemName string) (sys *System, ok bool) {
 	sys, ok = (*repo)[systemName]
 	return
 }
-
-/*func (repo *MapRepository) GetFilesOfSystem(systemName string) (map[string]*File, bool) {
-	if result, ok := repo.GetSystem(systemName); ok {
-		return result.Files, ok
-	}
-	return map[string]*File{}, false
-}
-
-func (repo *MapRepository) HasFile(fileName string, systemName string) (*File, bool) {
-	if sys, ok := repo.GetSystem(systemName); ok {
-		if file, ok := sys.Files[fileName]; ok {
-			return file, true
-		}
-
-	}
-	return nil, false
-}*/
 
 func (repo *MapRepository) DelSystem(systemName string) {
 	delete(*repo, systemName)
@@ -93,5 +65,8 @@ func (repo *MapRepository) FindSystemAndFiles(findString string) map[string]*Sys
 }
 
 func addFileToSystem(file *File, sys *System) {
+	if sys.Files == nil {
+		sys.Files = make(map[string]*File, 0)
+	}
 	sys.Files[file.Name] = file
 }

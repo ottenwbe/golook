@@ -40,8 +40,9 @@ func NewRepository() Repository {
 	return repo
 }
 
-var GoLookRepository Repository
-
-func init() {
-	GoLookRepository = NewRepository()
+// BEWARE: will panic if the GoLookRepository is not a MapRepository
+func AccessMapRepository() *MapRepository {
+	return GoLookRepository.(*MapRepository)
 }
+
+var GoLookRepository Repository = NewRepository()

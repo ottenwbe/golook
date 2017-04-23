@@ -16,6 +16,7 @@ package repositories
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"reflect"
 )
 
 var _ = Describe("The repository factory", func() {
@@ -33,7 +34,9 @@ var _ = Describe("The repository factory", func() {
 		repositoryType = MAP_REPOSITORY
 		repo := NewRepository()
 		Expect(repo).ToNot(BeNil())
-		//TODO: Check if type is correct
-		//Expect(reflect.TypeOf(repo).Name()).To(Equal(reflect.TypeOf(MapRepository{}).Name()))
+		Expect(reflect.TypeOf(repo)).To(Equal(reflect.TypeOf(&MapRepository{})))
+	})
+	It("should convert to a MapRepository by default", func() {
+		Expect(func() { AccessMapRepository() }).ToNot(Panic())
 	})
 })
