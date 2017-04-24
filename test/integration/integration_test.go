@@ -8,9 +8,13 @@ import (
 	"github.com/ottenwbe/golook/broker/runtime"
 	"github.com/ottenwbe/golook/broker/service"
 	log "github.com/sirupsen/logrus"
-	//"testing"
+	"testing"
 	"time"
 )
+
+func TestIntegration(t *testing.T) {
+	log.Info("dummy test")
+}
 
 /*func TestIntegration(t *testing.T) {
 	RunInDockerContainer(runTest)
