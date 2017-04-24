@@ -24,11 +24,11 @@ import (
 
 var _ = Describe("The api configuration", func() {
 
-	Context("Endpoints", func() {
+	Context("for the endpoints", func() {
 
 		It("should register all http end points", func() {
 
-			ConfigApi()
+			RegisterApi()
 
 			ep := runtime.HttpServer.RegisteredEndpoints()
 			Expect(extractStringFromSlice(INFO_EP, ep)).To(Equal(INFO_EP))

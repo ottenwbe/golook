@@ -17,5 +17,5 @@ import . "github.com/ottenwbe/golook/broker/routing"
 
 var (
 	systemIndex = NewRouter("system")
-	fileIndex   = NewRouter("file")
+	//fileIndex   = NewRouter("file")
 )

@@ -11,42 +11,37 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package cmd
+package runtime
 
 import (
-	"fmt"
-	"io/ioutil"
-	"os"
-	"testing"
-
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	"encoding/json"
+	"github.com/sirupsen/logrus"
 )
 
-func TestApplication(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Cmd Test Suite")
+const (
+	GOLOOK_NAME = "golook"
+	VERSION     = "v0.1.0-dev"
+)
+
+type AppInfo struct {
+	App     string  `json:"app"`
+	Version string  `json:"version"`
+	System  *System `json:"system"`
 }
 
-//see https://play.golang.org/p/fXpK0ZhXXf
-func stringFromStdIn(f func()) string {
-
-	defer func(reset *os.File) {
-		os.Stdout = reset
-	}(os.Stdout)
-	r, w, errPipe := os.Pipe()
-	if errPipe != nil {
-		return fmt.Sprintf("Pipe Error: %s", errPipe)
+func NewAppInfo() *AppInfo {
+	return &AppInfo{
+		App:     GOLOOK_NAME,
+		Version: VERSION,
+		System:  NewSystem(),
 	}
-	os.Stdout = w
+}
 
-	f()
-
-	w.Close()
-	b, err := ioutil.ReadAll(r)
+func EncodeAppInfo(info *AppInfo) string {
+	b, err := json.Marshal(info)
 	if err != nil {
-		return fmt.Sprintf("Read Error: %s", err)
+		logrus.WithError(err).Error("Could not encode app info.")
+		return "{}"
 	}
-
 	return string(b)
 }

@@ -11,42 +11,15 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package cmd
+package service
 
 import (
-	"fmt"
-	"io/ioutil"
-	"os"
-	"testing"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"testing"
 )
 
-func TestApplication(t *testing.T) {
+func TestServices(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Cmd Test Suite")
-}
-
-//see https://play.golang.org/p/fXpK0ZhXXf
-func stringFromStdIn(f func()) string {
-
-	defer func(reset *os.File) {
-		os.Stdout = reset
-	}(os.Stdout)
-	r, w, errPipe := os.Pipe()
-	if errPipe != nil {
-		return fmt.Sprintf("Pipe Error: %s", errPipe)
-	}
-	os.Stdout = w
-
-	f()
-
-	w.Close()
-	b, err := ioutil.ReadAll(r)
-	if err != nil {
-		return fmt.Sprintf("Read Error: %s", err)
-	}
-
-	return string(b)
+	RunSpecs(t, "Service Test Suite")
 }

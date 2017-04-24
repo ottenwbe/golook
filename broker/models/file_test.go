@@ -75,7 +75,7 @@ func PipeWriteFiles(pipeWriter *io.PipeWriter, files map[string]File) {
 }
 
 func PipeReadFiles(pipeReader *io.PipeReader, c chan *File) {
-	if f, err := DecodeFiles(pipeReader); err == nil && f[testFileName].Name == testFileName {
+	if f, err := UnmarshalFiles(pipeReader); err == nil && f[testFileName].Name == testFileName {
 		tmpF := f[testFileName]
 		c <- &tmpF
 	} else {
@@ -92,7 +92,7 @@ func PipeWriteFile(pipeWriter *io.PipeWriter, file File) {
 }
 
 func PipeReadFile(pipeReader *io.PipeReader, c chan *File) {
-	if f, err := DecodeFile(pipeReader); err == nil && f.Name == testFileName && f.Meta.STATE == fsnotify.Create {
+	if f, err := UnmarshalFile(pipeReader); err == nil && f.Name == testFileName && f.Meta.State == fsnotify.Create {
 		c <- &f
 	} else {
 		log.Printf("Error expected nil, got %s", err)
@@ -107,12 +107,12 @@ func newTestFile(fileName string) File {
 	f.Accessed = time.Time{}
 	f.Created = time.Time{}
 	f.Modified = time.Time{}
-	f.Meta.STATE = fsnotify.Create
+	f.Meta.State = fsnotify.Create
 	return f
 }
 
 func expectedResultFile(fileName string) File {
 	f := newTestFile(fileName)
-	f.Meta.STATE = fsnotify.Create
+	f.Meta.State = fsnotify.Create
 	return f
 }

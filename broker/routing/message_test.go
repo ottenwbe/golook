@@ -11,42 +11,30 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package cmd
+package routing
 
 import (
-	"fmt"
-	"io/ioutil"
-	"os"
-	"testing"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-func TestApplication(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Cmd Test Suite")
-}
+var _ = Describe("The encapsulated message", func() {
+	It("should comprise a method name and the content after its creation", func() {
+		m, err := NewRequestMessage(NilKey(), 1, "method", "msg")
 
-//see https://play.golang.org/p/fXpK0ZhXXf
-func stringFromStdIn(f func()) string {
+		Expect(err).To(BeNil())
+		Expect(m.Method).To(Equal("method"))
+		Expect(len(m.Params)).ToNot(BeZero())
+		Expect(m.Params).To(ContainSubstring("msg"))
+	})
 
-	defer func(reset *os.File) {
-		os.Stdout = reset
-	}(os.Stdout)
-	r, w, errPipe := os.Pipe()
-	if errPipe != nil {
-		return fmt.Sprintf("Pipe Error: %s", errPipe)
-	}
-	os.Stdout = w
+	It("should support to get the encapsulated method", func() {
+		m, err := NewRequestMessage(NilKey(), 1, "method", "msg")
 
-	f()
+		var s string
+		m.GetEncapsulated(&s)
 
-	w.Close()
-	b, err := ioutil.ReadAll(r)
-	if err != nil {
-		return fmt.Sprintf("Read Error: %s", err)
-	}
-
-	return string(b)
-}
+		Expect(err).To(BeNil())
+		Expect(s).To(Equal("msg"))
+	})
+})

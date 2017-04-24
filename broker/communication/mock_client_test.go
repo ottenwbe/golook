@@ -11,12 +11,20 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package models
+package communication
 
-type System struct {
-	Name  string           `json:"name"`
-	OS    string           `json:"os"`
-	IP    string           `json:"ip"`
-	UUID  string           `json:"uuid"`
-	Files map[string]*File `json:"files"`
-}
+import (
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+)
+
+var _ = Describe("The mock client", func() {
+
+	It("should record the name of the latest Call() and the number of calls.", func() {
+		m := &MockGolookClient{}
+		m.Call("test", nil)
+		Expect(m.Name).To(Equal("test"))
+		Expect(m.VisitedCall).To(Equal(1))
+	})
+
+})

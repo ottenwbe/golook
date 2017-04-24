@@ -11,20 +11,30 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package routing
+package utils
 
-import "github.com/ottenwbe/golook/broker/communication"
+import (
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+)
 
-//var GoLookRouter = NewRouter()
+var _ = Describe("The mock template", func() {
 
-func NewRouter(name string) Router {
-	result := &BroadcastRouter{
-		routeTable:   DefaultRouteTable{},
-		routeHandler: HandlerTable{},
-		name:         name,
-	}
+	It("should allow to run methods in a block with a mocked value for an interface", func() {
+		var test int64 = 5
+		var i int64 = 8
+		Mock(&i, &test, func() {
+			Expect(i).To(Equal(int64(5)))
+		})
+		Expect(i).To(Equal(int64(8)))
+	})
 
-	communication.RouteLayerRegistrar.RegisterClient(name, result)
-
-	return result
-}
+	It("should recover after panicing", func() {
+		var test int64 = 5
+		var i int64 = 8
+		Mock(&i, &test, func() {
+			panic("controlled panic of a test")
+		})
+		Expect(i).To(Equal(int64(8)))
+	})
+})

@@ -11,9 +11,8 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package communication
+package models
 
-//import (
-//. "github.com/onsi/ginkgo"
-//. "github.com/onsi/gomega"
-//)
+type MsgParams interface {
+	GetObject(v interface{}) error
+}

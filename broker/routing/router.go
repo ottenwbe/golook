@@ -15,54 +15,22 @@ package routing
 
 import (
 	. "github.com/ottenwbe/golook/broker/communication"
-	"github.com/ottenwbe/golook/broker/runtime"
-	"github.com/satori/go.uuid"
-	log "github.com/sirupsen/logrus"
+	"sync"
 )
 
-type Key struct {
-	id uuid.UUID
-}
-
-func NilKey() Key {
-	return Key{
-		id: uuid.Nil,
-	}
-}
-
-func SysKey() Key {
-	u, err := uuid.FromString(runtime.GolookSystem.UUID)
-	if err != nil {
-		log.Error("SysKey() cannot read UUID")
-		return NilKey()
-	}
-
-	return Key{
-		id: u,
-	}
-}
-
-func NewKeyU(key uuid.UUID) Key {
-	return Key{
-		id: key,
-	}
-}
-
-func NewKey(name string) Key {
-	return Key{
-		id: uuid.NewV5(uuid.Nil, name),
-	}
-}
-
-func NewKeyN(namespace uuid.UUID, name string) Key {
-	return Key{
-		id: uuid.NewV5(namespace, name),
-	}
+type Router interface {
+	RouterCallbackClient
+	Route(key Key, method string, params interface{}) interface{}
+	BroadCast(method string, params interface{}) interface{}
+	HandlerFunction(name string, handler func(params interface{}) interface{})
+	NewNeighbor(key Key, neighbor LookupClient)
+	Name() string
 }
 
 type HandlerTable map[string]func(params interface{}) interface{}
 
 type RouteTable interface {
+	clients() map[Key]LookupClient
 	get(key Key) (LookupClient, bool)
 	add(key Key, client LookupClient)
 	this() LookupClient
@@ -73,57 +41,59 @@ type DefaultRouteTable struct {
 	thisClient    LookupClient
 }
 
-func (rt DefaultRouteTable) this() LookupClient {
+func newDefaultRouteTable() RouteTable {
+	return &DefaultRouteTable{
+		uplinkClients: make(map[Key]LookupClient, 0),
+		thisClient:    nil,
+	}
+}
+
+func (rt *DefaultRouteTable) this() LookupClient {
 	return rt.thisClient
 }
 
-func (rt DefaultRouteTable) get(key Key) (LookupClient, bool) {
+func (rt *DefaultRouteTable) get(key Key) (LookupClient, bool) {
 	client, ok := rt.uplinkClients[key]
 	return client, ok
 }
 
-func (rt DefaultRouteTable) add(key Key, client LookupClient) {
+func (rt *DefaultRouteTable) add(key Key, client LookupClient) {
 	rt.uplinkClients[key] = client
 }
 
-type Router interface {
-	Route(key Key, method string, params interface{}) interface{}
-	Handle(method string, params interface{}) interface{}
-	HandlerFunction(name string, handler func(params interface{}) interface{})
+func (rt *DefaultRouteTable) clients() map[Key]LookupClient {
+	return rt.uplinkClients
 }
 
-type BroadcastRouter struct {
-	RouteLayerCallbackClient
-	routeTable   DefaultRouteTable //= DefaultRouteTable{}
-	routeHandler HandlerTable      //= HandlerTable{}
-	name         string
-}
+type DuplicateFilter map[uint64]bool
+type DuplicateMap map[string]DuplicateFilter
 
-func (router BroadcastRouter) HandlerFunction(name string, handler func(params interface{}) interface{}) {
-	//TODO: avoid duplicated entries
-	router.routeHandler[name] = handler
-}
+var (
+	duplicateMap DuplicateMap = make(DuplicateMap, 0)
+	duplicateMtx sync.Mutex   = sync.Mutex{}
+)
 
-func (router BroadcastRouter) Route(_ Key, method string, message interface{}) (result interface{}) {
-	// broadcast to all registered uplink clients
-	for _, client := range router.routeTable.uplinkClients {
-		// Make the call
-		tmpRes, err := client.Call(router.name, method, message)
-		if tmpRes != nil && err == nil {
-			result = tmpRes
-		} else if err != nil {
-			log.WithError(err).Error("Route message to client: %s", client)
-		}
-		log.Debug("Route message to client: %s", client)
+func (m DuplicateMap) watchForDuplicatesFrom(system string) {
+	if _, ok := duplicateMap[system]; !ok {
+		duplicateMap[system] = make(DuplicateFilter, 0)
 	}
-	return
 }
 
-func (router BroadcastRouter) Handle(method string, message interface{}) interface{} {
-	if function, ok := router.routeHandler[method]; ok {
-		return function(message)
-	} else {
-		log.Errorf("Handler for function %s not found", method)
-	}
-	return nil
+func (m DuplicateMap) isDuplicate(source Source) bool {
+	ok := m[source.System][source.Id]
+	return ok
+}
+
+func (m DuplicateMap) add(source Source) {
+	m[source.System][source.Id] = true
+}
+
+func (m DuplicateMap) CheckForDuplicates(source Source) bool {
+	duplicateMtx.Lock()
+	defer duplicateMtx.Unlock()
+
+	m.watchForDuplicatesFrom(source.System)
+	result := m.isDuplicate(source)
+	m.add(source)
+	return result
 }

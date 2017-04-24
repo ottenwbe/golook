@@ -14,8 +14,8 @@
 package service
 
 import (
-	. "github.com/ottenwbe/golook/broker/models"
 	. "github.com/ottenwbe/golook/broker/repository"
+	. "github.com/ottenwbe/golook/broker/utils"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -30,7 +30,7 @@ type QueryTransfer struct {
 func handleFileQuery(params interface{}) interface{} {
 
 	var systemMessage QueryTransfer
-	if err := Unmarshal(params, &systemMessage); err == nil {
+	if err := UnmarshalB(params, &systemMessage); err == nil {
 		return GoLookRepository.FindSystemAndFiles(systemMessage.Query)
 	} else {
 		log.WithError(err).Error("Could not handle file query")

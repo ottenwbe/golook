@@ -11,28 +11,30 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package service
+package cmd
 
 import (
-	. "github.com/ottenwbe/golook/broker/models"
-	. "github.com/ottenwbe/golook/broker/repository"
-	"github.com/sirupsen/logrus"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"github.com/spf13/cobra"
 )
 
-const (
-	FILE_REPORT = "file_report"
-)
+var _ = Describe("The root command", func() {
 
-func handleFileReport(params interface{}) interface{} {
-	var fileMessage FileTransfer
-	if err := Unmarshal(params, &fileMessage); err == nil {
-		GoLookRepository.StoreFiles(fileMessage.System, fileMessage.Files)
-	} else {
-		logrus.WithError(err).Error("Could not handle file report")
-	}
-	return nil
-}
+	var (
+		mockCmd = &cobra.Command{
+			Use:   "mock",
+			Short: "mock",
+			Long:  "mock",
+			Run: func(_ *cobra.Command, _ []string) {
+			},
+		}
+	)
 
-func init() {
-	systemIndex.HandlerFunction(FILE_REPORT, handleFileReport)
-}
+	It("should panic when a a call to run cannot be executed, i.e., due to parameters of a test", func() {
+		tmp := RootCmd
+		RootCmd = mockCmd
+		Expect(func() { Run() }).To(Panic())
+		RootCmd = tmp
+	})
+})

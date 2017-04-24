@@ -11,10 +11,28 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package models
+package service
 
-type AppInfo struct {
-	App     string  `json:"app"`
-	Version string  `json:"version"`
-	System  *System `json:"system"`
+import (
+	. "github.com/ottenwbe/golook/broker/repository"
+	. "github.com/ottenwbe/golook/broker/utils"
+	log "github.com/sirupsen/logrus"
+)
+
+const (
+	FILE_REPORT = "file_report"
+)
+
+func handleFileReport(params interface{}) interface{} {
+	var fileMessage PeerFileReport
+	if err := UnmarshalB(params, &fileMessage); err == nil {
+		GoLookRepository.StoreFiles(fileMessage.System, fileMessage.Files)
+	} else {
+		log.WithError(err).Error("Could not handle file report.")
+	}
+	return nil
+}
+
+func init() {
+	systemIndex.HandlerFunction(FILE_REPORT, handleFileReport)
 }

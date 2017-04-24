@@ -41,7 +41,7 @@ var _ = Describe("The management endpoint", func() {
 		}
 
 		savedReportService = reportService
-		savedQuerySerice   = queryService
+		savedQueryService  = queryService
 	)
 
 	BeforeEach(func() {
@@ -51,7 +51,7 @@ var _ = Describe("The management endpoint", func() {
 
 	AfterEach(func() {
 		reportService = savedReportService
-		queryService = savedQuerySerice
+		queryService = savedQueryService
 	})
 
 	Context(INFO_EP, func() {
@@ -66,7 +66,6 @@ var _ = Describe("The management endpoint", func() {
 		})
 	})
 
-	//TODO context per http metho
 	Context(FILE_EP, func() {
 
 		It("should return an error 400 and nack, when body is empty", func() {

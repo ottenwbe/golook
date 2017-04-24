@@ -11,19 +11,17 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package service
+package communication
 
-type QueryService interface {
-	MakeFileQuery(searchString string) interface{}
+import "github.com/ottenwbe/golook/broker/models"
+
+type MockGolookClient struct {
+	VisitedCall int
+	Name        string
 }
 
-func newQueryService() QueryService {
-	return &defaultQueryService{}
-}
-
-type defaultQueryService struct{}
-
-func (*defaultQueryService) MakeFileQuery(searchString string) interface{} {
-	fq := PeerFileQuery{SearchString: searchString}
-	return systemIndex.BroadCast(FILE_QUERY, fq)
+func (client *MockGolookClient) Call(router string, message interface{}) (models.MsgParams, error) {
+	client.Name = router
+	client.VisitedCall += 1
+	return nil, nil
 }

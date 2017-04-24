@@ -24,11 +24,7 @@ import (
 // implements the LookupClient interface
 type LookupRPCClient struct {
 	serverUrl string
-	c         *jsonrpc.RPCClient //TODO: check if http communication is synchronized
-}
-
-func init() {
-	LookupClients.Add("rpc", NewLookupRPCClient, true)
+	c         *jsonrpc.RPCClient
 }
 
 func NewLookupRPCClient(url string) LookupClient {
@@ -38,22 +34,25 @@ func NewLookupRPCClient(url string) LookupClient {
 	}
 }
 
-func (lc *LookupRPCClient) Call(index string, method string, message interface{}) (interface{}, error) {
-	m, err := NewRpcMessage(index, method, message)
+type RPCMsgResponse struct {
+	response *jsonrpc.RPCResponse
+}
+
+func (r *RPCMsgResponse) GetObject(v interface{}) error {
+	return r.response.GetObject(v)
+}
+
+//func (lc *LookupRPCClient) Call(index string, method string, message interface{}) (interface{}, error) {
+func (lc *LookupRPCClient) Call(method string, m interface{}) (MsgParams, error) {
+
+	response, err := lc.c.Call(method, m)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := lc.c.Call("encapsulated", m)
-	if err != nil {
-		return nil, err
-	}
+	return &RPCMsgResponse{response: response}, nil
+}
 
-	var msg ResponseMessage
-	err = response.GetObject(&msg)
-	if err != nil {
-		return nil, err
-	}
-
-	return msg.Content, nil
+func (lc *LookupRPCClient) Url() string {
+	return lc.serverUrl
 }

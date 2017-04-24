@@ -53,20 +53,19 @@ var _ = Describe("The file monitor", func() {
 		It("does not monitor files when the monitor is stopped", func() {
 			StopMonitor()
 			defer StartMonitor()
-			routing.RunWithMockedRouter(systemIndex, func() {
-				systemIndex = routing.NewMockedRouter()
+			routing.RunWithMockedRouter(&systemIndex, func() {
 
 				// Monitor the current directory for changes
 				currentDirectory, _ := filepath.Abs(".")
 				AddFileMonitor(currentDirectory)
 				defer RemoveFileMonitor(currentDirectory)
 
-				_, err := os.Create(TEST_FILE) // For read access.
+				_, err := os.Create(TEST_FILE)
 				if err != nil {
 					logrus.Fatal(err)
 				}
 
-				err = os.Remove(TEST_FILE) // For read access.
+				err = os.Remove(TEST_FILE)
 				if err != nil {
 					logrus.Fatal(err)
 				}
@@ -78,8 +77,7 @@ var _ = Describe("The file monitor", func() {
 
 		It("is triggered by adding and removing a file", func() {
 
-			routing.RunWithMockedRouter(systemIndex, func() {
-				systemIndex = routing.NewMockedRouter()
+			routing.RunWithMockedRouter(&systemIndex, func() {
 
 				// Monitor the current directory for changes
 				currentDirectory, _ := filepath.Abs(".")

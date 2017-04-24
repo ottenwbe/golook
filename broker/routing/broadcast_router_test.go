@@ -11,42 +11,19 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package cmd
+package routing
 
 import (
-	"fmt"
-	"io/ioutil"
-	"os"
-	"testing"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"reflect"
 )
 
-func TestApplication(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Cmd Test Suite")
-}
+var _ = Describe("The broadcast router", func() {
+	It("creates a new router", func() {
+		r := newBroadcastRouter("test")
 
-//see https://play.golang.org/p/fXpK0ZhXXf
-func stringFromStdIn(f func()) string {
-
-	defer func(reset *os.File) {
-		os.Stdout = reset
-	}(os.Stdout)
-	r, w, errPipe := os.Pipe()
-	if errPipe != nil {
-		return fmt.Sprintf("Pipe Error: %s", errPipe)
-	}
-	os.Stdout = w
-
-	f()
-
-	w.Close()
-	b, err := ioutil.ReadAll(r)
-	if err != nil {
-		return fmt.Sprintf("Read Error: %s", err)
-	}
-
-	return string(b)
-}
+		Expect(r).ToNot(BeNil())
+		Expect(reflect.TypeOf(r)).To(Equal(reflect.TypeOf(&BroadcastRouter{})))
+	})
+})

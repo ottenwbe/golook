@@ -11,7 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package models
+package utils
 
 import (
 	. "github.com/onsi/ginkgo"
@@ -19,42 +19,49 @@ import (
 )
 
 var _ = Describe("Marshalling a message", func() {
-	It("it should be the same result after demarshalling", func() {
+
+	It(" should be the same result after demarshalling when using the bytes method", func() {
 		testString := "test"
 
-		msg, err1 := Marshal(testString)
+		msg, err1 := MarshalB(testString)
 		var s string
-		err2 := Unmarshal(msg, &s)
+		err2 := UnmarshalB(msg, &s)
 
 		Expect(err1).To(BeNil())
 		Expect(err2).To(BeNil())
 		Expect(s).To(Equal(testString))
 	})
 
-	It("should throw an error when channels or other unsupported types are marshalled", func() {
+	It(" should be the same result after demarshalling when using the string method", func() {
+		testString := "test"
+
+		msg, err1 := MarshalS(testString)
+		var s string
+		err2 := UnmarshalS(msg, &s)
+
+		Expect(err1).To(BeNil())
+		Expect(err2).To(BeNil())
+		Expect(s).To(Equal(testString))
+	})
+
+	It("should return an error when channels or other unsupported types are used", func() {
 		c := make(chan bool)
 
-		_, err := Marshal(c)
+		_, err := MarshalB(c)
 
 		Expect(err).ToNot(BeNil())
 	})
-})
 
-var _ = Describe("The encapsulated message", func() {
-	It("should comprise a method name and the content after its creation", func() {
-		m, err := NewRpcMessage("index", "method", "msg")
-		Expect(err).To(BeNil())
-		Expect(m.Method).To(Equal("method"))
-		Expect(len(m.Content)).ToNot(BeZero())
-	})
+	//TODO own context
+	It("should return an error when unmarshalling a faulty input", func() {
+		s := ""
+		type test struct {
+			i int
+		}
+		var t test
 
-	It("should support to get the encapsulated method", func() {
-		m, err := NewRpcMessage("index", "method", "msg")
+		err := UnmarshalB([]byte(s), &t)
 
-		var s string
-		m.GetEncapsulated(&s)
-
-		Expect(err).To(BeNil())
-		Expect(s).To(Equal("msg"))
+		Expect(err).ToNot(BeNil())
 	})
 })

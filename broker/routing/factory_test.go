@@ -11,25 +11,29 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package models
+package routing
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/ottenwbe/golook/broker/communication"
+	"reflect"
 )
 
-var _ = Describe("uuids", func() {
+var _ = Describe("The router factory", func() {
+	It("creates a new router and registeres it", func() {
+		r := NewRouter("test")
+		defer finalizer(r)
 
-	var (
-		uuid1, uuid2 string
-	)
-
-	BeforeEach(func() {
-		uuid1 = NewUUID()
-		uuid2 = NewUUID()
+		Expect(r).ToNot(BeNil())
+		Expect(reflect.TypeOf(r)).To(Equal(reflect.TypeOf(&BroadcastRouter{})))
 	})
 
-	It("generated at random should differ", func() {
-		Expect(uuid1).ToNot(Equal(uuid2))
+	It("registers and deregisters a created router", func() {
+		r := NewRouter("test")
+		Expect(r).ToNot(BeNil())
+		Expect(communication.RouterRegistrar.HasClient("test")).To(BeTrue())
+		DeleteRouter("test")
+		Expect(communication.RouterRegistrar.HasClient("test")).To(BeFalse())
 	})
 })

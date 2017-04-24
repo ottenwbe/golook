@@ -11,15 +11,26 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package service
+package routing
 
 import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"testing"
+	"github.com/ottenwbe/golook/broker/communication"
+	"runtime"
 )
 
-func TestFileManagement(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "File Management Test Suite")
+func NewRouter(name string) Router {
+	result := newBroadcastRouter(name)
+
+	communication.RouterRegistrar.RegisterClient(name, result, RequestMessage{}, ResponseMessage{})
+	runtime.SetFinalizer(result, finalizer)
+
+	return result
+}
+
+func finalizer(r Router) {
+	DeleteRouter(r.Name())
+}
+
+func DeleteRouter(name string) {
+	communication.RouterRegistrar.RemoveClient(name)
 }

@@ -15,12 +15,13 @@ package repositories
 
 import (
 	. "github.com/ottenwbe/golook/broker/models"
+	"github.com/ottenwbe/golook/broker/runtime"
 	"strings"
 )
 
-type MapRepository map[string]*System
+type MapRepository map[string]*SystemFiles
 
-func (repo *MapRepository) StoreSystem(systemName string, system *System) bool {
+func (repo *MapRepository) StoreSystem(systemName string, system *SystemFiles) bool {
 	if system != nil {
 		(*repo)[systemName] = system
 		return true
@@ -38,7 +39,7 @@ func (repo *MapRepository) StoreFiles(systemName string, files map[string]*File)
 	return false
 }
 
-func (repo *MapRepository) GetSystem(systemName string) (sys *System, ok bool) {
+func (repo *MapRepository) GetSystem(systemName string) (sys *SystemFiles, ok bool) {
 	sys, ok = (*repo)[systemName]
 	return
 }
@@ -47,14 +48,15 @@ func (repo *MapRepository) DelSystem(systemName string) {
 	delete(*repo, systemName)
 }
 
-func (repo *MapRepository) FindSystemAndFiles(findString string) map[string]*System {
-	result := make(map[string]*System, 0)
+func (repo *MapRepository) FindSystemAndFiles(findString string) map[string]*SystemFiles {
+	result := make(map[string]*SystemFiles, 0)
 	for sid, system := range *repo {
 		for _, file := range system.Files {
 			if strings.Contains(file.Name, findString) {
 				if _, ok := result[sid]; !ok {
-					result[sid] = new(System)
-					result[sid].Name = system.Name
+					result[sid] = new(SystemFiles)
+					result[sid].System = new(runtime.System)
+					*result[sid].System = *system.System
 					result[sid].Files = make(map[string]*File, 0)
 				}
 				result[sid].Files[file.Name] = file
@@ -64,7 +66,7 @@ func (repo *MapRepository) FindSystemAndFiles(findString string) map[string]*Sys
 	return result
 }
 
-func addFileToSystem(file *File, sys *System) {
+func addFileToSystem(file *File, sys *SystemFiles) {
 	if sys.Files == nil {
 		sys.Files = make(map[string]*File, 0)
 	}

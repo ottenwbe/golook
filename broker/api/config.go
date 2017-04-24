@@ -20,22 +20,22 @@ import (
 )
 
 /*
-
- */
+	Configuration of the api
+*/
 
 const (
-	API_VERSION = "/v1"
+	Golook_API_VERSION = "/v1"
 
-	systemPath = "system"
-	FILE_PATH  = "file"
+	//systemPath = "system"
+	FILE_PATH = "file"
 
-	FILE_EP       = API_VERSION + "/file"
+	FILE_EP       = Golook_API_VERSION + "/file"
 	FILE_QUERY_EP = FILE_EP + "/{" + FILE_PATH + "}"
-	FOLDER_EP     = API_VERSION + "/folder"
-	INFO_EP       = API_VERSION + "/info"
+	FOLDER_EP     = Golook_API_VERSION + "/folder"
+	INFO_EP       = Golook_API_VERSION + "/info"
 )
 
-func ConfigApi() {
+func RegisterApi() {
 	HttpServer.RegisterFunction(FILE_QUERY_EP, putFile, http.MethodPut)
 	HttpServer.RegisterFunction(FILE_EP, getFiles, http.MethodGet)
 	HttpServer.RegisterFunction(FOLDER_EP, putFolder, http.MethodPut)

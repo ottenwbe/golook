@@ -11,29 +11,28 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package runtime
+package cmd
 
 import (
-	. "github.com/ottenwbe/golook/broker/models"
-
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-var _ = Describe(" AppInfo ", func() {
+var routingCmd = &cobra.Command{
+	Use:   "routing",
+	Short: "Configure the routing options",
+	Long:  "Configure the routing options",
+	Run: func(_ *cobra.Command, _ []string) {
+	},
+}
 
-	var info *AppInfo
+func configRouting() {
+	log.Info("configure routing commands")
+	//TODO bootstrap := viper.GetStringSlice("bootstrapping.peers")
+}
 
-	BeforeEach(func() {
-		info = NewAppInfo()
-	})
-
-	It("should comprise the current app version by default", func() {
-		Expect(info.Version).To(Equal(VERSION))
-	})
-
-	It("should comprise the current system by default", func() {
-		Expect(info.System).ToNot(BeNil())
-		Expect(*info.System).To(Equal(*NewSystem()))
-	})
-})
+func init() {
+	viper.SetDefault("bootstrapping.peers", []string{"127.0.0.1"})
+	RootCmd.AddCommand(routingCmd)
+}

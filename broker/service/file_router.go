@@ -19,6 +19,7 @@ import (
 	. "github.com/ottenwbe/golook/broker/models"
 	. "github.com/ottenwbe/golook/broker/routing"
 	. "github.com/ottenwbe/golook/broker/runtime"
+	. "github.com/ottenwbe/golook/broker/utils"
 	"io/ioutil"
 	"os"
 )
@@ -33,7 +34,7 @@ func routeFile(filePath string, replace bool) {
 		return
 	}
 
-	message, err := Marshal(FileTransfer{Files: map[string]*File{file.Name: file}, Replace: replace, System: GolookSystem.UUID})
+	message, err := MarshalB(PeerFileReport{Files: map[string]*File{file.Name: file}, Replace: replace, System: GolookSystem.UUID})
 	if err != nil {
 		log.WithError(err).Error("Ignoring file api.")
 		return
@@ -50,7 +51,7 @@ func routeFolder(folderPath string, replace bool) {
 		return
 	}
 
-	message, err := Marshal(FileTransfer{Files: report, Replace: replace, System: GolookSystem.UUID})
+	message, err := MarshalB(PeerFileReport{Files: report, Replace: replace, System: GolookSystem.UUID})
 	if err != nil {
 		log.WithError(err).Error("Ignoring folder api.")
 		return

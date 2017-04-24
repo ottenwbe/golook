@@ -14,8 +14,8 @@
 package service
 
 import (
-	. "github.com/ottenwbe/golook/broker/models"
 	. "github.com/ottenwbe/golook/broker/repository"
+	. "github.com/ottenwbe/golook/broker/utils"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -26,7 +26,7 @@ const (
 func handleSystemReport(params interface{}) interface{} {
 
 	var systemMessage SystemTransfer
-	if err := Unmarshal(params, &systemMessage); err == nil {
+	if err := UnmarshalB(params, &systemMessage); err == nil {
 		if systemMessage.IsDeletion {
 			GoLookRepository.StoreSystem(systemMessage.Uuid, systemMessage.System)
 		} else {

@@ -15,10 +15,12 @@ package models
 
 import (
 	"fmt"
+	"path/filepath"
+
 	"github.com/fsnotify/fsnotify"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"path/filepath"
+	log "github.com/sirupsen/logrus"
 )
 
 var _ = Describe("The file's", func() {
@@ -27,13 +29,16 @@ var _ = Describe("The file's", func() {
 
 	It("metadata of file file_io_test.go can be read", func() {
 		fp, errFilePath := filepath.Abs(FILE_NAME)
+		if errFilePath != nil {
+			log.WithError(errFilePath).Fatal("File I/O test failed")
+		}
 
 		file, errFile := NewFile(fp)
 
-		Expect(errFilePath).To(BeNil())
 		Expect(errFile).To(BeNil())
 		Expect(file).To(Not(BeNil()))
 		Expect(file.Name).To(Equal(fp))
+		Expect(file.Meta.State).To(Equal(fsnotify.Create))
 	})
 
 	It("non existing file is not read and marked as removed", func() {
@@ -42,7 +47,7 @@ var _ = Describe("The file's", func() {
 		file, errFile := NewFile(fp)
 
 		Expect(errFile).To(BeNil())
-		Expect(file.Meta.STATE).To(Equal(fsnotify.Remove))
+		Expect(file.Meta.State).To(Equal(fsnotify.Remove))
 	})
 
 })

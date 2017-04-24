@@ -30,16 +30,16 @@ type File struct {
 }
 
 type FileMeta struct {
-	STATE fsnotify.Op `json:"state"`
+	State fsnotify.Op `json:"state"`
 }
 
-func DecodeFiles(fileReader io.Reader) (map[string]File, error) {
+func UnmarshalFiles(fileReader io.Reader) (map[string]File, error) {
 	files := make(map[string]File, 0)
 	err := json.NewDecoder(fileReader).Decode(&files)
 	return files, err
 }
 
-func DecodeFile(fileReader io.Reader) (File, error) {
+func UnmarshalFile(fileReader io.Reader) (File, error) {
 	var file File
 	err := json.NewDecoder(fileReader).Decode(&file)
 	return file, err

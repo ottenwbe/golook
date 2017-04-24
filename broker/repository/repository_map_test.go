@@ -21,7 +21,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var _ = Describe("The repository map", func() {
+var _ = Describe("The repository implemented with maps", func() {
 
 	var (
 		repo *MapRepository
@@ -31,56 +31,63 @@ var _ = Describe("The repository map", func() {
 		repo = &MapRepository{}
 	})
 
-	It("not accept nil systems", func() {
+	It("does not accept nil systems", func() {
 		Expect(repo.StoreSystem("sys", nil)).To(BeFalse())
 	})
 
-	It("store valid systems", func() {
-		sys := runtime.NewSystem()
-		Expect(repo.StoreSystem(sys.Name, sys)).To(BeTrue())
-		_, ok := (*repo)[sys.Name]
+	It("stores valid systems", func() {
+		sys := &models.SystemFiles{System: runtime.NewSystem(), Files: nil}
+
+		Expect(repo.StoreSystem(sys.System.Name, sys)).To(BeTrue())
+		_, ok := (*repo)[sys.System.Name]
 		Expect(ok).To(BeTrue())
 	})
 
-	It("retrieve a system by name", func() {
-		sys := runtime.NewSystem()
-		Expect(repo.StoreSystem(sys.Name, sys)).To(BeTrue())
-		sys, ok := repo.GetSystem(sys.Name)
+	It("can retrieve a system by name", func() {
+		sys := &models.SystemFiles{System: runtime.NewSystem(), Files: nil}
+		repo.StoreSystem(sys.System.Name, sys)
+
+		sys, ok := repo.GetSystem(sys.System.Name)
 		Expect(sys).ToNot(BeNil())
 		Expect(ok).To(BeTrue())
 	})
 
-	It("allow to delete a stored System", func() {
-		sys := runtime.NewSystem()
-		Expect(repo.StoreSystem(sys.Name, sys)).To(BeTrue())
-		repo.DelSystem(sys.Name)
-		_, ok := (*repo)[sys.Name]
+	It("allows to delete a stored System", func() {
+		sys := &models.SystemFiles{System: runtime.NewSystem(), Files: nil}
+		sysName := sys.System.Name
+		stored := repo.StoreSystem(sysName, sys)
+
+		repo.DelSystem(sysName)
+		_, ok := (*repo)[sysName]
+		Expect(stored).To(BeTrue())
 		Expect(ok).To(BeFalse())
 	})
 
-	It("should reject files if no valid System is stored", func() {
+	It("rejects files if no valid System is stored", func() {
 		Expect(repo.StoreFiles("unknown", map[string]*models.File{})).To(BeFalse())
 	})
 
-	It("should accept files for valid systems", func() {
+	It("accepts files for valid systems", func() {
 		f := newTestFile()
-		sys := runtime.NewSystem()
+		sys := &models.SystemFiles{System: runtime.NewSystem(), Files: nil}
+		sysName := sys.System.Name
+		repo.StoreSystem(sysName, sys)
 
-		Expect(repo.StoreSystem(sys.Name, sys)).To(BeTrue())
-		Expect(repo.StoreFiles(sys.Name, map[string]*models.File{f.ShortName: f})).To(BeTrue())
+		Expect(repo.StoreFiles(sysName, map[string]*models.File{f.ShortName: f})).To(BeTrue())
 	})
 
 	It("should find files that have been stored", func() {
 		f := newTestFile()
-		sys := runtime.NewSystem()
+		sys := &models.SystemFiles{System: runtime.NewSystem(), Files: nil}
+		sysName := sys.System.Name
 
-		repo.StoreSystem(sys.Name, sys)
-		repo.StoreFiles(sys.Name, map[string]*models.File{f.ShortName: f})
+		repo.StoreSystem(sysName, sys)
+		repo.StoreFiles(sysName, map[string]*models.File{f.ShortName: f})
 
 		res := repo.FindSystemAndFiles(f.ShortName)
 		Expect(len(res)).To(Equal(1))
-		Expect(len(res[sys.Name].Files)).To(Equal(1))
-		Expect(*res[sys.Name].Files[f.Name]).To(Equal(*f))
+		Expect(len(res[sysName].Files)).To(Equal(1))
+		Expect(*res[sysName].Files[f.Name]).To(Equal(*f))
 	})
 })
 

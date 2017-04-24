@@ -18,21 +18,27 @@ import (
 
 	. "github.com/ottenwbe/golook/broker/runtime"
 
+	"github.com/ottenwbe/golook/broker/api"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 func Run() {
+
+	//TODO refactor
+	configRouting()
+	api.RegisterApi()
+
 	if err := RootCmd.Execute(); err != nil {
-		log.WithError(err).Fatal("Executing root command failed")
+		log.WithError(err).Panic("Executing root command failed")
 	}
 }
 
 var RootCmd = &cobra.Command{
 	Use:   GOLOOK_NAME,
 	Short: "Golook Broker",
-	Long:  "Golook Broker which implements a Servent (Client/Server) for the distributed file search",
+	Long:  "Golook Broker which implements a Servent (Client/Server) for a distributed file search",
 	Run: func(_ *cobra.Command, _ []string) {
 		log.Info("Starting up Golook...")
 		HttpServer.StartServer()

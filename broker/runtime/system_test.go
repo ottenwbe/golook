@@ -20,7 +20,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/ottenwbe/golook/broker/models"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -28,7 +27,7 @@ const (
 	testSysName = "test"
 )
 
-var _ = Describe("The model", func() {
+var _ = Describe("The system model", func() {
 
 	var (
 		chanbools  chan bool
@@ -74,11 +73,10 @@ var _ = Describe("The model", func() {
 
 func newTestSystem(sysName string) *System {
 	s := &System{
-		Name:  sysName,
-		OS:    "Linux",
-		IP:    "localhost",
-		UUID:  "uuid",
-		Files: nil,
+		Name: sysName,
+		OS:   "Linux",
+		IP:   "localhost",
+		UUID: "uuid",
 	}
 	return s
 }

@@ -13,17 +13,6 @@
 //limitations under the License.
 package service
 
-type QueryService interface {
-	MakeFileQuery(searchString string) interface{}
-}
-
-func newQueryService() QueryService {
-	return &defaultQueryService{}
-}
-
-type defaultQueryService struct{}
-
-func (*defaultQueryService) MakeFileQuery(searchString string) interface{} {
-	fq := PeerFileQuery{SearchString: searchString}
-	return systemIndex.BroadCast(FILE_QUERY, fq)
+func NewFileServices() (ReportService, QueryService) {
+	return newReportService(), newQueryService()
 }

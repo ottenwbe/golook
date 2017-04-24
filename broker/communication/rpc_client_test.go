@@ -16,17 +16,15 @@ package communication
 // Tests based on https://github.com/ybbus/jsonrpc/blob/master/jsonrpc_test.go
 
 import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-
-	. "github.com/ottenwbe/golook/broker/models"
-
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"strings"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"github.com/sirupsen/logrus"
 )
 
 type TestParams struct {
@@ -41,22 +39,29 @@ var _ = Describe("The rpc client", func() {
 	)
 
 	var (
-		requestChan chan string
-		httpServer  *httptest.Server
-		lookClient  LookupClient
+		requestChan     chan string
+		httpServer      *httptest.Server
+		lookClient      LookupClient
+		expectedContent []byte
 	)
 
 	BeforeEach(func() {
 
+		var err error
+		if expectedContent, err = json.Marshal(TestParams{A: 1, B: "test"}); err != nil {
+			logrus.WithError(err).Fatal("Test failed.")
+		}
+
 		requestChan = make(chan string, 1)
 
+		// start the test server
 		httpServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			data, _ := ioutil.ReadAll(r.Body)
 			defer r.Body.Close()
 			// put request and body to channel for the client to investigate them
 			requestChan <- string(data)
 
-			b, _ := json.Marshal(ResponseMessage{Content: EXPECTED_RESPONSE_CONTENT})
+			b, _ := json.Marshal(EXPECTED_RESPONSE_CONTENT)
 			fmt.Fprintf(w, `{"jsonrpc":"2.0","result":%s,"id":0}`, string(b))
 		}))
 
@@ -67,24 +72,23 @@ var _ = Describe("The rpc client", func() {
 		httpServer.Close()
 	})
 
-	It("should format the encapsulated RequestMessage to json", func() {
-		expectedContent, _ := json.Marshal(TestParams{A: 1, B: "test"}) //TODO: err
+	It("should send a message to the server and in turn receive the response without an error", func() {
+		var expectedString string
 
-		result, err := lookClient.Call("", "testMethod", TestParams{A: 1, B: "test"})
+		// make a test call to the server (see httpServer)
+		result, err := lookClient.Call("testMethod", TestParams{A: 1, B: "test"})
+		// unmarshal the result
+		result.GetObject(&expectedString)
 
 		Expect(err).To(BeNil())
-		// get the body which has been received by the server
+		// get the msg which has been received by the server
 		res := <-requestChan
-		Expect(res).To(ContainSubstring(strings.Replace(string(expectedContent), "\"", "\\\"", -1)))
-		Expect(result).To(Equal(EXPECTED_RESPONSE_CONTENT))
+		Expect(res).To(ContainSubstring(string(expectedContent)))
+		Expect(expectedString).To(Equal(EXPECTED_RESPONSE_CONTENT))
 	})
 
-	It("should return an error when an invalid type should be transferred as content, e.g. a channel", func() {
-		_, err := lookClient.Call("", "no method", make(chan bool))
+	It("should return an error when an invalid type is t be transferred as content, e.g. a channel", func() {
+		_, err := lookClient.Call("no method", make(chan bool))
 		Expect(err).ToNot(BeNil())
 	})
-
-	/*It("should be registered as default client", func() {
-		Expect(LookupClients.defaultClient).To(Equal("rpc"))
-	})*/
 })

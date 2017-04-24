@@ -18,9 +18,9 @@ import (
 )
 
 type Repository interface {
-	StoreSystem(systemName string, system *System) bool
-	GetSystem(systemName string) (*System, bool)
+	StoreSystem(systemName string, system *SystemFiles) bool
+	GetSystem(systemName string) (*SystemFiles, bool)
 	DelSystem(systemName string)
 	StoreFiles(systemName string, files map[string]*File) bool
-	FindSystemAndFiles(findString string) map[string]*System
+	FindSystemAndFiles(findString string) map[string]*SystemFiles
 }

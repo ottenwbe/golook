@@ -11,19 +11,31 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package service
+package utils
 
-type QueryService interface {
-	MakeFileQuery(searchString string) interface{}
+import "encoding/json"
+
+func MarshalB(message interface{}) ([]byte, error) {
+	if b, err := json.Marshal(message); err == nil {
+		return b, nil
+	} else {
+		return []byte{}, err
+	}
 }
 
-func newQueryService() QueryService {
-	return &defaultQueryService{}
+func MarshalS(message interface{}) (string, error) {
+	b, err := MarshalB(message)
+	return string(b), err
 }
 
-type defaultQueryService struct{}
+func UnmarshalB(message interface{}, result interface{}) error {
+	if err := json.Unmarshal(message.([]byte), result); err != nil {
+		return err
+	}
+	return nil
+}
 
-func (*defaultQueryService) MakeFileQuery(searchString string) interface{} {
-	fq := PeerFileQuery{SearchString: searchString}
-	return systemIndex.BroadCast(FILE_QUERY, fq)
+func UnmarshalS(message interface{}, result interface{}) error {
+	err := UnmarshalB([]byte(message.(string)), result)
+	return err
 }

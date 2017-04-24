@@ -14,30 +14,24 @@
 package runtime
 
 import (
-	"encoding/json"
-	"github.com/sirupsen/logrus"
-
-	. "github.com/ottenwbe/golook/broker/models"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-const (
-	GOLOOK_NAME = "golook"
-	VERSION     = "v0.1.0-dev"
-)
+var _ = Describe(" AppInfo ", func() {
 
-func NewAppInfo() *AppInfo {
-	return &AppInfo{
-		App:     GOLOOK_NAME,
-		Version: VERSION,
-		System:  NewSystem(),
-	}
-}
+	var info *AppInfo
 
-func EncodeAppInfo(info *AppInfo) string {
-	b, err := json.Marshal(info)
-	if err != nil {
-		logrus.WithError(err).Error("Could not encode app info.")
-		return "{}"
-	}
-	return string(b)
-}
+	BeforeEach(func() {
+		info = NewAppInfo()
+	})
+
+	It("should comprise the current app version by default", func() {
+		Expect(info.Version).To(Equal(VERSION))
+	})
+
+	It("should comprise the current system by default", func() {
+		Expect(info.System).ToNot(BeNil())
+		Expect(*info.System).To(Equal(*NewSystem()))
+	})
+})

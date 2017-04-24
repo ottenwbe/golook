@@ -16,39 +16,67 @@ package communication
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/ottenwbe/golook/broker/models"
 )
 
-type testRouteLayerClient struct {
-	message string
-}
+var _ = Describe("The router callback registrar", func() {
 
-func (t *testRouteLayerClient) Handle(method string, m interface{}) interface{} {
-	t.message = m.(string)
-	return method
-}
-
-var _ = Describe("The route layer callback registrar", func() {
-
-	It("buffer added callbacks", func() {
-		RouteLayerRegistrar.RegisterClient("test1", &testRouteLayerClient{})
-		Expect(RouteLayerRegistrar.callback).ToNot(BeNil())
+	It("stores routers that have been registered", func() {
+		const TEST_NAME = "test1"
+		RouterRegistrar.RegisterClient(TEST_NAME, &testRouteLayerClient{}, testMsg{}, testResponse{})
+		Expect(RouterRegistrar.routerCallback).ToNot(BeNil())
+		Expect(RouterRegistrar.routerCallback[TEST_NAME]).ToNot(BeNil())
 	})
 
-	It("calls the route layer when tasked to do so", func() {
+	It("allows to query for stored routers", func() {
+		const TEST_NAME = "testQuery"
+		RouterRegistrar.RegisterClient(TEST_NAME, &testRouteLayerClient{}, testMsg{}, testResponse{})
+		Expect(RouterRegistrar.HasClient(TEST_NAME)).To(BeTrue())
+	})
+
+	It("calls the router when tasked to do so", func() {
+		const (
+			MSG_CONTENT = "msg"
+			TEST_NAME   = "test"
+		)
 		t := &testRouteLayerClient{}
-		RouteLayerRegistrar.RegisterClient("test", t)
+		RouterRegistrar.RegisterClient(TEST_NAME, t, testMsg{}, testResponse{})
 
-		res := ToRouteLayer("test", "test", "msg")
+		res := toRouteLayer(TEST_NAME, &testMsgConv{MSG_CONTENT})
 
-		Expect(t.message).To(Equal("msg"))
-		Expect(res.(string)).To(Equal("test"))
+		Expect(t.message).To(Equal(MSG_CONTENT))
+		Expect(res.(string)).To(Equal(TEST_NAME))
 	})
 
-	It("rejects messages if the route layer is not active", func() {
-		RouteLayerRegistrar.RegisterClient("atest", nil)
+	It("rejects messages, i.e., returns nil, if the router is not registered", func() {
+		const TEST_NAME = "atest"
+		RouterRegistrar.RegisterClient(TEST_NAME, nil, testMsg{}, testResponse{})
 
-		res := ToRouteLayer("atest", "test", "msg")
+		res := toRouteLayer(TEST_NAME, &testMsgConv{"msg"})
 
 		Expect(res).To(BeNil())
 	})
 })
+
+type (
+	testRouteLayerClient struct {
+		message string
+	}
+	testMsg struct {
+	}
+	testResponse struct {
+	}
+	testMsgConv struct {
+		testString string
+	}
+)
+
+func (tConverter *testMsgConv) GetObject(v interface{}) error {
+	*v.(*string) = tConverter.testString
+	return nil
+}
+
+func (t *testRouteLayerClient) Handle(method string, params models.MsgParams) interface{} {
+	params.GetObject(&t.message)
+	return method
+}

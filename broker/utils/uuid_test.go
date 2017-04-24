@@ -11,20 +11,25 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package models
+package utils
 
-type FileTransfer struct {
-	Files   map[string]*File
-	Replace bool
-	System  string
-}
+import (
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+)
 
-type SystemTransfer struct {
-	Uuid       string
-	System     *System
-	IsDeletion bool
-}
+var _ = Describe("uuids", func() {
 
-type FileQueryTransfer struct {
-	SearchString string
-}
+	var (
+		uuid1, uuid2 string
+	)
+
+	BeforeEach(func() {
+		uuid1 = NewUUID()
+		uuid2 = NewUUID()
+	})
+
+	It("generated at random should differ", func() {
+		Expect(uuid1).ToNot(Equal(uuid2))
+	})
+})

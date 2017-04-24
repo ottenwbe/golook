@@ -20,7 +20,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestClients(t *testing.T) {
+func TestRouting(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Router Test Suite")
 }

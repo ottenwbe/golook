@@ -13,33 +13,52 @@
 //limitations under the License.
 package communication
 
-import "github.com/sirupsen/logrus"
+import (
+	"github.com/osamingo/jsonrpc"
+	"github.com/ottenwbe/golook/broker/models"
+	"github.com/sirupsen/logrus"
+)
 
-type RouteLayerCallbackClient interface {
-	Handle(method string, message interface{}) interface{}
-	//BroadCast(v interface{}) //future work
+type RouterCallbackClient interface {
+	Handle(method string, params models.MsgParams) interface{}
 }
 
-type RegisteredRouteLayers struct {
-	callback map[string]RouteLayerCallbackClient
+type RegisteredCallbackClients struct {
+	routerCallback map[string]RouterCallbackClient
 }
 
-func (r *RegisteredRouteLayers) RegisterClient(index string, client RouteLayerCallbackClient) {
-	r.callback[index] = client
+func (r *RegisteredCallbackClients) RegisterClient(name string, client RouterCallbackClient, msg interface{}, response interface{}) {
+	r.routerCallback[name] = client
+	//TODO: registration has to be parametrized
+	jsonrpc.RegisterMethod(name, &RpcHandler{
+		index: name,
+	}, msg, response)
+
 }
 
-func (r *RegisteredRouteLayers) RemoveClient(index string, client RouteLayerCallbackClient) {
-	delete(r.callback, index)
+func (r *RegisteredCallbackClients) RemoveClient(name string) {
+	delete(r.routerCallback, name)
+	//TODO remove from jsonrpc, how?
+	//jsonrpc.PurgeMethods()
 }
 
-func ToRouteLayer(key string, method string, message interface{}) interface{} {
-	if reg, ok := RouteLayerRegistrar.callback[key]; ok && reg != nil {
-		return reg.Handle(method, message)
+func (r *RegisteredCallbackClients) HasClient(name string) bool {
+	_, ok := r.routerCallback[name]
+	return ok
+}
+
+func toRouteLayer(router string, message models.MsgParams) interface{} {
+	if reg, ok := RouterRegistrar.routerCallback[router]; ok && reg != nil {
+		return reg.Handle(router, message)
 	} else {
-		logrus.Error("Method dropped before handing over to route layer. No route layer defined.")
+		logrus.Error("Method dropped before handing it over to route layer. No router client found.")
 		return nil
 	}
 
 }
 
-var RouteLayerRegistrar *RegisteredRouteLayers = &RegisteredRouteLayers{callback: make(map[string]RouteLayerCallbackClient)}
+var RouterRegistrar = newRouterRegistrar()
+
+func newRouterRegistrar() *RegisteredCallbackClients {
+	return &RegisteredCallbackClients{routerCallback: make(map[string]RouterCallbackClient)}
+}

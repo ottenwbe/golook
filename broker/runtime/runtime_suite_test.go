@@ -19,7 +19,7 @@ import (
 	"testing"
 )
 
-func TestApplication(t *testing.T) {
+func TestRuntime(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Application Suite")
+	RunSpecs(t, "Runtime Test Suite")
 }

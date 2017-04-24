@@ -13,49 +13,63 @@
 ////limitations under the License.
 package routing
 
-//
-//import (
-//	. "github.com/onsi/ginkgo"
-//	. "github.com/onsi/gomega"
-//)
-//
-//var _ = Describe("The mocked router", func() {
-//
-//	var (
-//		router *MockedLookRouter
-//	)
-//
-//	BeforeEach(func() {
-//		router = NewMockedRouter().(*MockedLookRouter)
-//	})
-//
-//	It("should set the valid flag to true after calling handleQueryAllSystemsForFile", func() {
-//		router.handleQueryAllSystemsForFile("test.txt")
-//		Expect(router.Visited).To(BeTrue())
-//	})
-//
-//	It("should set the valid flag to true after calling QueryFiles", func() {
-//		router.handleQueryFiles("system")
-//		Expect(router.Visited).To(BeTrue())
-//	})
-//
-//	It("should set the valid flag to true after calling ReportFolder", func() {
-//		router.handleReportFolder("folderName")
-//		Expect(router.Visited).To(BeTrue())
-//	})
-//
-//	It("should set the valid flag to true after calling ReportFolderR", func() {
-//		router.handleReportFolderR("folderName")
-//		Expect(router.Visited).To(BeTrue())
-//	})
-//
-//	It("should set the valid flag to true after calling ReportFileR", func() {
-//		router.handleReportFileR("file.txt")
-//		Expect(router.Visited).To(BeTrue())
-//	})
-//
-//	It("should set the valid flag to true after calling ReportFile", func() {
-//		router.handleReportFile("file.txt")
-//		Expect(router.Visited).To(BeTrue())
-//	})
-//})
+import (
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"reflect"
+)
+
+var _ = Describe("The mocked router", func() {
+
+	var (
+		router *MockedLookRouter
+	)
+
+	BeforeEach(func() {
+		router = NewMockedRouter().(*MockedLookRouter)
+	})
+
+	Context("logic of mock router", func() {
+		It("should increase the Visited flag with each call to Handle", func() {
+			router.Handle("test_handle", nil)
+			Expect(router.Visited).To(Equal(1))
+			Expect(router.VisitedMethod).To(Equal("test_handle"))
+		})
+
+		It("should increase the Visited flag with each call to Route", func() {
+			router.Route(SysKey(), "test_route", nil)
+			Expect(router.Visited).To(Equal(1))
+			Expect(router.VisitedMethod).To(Equal("test_route"))
+		})
+
+		It("should increase the Visited flag with each call to HandlerFunction", func() {
+			router.HandlerFunction("test_handler", nil)
+			Expect(router.Visited).To(Equal(1))
+			Expect(router.VisitedMethod).To(Equal("test_handler"))
+		})
+
+		It("should increase the Visited flag with each call to BroadCast", func() {
+			router.BroadCast("test_bc", nil)
+			Expect(router.Visited).To(Equal(1))
+			Expect(router.VisitedMethod).To(Equal("test_bc"))
+		})
+
+		It("should return 'mock' as name", func() {
+			Expect(router.Name()).To(Equal("mock"))
+		})
+	})
+
+	Context("RunWithMockedRouter", func() {
+		It("should replace a router with a mock, execute a function in a block with the replaced router,"+
+			" and then reset the original router afterwards", func() {
+			index := NewRouter("r")
+			RunWithMockedRouter(&index, func() {
+				Expect(reflect.TypeOf(index)).ToNot(Equal(reflect.TypeOf(NewRouter("r"))))
+				//Test if original router was successfully set
+				Expect(reflect.TypeOf(index)).To(Equal(reflect.TypeOf(NewMockedRouter())))
+			})
+			//Test if reset to original router was successful
+			Expect(reflect.TypeOf(index)).To(Equal(reflect.TypeOf(NewRouter("r"))))
+		})
+	})
+})

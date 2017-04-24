@@ -17,11 +17,12 @@
 package models
 
 import (
-	"github.com/fsnotify/fsnotify"
 	"os"
 	"path/filepath"
 	"syscall"
 	"time"
+
+	"github.com/fsnotify/fsnotify"
 )
 
 func NewFile(filePath string) (f *File, err error) {
@@ -29,30 +30,37 @@ func NewFile(filePath string) (f *File, err error) {
 	//TODO refactor
 
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		f = &File{
-			Name:      filePath,
-			ShortName: filePath,
-			Created:   time.Unix(0, 0),
-			Modified:  time.Unix(0, 0),
-			Accessed:  time.Unix(0, 0),
-			Meta:      FileMeta{fsnotify.Remove},
-		}
+		f = newRemovedFile(filePath)
 		return f, nil
 	}
 
-	var fi os.FileInfo
-	var fileName string
-	fi, err = os.Stat(filePath)
+	fi, err := os.Stat(filePath)
 	if err != nil {
-		return
-	}
-	var stat = fi.Sys().(*syscall.Stat_t)
-	fileName, err = filepath.Abs(filePath)
-	if err != nil {
-		return
+		return nil, err
 	}
 
-	f = &File{
+	fileName, err := filepath.Abs(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	f = newValidFile(fileName, filePath, fi.Sys().(*syscall.Stat_t))
+	return f, nil
+}
+
+func newRemovedFile(filePath string) *File {
+	return &File{
+		Name:      filePath,
+		ShortName: filePath,
+		Created:   time.Unix(0, 0),
+		Modified:  time.Unix(0, 0),
+		Accessed:  time.Unix(0, 0),
+		Meta:      FileMeta{fsnotify.Remove},
+	}
+}
+
+func newValidFile(fileName string, filePath string, stat *syscall.Stat_t) *File {
+	return &File{
 		Name:      fileName,
 		ShortName: filepath.Base(filePath),
 		Created:   time.Unix(stat.Ctim.Sec, stat.Ctim.Nsec),
@@ -60,5 +68,4 @@ func NewFile(filePath string) (f *File, err error) {
 		Accessed:  time.Unix(stat.Atim.Sec, stat.Atim.Nsec),
 		Meta:      FileMeta{fsnotify.Create},
 	}
-	return
 }

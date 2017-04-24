@@ -17,30 +17,36 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/osamingo/jsonrpc"
-	"github.com/ottenwbe/golook/broker/models"
 	"github.com/ottenwbe/golook/broker/runtime"
 )
 
 type (
-	RpcHandler struct{}
+	RpcHandler struct {
+		index string
+	}
+
+	RpcReceiverParams struct {
+		params *json.RawMessage
+	}
 )
+
+func (p *RpcReceiverParams) GetObject(v interface{}) error {
+	if err := jsonrpc.Unmarshal(p.params, v); err != nil {
+		return err
+	}
+	return nil
+}
 
 var _ (jsonrpc.Handler) = (*RpcHandler)(nil)
 
-func (h *RpcHandler) ServeJSONRPC(c context.Context, params *json.RawMessage) (interface{}, *jsonrpc.Error) {
+func (h *RpcHandler) ServeJSONRPC(_ context.Context, params *json.RawMessage) (interface{}, *jsonrpc.Error) {
 
-	var p models.RequestMessage
-	if err := jsonrpc.Unmarshal(params, &p); err != nil {
-		return nil, err
-	}
+	var p = &RpcReceiverParams{params: params}
 
-	return ToRouteLayer(p.Index, p.Method, p.Content), nil
-
+	return toRouteLayer(h.index, p), nil
 }
 
 func init() {
 	runtime.HttpServer.RegisterFunctionS("/rpc", jsonrpc.HandlerFunc)
 	runtime.HttpServer.RegisterFunctionS("/rpc/debug", jsonrpc.DebugHandlerFunc)
-
-	jsonrpc.RegisterMethod("encapsulated", &RpcHandler{}, models.RequestMessage{}, models.ResponseMessage{})
 }

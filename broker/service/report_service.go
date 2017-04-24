@@ -24,16 +24,16 @@ type ReportService interface {
 	MakeFolderReport(folderReport *FileReport)
 }
 
-func NewReportService() ReportService {
-	return &reportService{}
+func newReportService() ReportService {
+	return &defaultReportService{}
 }
 
-type reportService struct{}
+type defaultReportService struct{}
 
-func (*reportService) MakeFileReport(fileReport *FileReport) {
+func (*defaultReportService) MakeFileReport(fileReport *FileReport) {
 
 	if fileReport == nil {
-		log.Error("Ignoring empty file api.")
+		log.Error("Ignoring empty file report.")
 		return
 	}
 
@@ -44,10 +44,10 @@ func (*reportService) MakeFileReport(fileReport *FileReport) {
 	}
 }
 
-func (*reportService) MakeFolderReport(folderReport *FileReport) {
+func (*defaultReportService) MakeFolderReport(folderReport *FileReport) {
 
 	if folderReport == nil {
-		log.Error("Ignoring empty folder api.")
+		log.Error("Ignoring empty folder report.")
 		return
 	}
 

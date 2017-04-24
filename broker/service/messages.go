@@ -13,17 +13,20 @@
 //limitations under the License.
 package service
 
-type QueryService interface {
-	MakeFileQuery(searchString string) interface{}
+import . "github.com/ottenwbe/golook/broker/models"
+
+type PeerFileReport struct {
+	Files   map[string]*File `json:"files"`
+	Replace bool             `json:"replace"`
+	System  string           `json:"system"`
 }
 
-func newQueryService() QueryService {
-	return &defaultQueryService{}
+type SystemTransfer struct {
+	Uuid       string       `json:"uuid"`
+	System     *SystemFiles `json:"system"`
+	IsDeletion bool         `json:"deletion"`
 }
 
-type defaultQueryService struct{}
-
-func (*defaultQueryService) MakeFileQuery(searchString string) interface{} {
-	fq := PeerFileQuery{SearchString: searchString}
-	return systemIndex.BroadCast(FILE_QUERY, fq)
+type PeerFileQuery struct {
+	SearchString string `json:"search"`
 }

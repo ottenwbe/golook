@@ -37,6 +37,6 @@ func (r RouteJob) Run() {
 }
 
 func routeSystem(isDeletion bool) {
-	s := SystemTransfer{Uuid: GolookSystem.UUID, System: GolookSystem, IsDeletion: isDeletion}
+	s := SystemTransfer{Uuid: GolookSystem.UUID, System: &SystemFiles{System: GolookSystem, Files: nil}, IsDeletion: isDeletion}
 	systemIndex.Route(SysKey(), SYSTEM_REPORT, s)
 }

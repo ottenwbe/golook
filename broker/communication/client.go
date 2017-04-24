@@ -13,6 +13,9 @@
 //limitations under the License.
 package communication
 
+import . "github.com/ottenwbe/golook/broker/models"
+
 type LookupClient interface {
-	Call(routeLayerKey string, method string, message interface{}) (interface{}, error)
+	Call(index string, message interface{}) (MsgParams, error)
+	Url() string
 }

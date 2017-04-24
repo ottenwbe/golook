@@ -24,11 +24,10 @@ import (
 
 var _ = Describe("The report service", func() {
 
-	var rs = NewReportService()
+	var rs = newReportService()
 
 	It("ignores nil file reports", func() {
-		routing.RunWithMockedRouter(systemIndex, func() {
-			systemIndex = routing.NewMockedRouter()
+		routing.RunWithMockedRouter(&systemIndex, func() {
 
 			rs.MakeFileReport(nil)
 			Expect(routing.AccessMockedRouter(systemIndex).Visited).To(BeZero())
@@ -36,8 +35,7 @@ var _ = Describe("The report service", func() {
 	})
 
 	It("adds files which sepecify a monitoring flag to the file monitor", func() {
-		routing.RunWithMockedRouter(systemIndex, func() {
-			systemIndex = routing.NewMockedRouter()
+		routing.RunWithMockedRouter(&systemIndex, func() {
 
 			testFileName := "test_add_remove.txt"
 			rs.MakeFileReport(
@@ -55,8 +53,7 @@ var _ = Describe("The report service", func() {
 	})
 
 	It("does not add file reports without monitoring flag to the file monitor", func() {
-		routing.RunWithMockedRouter(systemIndex, func() {
-			systemIndex = routing.NewMockedRouter()
+		routing.RunWithMockedRouter(&systemIndex, func() {
 
 			testFileName := "test_add_remove.txt"
 			rs.MakeFileReport(
@@ -75,8 +72,7 @@ var _ = Describe("The report service", func() {
 	})
 
 	It("ignores nil folder reports", func() {
-		routing.RunWithMockedRouter(systemIndex, func() {
-			systemIndex = routing.NewMockedRouter()
+		routing.RunWithMockedRouter(&systemIndex, func() {
 
 			rs.MakeFolderReport(nil)
 			Expect(routing.AccessMockedRouter(systemIndex).Visited).To(BeZero())
@@ -84,8 +80,7 @@ var _ = Describe("The report service", func() {
 	})
 
 	It("does add folders specifying the monitor flag to the monitor and ignores invalid folders", func() {
-		routing.RunWithMockedRouter(systemIndex, func() {
-			systemIndex = routing.NewMockedRouter()
+		routing.RunWithMockedRouter(&systemIndex, func() {
 
 			folderName := "test_add_remove"
 			rs.MakeFolderReport(
@@ -104,8 +99,7 @@ var _ = Describe("The report service", func() {
 	})
 
 	It("does add folders specifying the monitor flag to the file monitor", func() {
-		routing.RunWithMockedRouter(systemIndex, func() {
-			systemIndex = routing.NewMockedRouter()
+		routing.RunWithMockedRouter(&systemIndex, func() {
 
 			folderName, _ := filepath.Abs(".")
 			rs.MakeFolderReport(

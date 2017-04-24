@@ -22,6 +22,6 @@ import (
 
 var _ = Describe("The api command", func() {
 	It("should return the supported api versions", func() {
-		Expect(stringFromStdIn(func() { apiCmd.Run(nil, []string{}) })).To(ContainSubstring(api.API_VERSION))
+		Expect(stringFromStdIn(func() { apiCmd.Run(nil, []string{}) })).To(ContainSubstring(api.Golook_API_VERSION))
 	})
 })

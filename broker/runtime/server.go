@@ -47,16 +47,28 @@ func (s *lookSever) StartServer() {
 //	s.server.Shutdown(ctx)
 //}
 
+/*
+	Register an endpoint and the corresponding controller.
+*/
 func (s *lookSever) RegisterFunctionS(path string, f func(http.ResponseWriter, *http.Request)) {
 	log.Infof("Register http endpoint: %s", path)
 	http.HandleFunc(path, f)
 }
 
+/*
+	Register an endpoint and the corresponding controller for a specific http method.
+*/
 func (s *lookSever) RegisterFunction(path string, f func(http.ResponseWriter, *http.Request), method string) {
 	log.Infof("Register http endpoint: %s", path)
 	s.router.HandleFunc(path, f).Methods(method)
 }
 
+/*
+	Returns all registered endpoints as an array of string.
+
+	Example result:
+	["/info","/system/{system}","/foo/bar"]
+*/
 func (s *lookSever) RegisteredEndpoints() []string {
 	result := []string{}
 

@@ -17,13 +17,12 @@ import (
 	"fmt"
 	"net/http"
 
-	. "github.com/ottenwbe/golook/broker/service"
 	. "github.com/ottenwbe/golook/broker/runtime"
+	. "github.com/ottenwbe/golook/broker/service"
 )
 
 var (
-	queryService  = NewQueryService()
-	reportService = NewReportService()
+	reportService, queryService = NewFileServices()
 )
 
 // Endpoint: GET /file

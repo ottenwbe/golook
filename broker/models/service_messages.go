@@ -14,11 +14,10 @@
 package models
 
 import (
-	"github.com/satori/go.uuid"
+	. "github.com/ottenwbe/golook/broker/runtime"
 )
 
-// Facade for uuid
-func NewUUID() string {
-	uuid := uuid.NewV4()
-	return uuid.String()
+type SystemFiles struct {
+	System *System          `json:"system"`
+	Files  map[string]*File `json:"files"`
 }

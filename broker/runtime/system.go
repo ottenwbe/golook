@@ -15,22 +15,33 @@ package runtime
 
 import (
 	"encoding/json"
-	. "github.com/ottenwbe/golook/broker/models"
-	"github.com/satori/go.uuid"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"net"
 	"os"
 	"runtime"
+
+	"github.com/satori/go.uuid"
+	log "github.com/sirupsen/logrus"
+)
+
+type System struct {
+	Name string `json:"name"`
+	OS   string `json:"os"`
+	IP   string `json:"ip"`
+	UUID string `json:"uuid"`
+}
+
+var (
+	sysUuid              = uuid.NewV4()
+	GolookSystem *System = NewSystem()
 )
 
 func NewSystem() *System {
 	return &System{
-		Name:  getName(),
-		OS:    getOS(),
-		IP:    getIP(),
-		UUID:  getUuid(),
-		Files: nil,
+		Name: getName(),
+		OS:   getOS(),
+		IP:   getIP(),
+		UUID: getUuid(),
 	}
 }
 
@@ -66,10 +77,7 @@ func DecodeSystem(sysReader io.Reader) (System, error) {
 }
 
 func getUuid() string {
-	if GolookSystem != nil {
-		return GolookSystem.UUID
-	}
-	return uuid.NewV4().String()
+	return sysUuid.String()
 }
 
 func getName() string {
@@ -124,10 +132,4 @@ func logError(err error) {
 	if err != nil {
 		log.WithError(err).Error("Error when instantiating System")
 	}
-}
-
-var GolookSystem *System
-
-func init() {
-	GolookSystem = NewSystem()
 }

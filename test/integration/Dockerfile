@@ -7,6 +7,6 @@ ENV GOLOOK $GOPATH/src/github.com/ottenwbe/golook
 RUN mkdir -p $GOPATH/src
 RUN git clone https://github.com/ottenwbe/golook.git $GOLOOK
 RUN cd $GOLOOK; go get ./...; go install
-RUN cp $GOPATH/bin/golook_server /usr/local/bin
+RUN cp $GOPATH/bin/golook /usr/local/bin
 EXPOSE 8080
 ENTRYPOINT ["/usr/local/bin/golook"]
