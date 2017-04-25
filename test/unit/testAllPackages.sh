@@ -4,7 +4,7 @@ set -e
 echo "" > coverage.txt
 
 # run tests
-ginkgo -coverprofile=profile.out -covermode=atomic  ./...
+ginkgo -coverprofile=profile.out -covermode=atomic --tags=integration  ./...
 
 # collect coverprofiles from all tested packages
 for d in $(find . -type d -print0 | xargs -0 echo); do
