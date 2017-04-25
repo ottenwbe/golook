@@ -23,7 +23,7 @@ type Router interface {
 	Route(key Key, method string, params interface{}) interface{}
 	BroadCast(method string, params interface{}) interface{}
 	HandlerFunction(name string, handler func(params interface{}) interface{})
-	NewNeighbor(key Key, neighbor LookupClient)
+	NewPeer(key Key, neighbor LookupClient)
 	Name() string
 }
 
@@ -65,7 +65,7 @@ func (rt *DefaultRouteTable) clients() map[Key]LookupClient {
 	return rt.uplinkClients
 }
 
-type DuplicateFilter map[uint64]bool
+type DuplicateFilter map[int]bool
 type DuplicateMap map[string]DuplicateFilter
 
 var (

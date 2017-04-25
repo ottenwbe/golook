@@ -21,6 +21,11 @@ type PeerFileReport struct {
 	System  string           `json:"system"`
 }
 
+type PeerResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+}
+
 type SystemTransfer struct {
 	Uuid       string       `json:"uuid"`
 	System     *SystemFiles `json:"system"`

@@ -19,7 +19,7 @@ import (
 )
 
 type Source struct {
-	Id     uint64 `json:"id"`
+	Id     int    `json:"id"`
 	System string `json:"system"`
 }
 
@@ -35,21 +35,29 @@ type RequestMessage struct {
 }
 
 type ResponseMessage struct {
-	Src    Source      `json:"source"`
-	Dst    Destination `json:"destination"`
-	Params string      `json:"params"` //TODO: Change to []byte?
+	Src      Source `json:"source"`
+	Receiver Source `json:"receiver"`
+	Params   string `json:"params"` //TODO: Change to []byte?
 }
 
-func NewRequestMessage(key Key, reqId uint64, method string, message interface{}) (*RequestMessage, error) {
-	p, err := MarshalS(message)
+func NewRequestMessage(key Key, reqId int, method string, params interface{}) (*RequestMessage, error) {
+	p, err := MarshalS(params)
 	if err != nil {
 		return nil, err
 	}
 	return &RequestMessage{Method: method, Params: p, Dst: Destination{Key: key}, Src: Source{Id: reqId, System: GolookSystem.UUID}}, nil
 }
 
+func NewResponseMessage(rm *RequestMessage, params interface{}) (*ResponseMessage, error) {
+	p, err := MarshalS(params)
+	if err != nil {
+		return nil, err
+	}
+	return &ResponseMessage{Src: rm.Src, Receiver: Source{Id: 0, System: GolookSystem.UUID}, Params: p}, nil
+}
+
 /*
-Get the encapsulated content of a (rpc) message. To this end, v is an in/out parameter.
+GetEncapsulated returns the encapsulated content of a (rpc) message. To this end, v is an in/out parameter.
 
 Example:
 m, _ := NewRequestMessage("method", "msg")

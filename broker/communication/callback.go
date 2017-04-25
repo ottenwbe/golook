@@ -48,6 +48,9 @@ func (r *RegisteredCallbackClients) HasClient(name string) bool {
 }
 
 func toRouteLayer(router string, message models.MsgParams) interface{} {
+
+	logrus.Info("going up to route layer for %s", router)
+
 	if reg, ok := RouterRegistrar.routerCallback[router]; ok && reg != nil {
 		return reg.Handle(router, message)
 	} else {

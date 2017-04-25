@@ -77,10 +77,11 @@ var _ = Describe("The rpc client", func() {
 
 		// make a test call to the server (see httpServer)
 		result, err := lookClient.Call("testMethod", TestParams{A: 1, B: "test"})
+		Expect(err).To(BeNil())
+
 		// unmarshal the result
 		result.GetObject(&expectedString)
 
-		Expect(err).To(BeNil())
 		// get the msg which has been received by the server
 		res := <-requestChan
 		Expect(res).To(ContainSubstring(string(expectedContent)))

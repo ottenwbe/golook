@@ -18,18 +18,12 @@ import (
 
 	. "github.com/ottenwbe/golook/broker/runtime"
 
-	"github.com/ottenwbe/golook/broker/api"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 func Run() {
-
-	//TODO refactor
-	configRouting()
-	api.RegisterApi()
-
 	if err := RootCmd.Execute(); err != nil {
 		log.WithError(err).Panic("Executing root command failed")
 	}
@@ -40,6 +34,11 @@ var RootCmd = &cobra.Command{
 	Short: "Golook Broker",
 	Long:  "Golook Broker which implements a Servent (Client/Server) for a distributed file search",
 	Run: func(_ *cobra.Command, _ []string) {
+
+		//TODO configuration of routing
+		configRouting()
+		ConfigurationHandler.Execute()
+
 		log.Info("Starting up Golook...")
 		HttpServer.StartServer()
 		log.Info("Shutting down server...")
@@ -48,11 +47,22 @@ var RootCmd = &cobra.Command{
 
 func init() {
 
+	initLogging()
 	initConfig()
 
 	err := viper.ReadInConfig() // Find and read the cmd file
 	if err != nil {             // Handle errors reading the cmd file
 		log.WithError(err).Infof("Config file could not be found, falling back to default parameters")
+	}
+}
+
+func initLogging() {
+	// You could set this to any `io.Writer` such as a file
+	file, err := os.OpenFile("golook.log", os.O_CREATE|os.O_WRONLY, 0666)
+	if err == nil {
+		log.SetOutput(file)
+	} else {
+		log.Info("Failed to log to file, using default stderr")
 	}
 }
 

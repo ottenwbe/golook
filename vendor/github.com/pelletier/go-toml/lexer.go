@@ -111,7 +111,7 @@ func (l *tomlLexer) follow(next string) bool {
 	return true
 }
 
-// Error file_management
+// Error management
 
 func (l *tomlLexer) errorf(format string, args ...interface{}) tomlLexStateFn {
 	l.tokens <- token{

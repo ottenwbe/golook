@@ -28,7 +28,7 @@ var _ = Describe("The api configuration", func() {
 
 		It("should register all http end points", func() {
 
-			RegisterApi()
+			configAPI()
 
 			ep := runtime.HttpServer.RegisteredEndpoints()
 			Expect(extractStringFromSlice(INFO_EP, ep)).To(Equal(INFO_EP))

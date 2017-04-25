@@ -12,3 +12,4 @@ coverage.txt
 .cover/
 
 golook.yml
+golook.log

@@ -16,7 +16,7 @@ package api
 import (
 	"net/http"
 
-	. "github.com/ottenwbe/golook/broker/runtime"
+	golook "github.com/ottenwbe/golook/broker/runtime"
 )
 
 /*
@@ -24,20 +24,25 @@ import (
 */
 
 const (
-	Golook_API_VERSION = "/v1"
+	/*GolookAPIVersion describes the currently supported implemented http api version*/
+	GolookAPIVersion = "/v1"
 
 	//systemPath = "system"
 	FILE_PATH = "file"
 
-	FILE_EP       = Golook_API_VERSION + "/file"
+	FILE_EP       = GolookAPIVersion + "/file"
 	FILE_QUERY_EP = FILE_EP + "/{" + FILE_PATH + "}"
-	FOLDER_EP     = Golook_API_VERSION + "/folder"
-	INFO_EP       = Golook_API_VERSION + "/info"
+	FOLDER_EP     = GolookAPIVersion + "/folder"
+	INFO_EP       = "/info"
 )
 
-func RegisterApi() {
-	HttpServer.RegisterFunction(FILE_QUERY_EP, putFile, http.MethodPut)
-	HttpServer.RegisterFunction(FILE_EP, getFiles, http.MethodGet)
-	HttpServer.RegisterFunction(FOLDER_EP, putFolder, http.MethodPut)
-	HttpServer.RegisterFunction(INFO_EP, getInfo, http.MethodGet)
+func configAPI() {
+	golook.HttpServer.RegisterFunction(FILE_QUERY_EP, putFile, http.MethodPut)
+	golook.HttpServer.RegisterFunction(FILE_EP, getFiles, http.MethodGet)
+	golook.HttpServer.RegisterFunction(FOLDER_EP, putFolder, http.MethodPut)
+	golook.HttpServer.RegisterFunction(INFO_EP, getInfo, http.MethodGet)
+}
+
+func init() {
+	golook.ConfigurationHandler.RegisterConfig(configAPI)
 }

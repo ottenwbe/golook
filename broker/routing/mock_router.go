@@ -24,8 +24,8 @@ type MockedLookRouter struct {
 	VisitedMethod string
 }
 
-func (*MockedLookRouter) NewNeighbor(key Key, neighbor communication.LookupClient) {
-	panic("implement me")
+func (lr *MockedLookRouter) NewPeer(key Key, neighbor communication.LookupClient) {
+	lr.Visited += 1
 }
 
 func (lr *MockedLookRouter) BroadCast(method string, params interface{}) interface{} {

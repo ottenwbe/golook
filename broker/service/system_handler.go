@@ -14,6 +14,7 @@
 package service
 
 import (
+	"fmt"
 	. "github.com/ottenwbe/golook/broker/repository"
 	. "github.com/ottenwbe/golook/broker/utils"
 	log "github.com/sirupsen/logrus"
@@ -24,18 +25,29 @@ const (
 )
 
 func handleSystemReport(params interface{}) interface{} {
+	log.Info("handleSystemReport !!!")
+	var (
+		systemMessage SystemTransfer
+		response      PeerResponse
+	)
 
-	var systemMessage SystemTransfer
-	if err := UnmarshalB(params, &systemMessage); err == nil {
+	log.Info("handleSystemReport will gather for %s", params.(string))
+
+	if err := UnmarshalS(params, &systemMessage); err == nil {
 		if systemMessage.IsDeletion {
-			GoLookRepository.StoreSystem(systemMessage.Uuid, systemMessage.System)
-		} else {
 			GoLookRepository.DelSystem(systemMessage.Uuid)
+			response = PeerResponse{true, fmt.Sprintf("Processed request for deleting system %s", systemMessage.Uuid)}
+		} else {
+			response.Success = GoLookRepository.StoreSystem(systemMessage.Uuid, systemMessage.System)
+			response.Message = fmt.Sprintf("Processed request for adding system %s", systemMessage.Uuid)
 		}
 	} else {
+		response = PeerResponse{false, "Could not handle malformed system report"}
 		log.WithError(err).Error("Could not handle system report")
 	}
-	return nil
+
+	log.Info("handleSystemReport got a response %s", response.Message)
+	return response
 }
 
 func init() {

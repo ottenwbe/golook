@@ -18,6 +18,8 @@ import (
 	"encoding/json"
 	"github.com/osamingo/jsonrpc"
 	"github.com/ottenwbe/golook/broker/runtime"
+	"github.com/sirupsen/logrus"
+	"net/http"
 )
 
 type (
@@ -26,12 +28,16 @@ type (
 	}
 
 	RpcReceiverParams struct {
-		params *json.RawMessage
+		params json.RawMessage
 	}
 )
 
 func (p *RpcReceiverParams) GetObject(v interface{}) error {
-	if err := jsonrpc.Unmarshal(p.params, v); err != nil {
+
+	logrus.Printf("%s", p.params)
+	logrus.Printf("%s", string(p.params))
+
+	if err := jsonrpc.Unmarshal(&p.params, v); err != nil {
 		return err
 	}
 	return nil
@@ -41,12 +47,34 @@ var _ (jsonrpc.Handler) = (*RpcHandler)(nil)
 
 func (h *RpcHandler) ServeJSONRPC(_ context.Context, params *json.RawMessage) (interface{}, *jsonrpc.Error) {
 
-	var p = &RpcReceiverParams{params: params}
+	logrus.Info("Serve rpc message: %s", string(*params))
 
-	return toRouteLayer(h.index, p), nil
+	p := &RpcReceiverParams{params: *params}
+
+	response := toRouteLayer(h.index, p)
+	logrus.Infof("From Route layer I got: %s", response)
+
+	return response, nil
+}
+
+func serve() {
+	http.ListenAndServe(":8382", http.DefaultServeMux)
+
+}
+
+func configRPC() {
+
+	http.HandleFunc("/rpc", jsonrpc.HandlerFunc)
+	http.HandleFunc("/rpc/debug", jsonrpc.DebugHandlerFunc)
+	serve()
+
+	//srv := httptest.NewServer(http.DefaultServeMux)
+	//defer srv.Close()
+
+	//runtime.HttpServer.RegisterFunctionS("/rpc", jsonrpc.HandlerFunc)
+	//runtime.HttpServer.RegisterFunctionS("/rpc/debug", jsonrpc.DebugHandlerFunc)
 }
 
 func init() {
-	runtime.HttpServer.RegisterFunctionS("/rpc", jsonrpc.HandlerFunc)
-	runtime.HttpServer.RegisterFunctionS("/rpc/debug", jsonrpc.DebugHandlerFunc)
+	runtime.ConfigurationHandler.RegisterConfig(configRPC)
 }

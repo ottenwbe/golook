@@ -14,17 +14,21 @@
 package routing
 
 import (
-	. "github.com/ottenwbe/golook/broker/communication"
-	. "github.com/ottenwbe/golook/broker/models"
+	com "github.com/ottenwbe/golook/broker/communication"
+	"github.com/ottenwbe/golook/broker/models"
 
 	log "github.com/sirupsen/logrus"
 )
 
+/*
+BroadcastRouter implements a router which by default broadcasts ALL messages to its peers. This
+means that direct message requests (see Route) are internally handled as broadcast.
+*/
 type BroadcastRouter struct {
-	routeTable   RouteTable   //= DefaultRouteTable{}
-	routeHandler HandlerTable //= HandlerTable{}
+	routeTable   RouteTable
+	routeHandler HandlerTable
 	name         string
-	reqId        uint64
+	reqId        int
 }
 
 func newBroadcastRouter(name string) Router {
@@ -36,47 +40,53 @@ func newBroadcastRouter(name string) Router {
 	}
 }
 
-func (router *BroadcastRouter) Name() string {
-	return router.name
-}
-
-func (router *BroadcastRouter) HandlerFunction(name string, handler func(params interface{}) interface{}) {
-	//TODO: avoid duplicated entries
-	router.routeHandler[name] = handler
-}
-
 func (router *BroadcastRouter) BroadCast(method string, message interface{}) interface{} {
 
-	var (
-		responseChannel                   = make(chan *ResponseMessage)
-		goRoutineCounter uint16           = 0
-		responseCounter  uint16           = 0
-		result           *ResponseMessage = nil
-	)
-
-	m, err := NewRequestMessage(NilKey(), router.reqId, method, message)
+	m, err := NewRequestMessage(NilKey(), router.nextRequestId(), method, message)
 	if err != nil {
 		log.WithError(err).Error("Request Message could not be created")
 		return nil
 	}
-	router.reqId += 1
 
-	// broadcast to all registered uplink clients
+	resonse := router.broadcast(m)
+	if resonse == nil {
+		log.Error("Requests response message could not be created")
+		return nil
+	}
+
+	return resonse.Params
+}
+
+func (router *BroadcastRouter) nextRequestId() int {
+	result := router.reqId
+	router.reqId += 1
+	return result
+}
+
+func (router *BroadcastRouter) broadcast(m *RequestMessage) *ResponseMessage {
+	var (
+		responseChannel                   = make(chan *ResponseMessage)
+		goRoutineCounter                  = 0
+		responseCounter                   = 0
+		result           *ResponseMessage = nil
+	)
+
+	// forward message to all registered clients concurrently
 	for _, client := range router.routeTable.clients() {
-		go request(client, m, router.name, responseChannel)
+		go forward(client, m, router.name, responseChannel)
 		goRoutineCounter += 1
 	}
 
+	// wait for the first successful response (result != nil) or until all client requests responded
 	for result == nil && responseCounter < goRoutineCounter {
 		result = <-responseChannel
 		responseCounter += 1
 	}
-
 	return result
 }
 
-func request(client LookupClient, requestMessage *RequestMessage, routerName string, responseChannel chan *ResponseMessage) {
-	log.Debug("Routing message to client: %s", client)
+func forward(client com.LookupClient, requestMessage *RequestMessage, routerName string, responseChannel chan *ResponseMessage) {
+	log.Infof("Routing message to client: %s", client.Url())
 
 	// Make the call
 	tmpResponse, err := client.Call(routerName, requestMessage)
@@ -85,7 +95,7 @@ func request(client LookupClient, requestMessage *RequestMessage, routerName str
 		tmpResponse.GetObject(&actualResponse)
 		responseChannel <- actualResponse
 	} else {
-		log.WithError(err).Error("Error while routing message to client: %s", client)
+		log.WithError(err).Errorf("Error while routing message to client: %s", client.Url())
 		responseChannel <- nil
 	}
 }
@@ -94,37 +104,52 @@ func (router *BroadcastRouter) Route(_ Key, method string, message interface{}) 
 	return router.BroadCast(method, message)
 }
 
-func (router *BroadcastRouter) NewNeighbor(key Key, neighbor LookupClient) {
+func (router *BroadcastRouter) NewPeer(key Key, neighbor com.LookupClient) {
 	log.WithField("router", router.name).WithField("neighbor", neighbor.Url()).Info("New neighbor.")
 	router.routeTable.add(key, neighbor)
 }
 
-func (router *BroadcastRouter) Handle(routerName string, msg MsgParams) interface{} {
+func (router *BroadcastRouter) Handle(routerName string, msg models.MsgParams) interface{} {
 
 	var (
-		result  *ResponseMessage = nil
-		message                  = &RequestMessage{}
+		response = ResponseMessage{}
+		tmp      = []RequestMessage{}
 	)
 
-	// cast message to RequestMessage from interface and verify it is a valid message
-	if err := msg.GetObject(&message); err != nil {
-		log.WithError(err).Info("Could not read message while handling in router: %s.", routerName)
+	// cast request to RequestMessage from interface and verify it is a valid request
+	if err := msg.GetObject(&tmp); err != nil {
+		log.WithField("router", router.Name()).WithError(err).Infof("Could not read request while handling message.")
 		return nil
 	}
 
+	request := tmp[0]
+
 	// ignore duplicates to ensure an at least once semantic
-	if duplicateMap.CheckForDuplicates(message.Src) {
+	if duplicateMap.CheckForDuplicates(request.Src) {
 		return nil
 	}
 
 	// check if it is a broadcast, i.e., NilKey as routing key,
 	// then deliver to upper layer and continue with broadcast
-	if NilKey() == message.Dst.Key {
-		result = router.deliver(message.Method, message.Params).(*ResponseMessage)
-		router.BroadCast("", nil)
-	} else /* handle directed message */ {
-		//check if it is a directed message, then forward it to a possible better match
-		//TODO implement directed message...
+	if NilKey() == request.Dst.Key {
+		responseParams := router.deliver(request.Method, request.Params)
+		response = newResponse(responseParams, &request)
+		router.broadcast(&request) //TODO forward result of further broadcast
+	} else /* handle directed request */ {
+		//check if it is a directed request, then forward it to a possible better match
+		//TODO implement directed request...
+	}
+	return response
+}
+
+func newResponse(responseParams interface{}, requestMsg *RequestMessage) (result ResponseMessage) {
+	if responseParams == nil {
+		//TODO err
+		r, _ := NewResponseMessage(requestMsg, "{}")
+		result = *r
+	} else {
+		r, _ := NewResponseMessage(requestMsg, responseParams)
+		result = *r
 	}
 	return result
 }
@@ -136,4 +161,13 @@ func (router *BroadcastRouter) deliver(method string, params interface{}) interf
 		log.Errorf("Handler for method %s not found in router %s", method, router.name)
 	}
 	return nil
+}
+
+func (router *BroadcastRouter) Name() string {
+	return router.name
+}
+
+func (router *BroadcastRouter) HandlerFunction(name string, handler func(params interface{}) interface{}) {
+	log.WithField("router", router.Name()).WithField("callback", name).Info("Router registered new callback.")
+	router.routeHandler[name] = handler
 }

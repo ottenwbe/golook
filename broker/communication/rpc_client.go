@@ -14,11 +14,12 @@
 package communication
 
 import (
-	"github.com/ybbus/jsonrpc"
+	"fmt"
 
 	. "github.com/ottenwbe/golook/broker/models"
 
-	"fmt"
+	"github.com/sirupsen/logrus"
+	"github.com/ybbus/jsonrpc"
 )
 
 // implements the LookupClient interface
@@ -45,12 +46,18 @@ func (r *RPCMsgResponse) GetObject(v interface{}) error {
 //func (lc *LookupRPCClient) Call(index string, method string, message interface{}) (interface{}, error) {
 func (lc *LookupRPCClient) Call(method string, m interface{}) (MsgParams, error) {
 
+	logrus.Infof("Making a call for %s with %s", method, m)
+
 	response, err := lc.c.Call(method, m)
 	if err != nil {
 		return nil, err
 	}
 
-	return &RPCMsgResponse{response: response}, nil
+	r := &RPCMsgResponse{response: response}
+
+	logrus.Info("response is " + string(response.ID))
+
+	return r, nil
 }
 
 func (lc *LookupRPCClient) Url() string {

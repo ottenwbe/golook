@@ -11,17 +11,23 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package cmd
+package runtime
 
-import (
-	"github.com/ottenwbe/golook/broker/api"
-
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+type (
+	ConfigHandler    func()
+	ConfigHandlerArr []func()
 )
 
-var _ = Describe("The api command", func() {
-	It("should return the supported api versions", func() {
-		Expect(stringFromStdIn(func() { apiCmd.Run(nil, []string{}) })).To(ContainSubstring(api.GolookAPIVersion))
-	})
-})
+var (
+	ConfigurationHandler = ConfigHandlerArr{}
+)
+
+func (c *ConfigHandlerArr) RegisterConfig(handler ConfigHandler) {
+	*c = append(*c, handler)
+}
+
+func (c *ConfigHandlerArr) Execute() {
+	for _, config := range *c {
+		config()
+	}
+}

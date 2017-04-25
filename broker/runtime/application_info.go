@@ -24,16 +24,18 @@ const (
 )
 
 type AppInfo struct {
-	App     string  `json:"app"`
-	Version string  `json:"version"`
-	System  *System `json:"system"`
+	App       string   `json:"app"`
+	Version   string   `json:"version"`
+	System    *System  `json:"system"`
+	Endpoints []string `json:"endpoints"`
 }
 
 func NewAppInfo() *AppInfo {
 	return &AppInfo{
-		App:     GOLOOK_NAME,
-		Version: VERSION,
-		System:  NewSystem(),
+		App:       GOLOOK_NAME,
+		Version:   VERSION,
+		System:    NewSystem(),
+		Endpoints: HttpServer.RegisteredEndpoints(),
 	}
 }
 
