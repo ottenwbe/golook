@@ -65,5 +65,5 @@ var s string
 m.GetEncapsulated(&s)
 */
 func (m *RequestMessage) GetEncapsulated(v interface{}) error {
-	return UnmarshalS(m.Params, v)
+	return Unmarshal(m.Params, v)
 }

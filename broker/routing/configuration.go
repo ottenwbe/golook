@@ -11,24 +11,28 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package cmd
+
+package routing
 
 import (
-	. "github.com/ottenwbe/golook/broker/runtime"
-
-	"fmt"
-	"github.com/spf13/cobra"
+	"github.com/ottenwbe/golook/broker/runtime"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: fmt.Sprintf("Print the version number of %s.", GOLOOK_NAME),
-	Long:  fmt.Sprintf("All software has versions. This is %s's version.", GOLOOK_NAME),
-	Run: func(_ *cobra.Command, _ []string) {
-		fmt.Println(VERSION)
-	},
+var (
+	DefaultPeers = []string{}
+)
+
+const peers = "routing.peers"
+
+func configureRouting() {
+	log.Info("Configure routing layer")
+	DefaultPeers = viper.GetStringSlice(peers)
 }
 
 func init() {
-	RootCmd.AddCommand(versionCmd)
+	viper.SetDefault(peers, []string{"http://127.0.0.1:8383"})
+
+	runtime.ConfigurationHandler.RegisterConfig(configureRouting)
 }

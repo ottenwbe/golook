@@ -1,3 +1,5 @@
+// +build !integration
+
 //Copyright 2016-2017 Beate Ottenwälder
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,18 +13,17 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package cmd
+
+package routing
 
 import (
-	. "github.com/ottenwbe/golook/broker/runtime"
+	"testing"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("The version command", func() {
-	It("should return the current version", func() {
-		Expect(stringFromStdIn(func() { versionCmd.Run(nil, []string{}) })).To(Equal(VERSION + "\n"))
-	})
-
-})
+func TestRouting(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Router Test Suite")
+}

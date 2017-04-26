@@ -14,6 +14,7 @@
 package service
 
 import (
+	"fmt"
 	. "github.com/ottenwbe/golook/broker/repository"
 	. "github.com/ottenwbe/golook/broker/utils"
 	log "github.com/sirupsen/logrus"
@@ -24,13 +25,20 @@ const (
 )
 
 func handleFileReport(params interface{}) interface{} {
-	var fileMessage PeerFileReport
-	if err := UnmarshalB(params, &fileMessage); err == nil {
-		GoLookRepository.StoreFiles(fileMessage.System, fileMessage.Files)
+	var (
+		fileMessage PeerFileReport
+		response    PeerResponse
+	)
+
+	if err := Unmarshal(params, &fileMessage); err == nil {
+		response.Error = !GoLookRepository.StoreFiles(fileMessage.System, fileMessage.Files)
+		response.Message = fmt.Sprintf("Processed file report for system %s", fileMessage.System)
 	} else {
 		log.WithError(err).Error("Could not handle file report.")
+		response = PeerResponse{Error: true, Message: "Malformed file report", Data: nil}
 	}
-	return nil
+
+	return response
 }
 
 func init() {

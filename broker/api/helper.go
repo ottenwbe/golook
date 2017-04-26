@@ -60,7 +60,7 @@ func returnNackAndLogError(writer http.ResponseWriter, errorString string, err e
 
 func extractFileFromPath(request *http.Request) string {
 	params := mux.Vars(request)
-	fileName := params[FILE_PATH]
+	fileName := params[FilePath]
 	return fileName
 }
 

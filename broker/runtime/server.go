@@ -11,6 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package runtime
 
 import (
@@ -23,7 +24,7 @@ import (
 type lookSever struct {
 	Address string
 	server  *http.Server
-	router  *mux.Router
+	router  http.Handler
 }
 
 var (
@@ -32,10 +33,17 @@ var (
 		router:  mux.NewRouter().StrictSlash(true),
 		Address: "",
 	}
+
+	RpcServer *lookSever = &lookSever{
+		server:  nil,
+		router:  http.DefaultServeMux,
+		Address: ":8382",
+	}
 )
 
 func (s *lookSever) StartServer() {
 	s.server = &http.Server{Addr: s.Address, Handler: s.router}
+
 	// start the httpServer and listen
 	log.Fatal(s.server.ListenAndServe())
 }
@@ -48,11 +56,11 @@ func (s *lookSever) StartServer() {
 //}
 
 /*
-RegisterFunctionS registers an endpoint and the corresponding controller.
+RegisterFunctionRPC registers an endpoint and the corresponding controller.
 */
-func (s *lookSever) RegisterFunctionS(path string, f func(http.ResponseWriter, *http.Request)) {
+func (s *lookSever) RegisterFunctionRPC(path string, f func(http.ResponseWriter, *http.Request)) {
 	log.Infof("Register http endpoint: %s", path)
-	s.router.HandleFunc(path, f)
+	http.HandleFunc(path, f)
 }
 
 /*
@@ -60,7 +68,7 @@ RegisterFunction registers an endpoint and the corresponding controller for a sp
 */
 func (s *lookSever) RegisterFunction(path string, f func(http.ResponseWriter, *http.Request), method string) {
 	log.Infof("Register http endpoint: %s", path)
-	s.router.HandleFunc(path, f).Methods(method)
+	s.router.(*mux.Router).HandleFunc(path, f).Methods(method)
 }
 
 /*
@@ -72,7 +80,7 @@ Example result:
 func (s *lookSever) RegisteredEndpoints() []string {
 	result := []string{}
 
-	s.router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+	s.router.(*mux.Router).Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		if s, err := route.GetPathTemplate(); err == nil {
 			result = append(result, s)
 		}

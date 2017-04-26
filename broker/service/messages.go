@@ -22,8 +22,9 @@ type PeerFileReport struct {
 }
 
 type PeerResponse struct {
-	Success bool   `json:"success"`
+	Error   bool   `json:"error"`
 	Message string `json:"message"`
+	Data    []byte `json:"data"`
 }
 
 type SystemTransfer struct {

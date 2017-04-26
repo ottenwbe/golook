@@ -59,7 +59,7 @@ type RPCError struct {
 }
 
 // RPCClient sends jsonrpc requests over http to the provided rpc backend.
-// RPCClient is created using the factory function NewRPCClient().
+// RPCClient is created using the factory function NewJsonRPCClient().
 type RPCClient struct {
 	endpoint        string
 	httpClient      *http.Client
@@ -69,9 +69,9 @@ type RPCClient struct {
 	idMutex         sync.Mutex
 }
 
-// NewRPCClient returns a new RPCClient instance with default configuration (no custom headers, default http.Client, autoincrement ids).
+// NewJsonRPCClient returns a new RPCClient instance with default configuration (no custom headers, default http.Client, autoincrement ids).
 // Endpoint is the rpc-service url to which the rpc requests are sent.
-func NewRPCClient(endpoint string) *RPCClient {
+func NewJsonRPCClient(endpoint string) *RPCClient {
 	return &RPCClient{
 		endpoint:        endpoint,
 		httpClient:      http.DefaultClient,

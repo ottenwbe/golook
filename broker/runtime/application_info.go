@@ -11,6 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package runtime
 
 import (
@@ -19,8 +20,8 @@ import (
 )
 
 const (
-	GOLOOK_NAME = "golook"
-	VERSION     = "v0.1.0-dev"
+	Golook_Name = "golook"
+	Version     = "v0.1.0-dev"
 )
 
 type AppInfo struct {
@@ -32,8 +33,8 @@ type AppInfo struct {
 
 func NewAppInfo() *AppInfo {
 	return &AppInfo{
-		App:       GOLOOK_NAME,
-		Version:   VERSION,
+		App:       Golook_Name,
+		Version:   Version,
 		System:    NewSystem(),
 		Endpoints: HttpServer.RegisteredEndpoints(),
 	}

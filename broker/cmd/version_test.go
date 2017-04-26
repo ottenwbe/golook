@@ -11,28 +11,19 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package cmd
 
 import (
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	. "github.com/ottenwbe/golook/broker/runtime"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-var routingCmd = &cobra.Command{
-	Use:   "routing",
-	Short: "Configure the routing options",
-	Long:  "Configure the routing options",
-	Run: func(_ *cobra.Command, _ []string) {
-	},
-}
+var _ = Describe("The version command", func() {
+	It("should return the current version", func() {
+		Expect(stringFromStdIn(func() { versionCmd.Run(nil, []string{}) })).To(Equal(Version + "\n"))
+	})
 
-func configRouting() {
-	log.Info("configure routing commands")
-	//TODO bootstrap := viper.GetStringSlice("bootstrapping.peers")
-}
-
-func init() {
-	viper.SetDefault("bootstrapping.peers", []string{"127.0.0.1"})
-	RootCmd.AddCommand(routingCmd)
-}
+})

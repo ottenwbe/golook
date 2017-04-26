@@ -41,7 +41,7 @@ var _ = Describe("The rpc client", func() {
 	var (
 		requestChan     chan string
 		httpServer      *httptest.Server
-		lookClient      LookupClient
+		testClient      RpcClient
 		expectedContent []byte
 	)
 
@@ -65,7 +65,7 @@ var _ = Describe("The rpc client", func() {
 			fmt.Fprintf(w, `{"jsonrpc":"2.0","result":%s,"id":0}`, string(b))
 		}))
 
-		lookClient = NewLookupRPCClient(httpServer.URL)
+		testClient = newJsonRPCClient(httpServer.URL)
 	})
 
 	AfterEach(func() {
@@ -76,11 +76,11 @@ var _ = Describe("The rpc client", func() {
 		var expectedString string
 
 		// make a test call to the server (see httpServer)
-		result, err := lookClient.Call("testMethod", TestParams{A: 1, B: "test"})
+		result, err := testClient.Call("testMethod", TestParams{A: 1, B: "test"})
 		Expect(err).To(BeNil())
 
 		// unmarshal the result
-		result.GetObject(&expectedString)
+		result.Unmarshal(&expectedString)
 
 		// get the msg which has been received by the server
 		res := <-requestChan
@@ -88,8 +88,8 @@ var _ = Describe("The rpc client", func() {
 		Expect(expectedString).To(Equal(EXPECTED_RESPONSE_CONTENT))
 	})
 
-	It("should return an error when an invalid type is t be transferred as content, e.g. a channel", func() {
-		_, err := lookClient.Call("no method", make(chan bool))
+	It("should return an error when an invalid type is to be transferred as content, e.g. a channel", func() {
+		_, err := testClient.Call("no method", make(chan bool))
 		Expect(err).ToNot(BeNil())
 	})
 })

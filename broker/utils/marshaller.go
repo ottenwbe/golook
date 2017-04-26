@@ -13,7 +13,11 @@
 //limitations under the License.
 package utils
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"errors"
+)
 
 func MarshalB(message interface{}) ([]byte, error) {
 	if b, err := json.Marshal(message); err == nil {
@@ -28,14 +32,23 @@ func MarshalS(message interface{}) (string, error) {
 	return string(b), err
 }
 
-func UnmarshalB(message interface{}, result interface{}) error {
-	if err := json.Unmarshal(message.([]byte), result); err != nil {
+func Unmarshal(orig interface{}, result interface{}) (err error) {
+
+	switch v := orig.(type) {
+	case string:
+		err = unmarshalB([]byte(v), result)
+	case []byte:
+		err = unmarshalB(v, result)
+	default:
+		err = errors.New("Could not unmarshal value")
+	}
+
+	return err
+}
+
+func unmarshalB(message []byte, result interface{}) error {
+	if err := json.Unmarshal(message, result); err != nil {
 		return err
 	}
 	return nil
-}
-
-func UnmarshalS(message interface{}, result interface{}) error {
-	err := UnmarshalB([]byte(message.(string)), result)
-	return err
 }

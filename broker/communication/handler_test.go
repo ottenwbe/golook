@@ -23,15 +23,15 @@ var _ = Describe("The router callback registrar", func() {
 
 	It("stores routers that have been registered", func() {
 		const TEST_NAME = "test1"
-		RouterRegistrar.RegisterClient(TEST_NAME, &testRouteLayerClient{}, testMsg{}, testResponse{})
-		Expect(RouterRegistrar.routerCallback).ToNot(BeNil())
-		Expect(RouterRegistrar.routerCallback[TEST_NAME]).ToNot(BeNil())
+		MessageDispatcher.RegisterHandler(TEST_NAME, &testRouteLayerClient{}, testMsg{}, testResponse{})
+		Expect(*MessageDispatcher).ToNot(BeNil())
+		Expect((*MessageDispatcher)[TEST_NAME]).ToNot(BeNil())
 	})
 
 	It("allows to query for stored routers", func() {
 		const TEST_NAME = "testQuery"
-		RouterRegistrar.RegisterClient(TEST_NAME, &testRouteLayerClient{}, testMsg{}, testResponse{})
-		Expect(RouterRegistrar.HasClient(TEST_NAME)).To(BeTrue())
+		MessageDispatcher.RegisterHandler(TEST_NAME, &testRouteLayerClient{}, testMsg{}, testResponse{})
+		Expect(MessageDispatcher.HasHandler(TEST_NAME)).To(BeTrue())
 	})
 
 	It("calls the router when tasked to do so", func() {
@@ -40,20 +40,22 @@ var _ = Describe("The router callback registrar", func() {
 			TEST_NAME   = "test"
 		)
 		t := &testRouteLayerClient{}
-		RouterRegistrar.RegisterClient(TEST_NAME, t, testMsg{}, testResponse{})
+		MessageDispatcher.RegisterHandler(TEST_NAME, t, testMsg{}, testResponse{})
 
-		res := toRouteLayer(TEST_NAME, &testMsgConv{MSG_CONTENT})
+		res, err := MessageDispatcher.handleMessage(TEST_NAME, &testMsgConv{MSG_CONTENT})
 
+		Expect(err).To(BeNil())
 		Expect(t.message).To(Equal(MSG_CONTENT))
 		Expect(res.(string)).To(Equal(TEST_NAME))
 	})
 
 	It("rejects messages, i.e., returns nil, if the router is not registered", func() {
-		const TEST_NAME = "atest"
-		RouterRegistrar.RegisterClient(TEST_NAME, nil, testMsg{}, testResponse{})
+		const TEST_NAME = "should_not_exist_test"
+		MessageDispatcher.RegisterHandler(TEST_NAME, nil, testMsg{}, testResponse{})
 
-		res := toRouteLayer(TEST_NAME, &testMsgConv{"msg"})
+		res, err := MessageDispatcher.handleMessage(TEST_NAME, &testMsgConv{"msg"})
 
+		Expect(err).ToNot(BeNil())
 		Expect(res).To(BeNil())
 	})
 })
@@ -71,12 +73,12 @@ type (
 	}
 )
 
-func (tConverter *testMsgConv) GetObject(v interface{}) error {
+func (tConverter *testMsgConv) Unmarshal(v interface{}) error {
 	*v.(*string) = tConverter.testString
 	return nil
 }
 
-func (t *testRouteLayerClient) Handle(method string, params models.MsgParams) interface{} {
-	params.GetObject(&t.message)
+func (t *testRouteLayerClient) Handle(method string, params models.EncapsulatedValues) interface{} {
+	params.Unmarshal(&t.message)
 	return method
 }

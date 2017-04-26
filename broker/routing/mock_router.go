@@ -19,48 +19,48 @@ import (
 	. "github.com/ottenwbe/golook/broker/utils"
 )
 
-type MockedLookRouter struct {
+type MockRouter struct {
 	Visited       int
 	VisitedMethod string
 }
 
-func (lr *MockedLookRouter) NewPeer(key Key, neighbor communication.LookupClient) {
+func (lr *MockRouter) NewPeer(key Key, neighbor communication.RpcClient) {
 	lr.Visited += 1
 }
 
-func (lr *MockedLookRouter) BroadCast(method string, params interface{}) interface{} {
-	lr.Visited += 1
-	lr.VisitedMethod = method
-	return nil
-}
-
-func (lr *MockedLookRouter) Route(key Key, method string, params interface{}) interface{} {
+func (lr *MockRouter) BroadCast(method string, params interface{}) interface{} {
 	lr.Visited += 1
 	lr.VisitedMethod = method
 	return nil
 }
 
-func (lr *MockedLookRouter) Handle(method string, params MsgParams) interface{} {
+func (lr *MockRouter) Route(key Key, method string, params interface{}) interface{} {
 	lr.Visited += 1
 	lr.VisitedMethod = method
 	return nil
 }
 
-func (lr *MockedLookRouter) HandlerFunction(name string, handler func(params interface{}) interface{}) {
+func (lr *MockRouter) Handle(method string, params EncapsulatedValues) interface{} {
+	lr.Visited += 1
+	lr.VisitedMethod = method
+	return nil
+}
+
+func (lr *MockRouter) HandlerFunction(name string, handler func(params interface{}) interface{}) {
 	lr.Visited += 1
 	lr.VisitedMethod = name
 }
 
-func (lr *MockedLookRouter) Name() string {
+func (lr *MockRouter) Name() string {
 	return "mock"
 }
 
 func NewMockedRouter() Router {
-	return &MockedLookRouter{}
+	return &MockRouter{}
 }
 
-func AccessMockedRouter(r Router) *MockedLookRouter {
-	return r.(*MockedLookRouter)
+func AccessMockedRouter(r Router) *MockRouter {
+	return r.(*MockRouter)
 }
 
 func RunWithMockedRouter(ptrOrig interface{}, f func()) {

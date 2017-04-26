@@ -12,15 +12,24 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-package runtime
+package cmd
 
 import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	. "github.com/ottenwbe/golook/broker/runtime"
+
+	"fmt"
+	"github.com/spf13/cobra"
 )
 
-var _ = Describe(" Server ", func() {
-	It("should not be nil after startup", func() {
-		Expect(HttpServer).ToNot(BeNil())
-	})
-})
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: fmt.Sprintf("Print the version number of %s.", Golook_Name),
+	Long:  fmt.Sprintf("All software has versions. This is %s's version.", Golook_Name),
+	Run: func(_ *cobra.Command, _ []string) {
+		fmt.Println(Version)
+	},
+}
+
+func init() {
+	RootCmd.AddCommand(versionCmd)
+}

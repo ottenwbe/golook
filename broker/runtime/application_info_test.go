@@ -11,6 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package runtime
 
 import (
@@ -27,7 +28,7 @@ var _ = Describe(" AppInfo ", func() {
 	})
 
 	It("should comprise the current app version by default", func() {
-		Expect(info.Version).To(Equal(VERSION))
+		Expect(info.Version).To(Equal(Version))
 	})
 
 	It("should comprise the current system by default", func() {

@@ -19,49 +19,47 @@ import (
 )
 
 type Router interface {
-	RouterCallbackClient
+	MessageHandler
 	Route(key Key, method string, params interface{}) interface{}
 	BroadCast(method string, params interface{}) interface{}
 	HandlerFunction(name string, handler func(params interface{}) interface{})
-	NewPeer(key Key, neighbor LookupClient)
+	NewPeer(key Key, peer RpcClient)
 	Name() string
 }
 
 type HandlerTable map[string]func(params interface{}) interface{}
 
 type RouteTable interface {
-	clients() map[Key]LookupClient
-	get(key Key) (LookupClient, bool)
-	add(key Key, client LookupClient)
-	this() LookupClient
+	clients() map[Key]RpcClient
+	get(key Key) (RpcClient, bool)
+	add(key Key, client RpcClient)
+	this() RpcServer
 }
 
 type DefaultRouteTable struct {
-	uplinkClients map[Key]LookupClient
-	thisClient    LookupClient
+	uplinkClients map[Key]RpcClient
 }
 
 func newDefaultRouteTable() RouteTable {
 	return &DefaultRouteTable{
-		uplinkClients: make(map[Key]LookupClient, 0),
-		thisClient:    nil,
+		uplinkClients: make(map[Key]RpcClient, 0),
 	}
 }
 
-func (rt *DefaultRouteTable) this() LookupClient {
-	return rt.thisClient
+func (rt *DefaultRouteTable) this() RpcServer {
+	return nil
 }
 
-func (rt *DefaultRouteTable) get(key Key) (LookupClient, bool) {
+func (rt *DefaultRouteTable) get(key Key) (RpcClient, bool) {
 	client, ok := rt.uplinkClients[key]
 	return client, ok
 }
 
-func (rt *DefaultRouteTable) add(key Key, client LookupClient) {
+func (rt *DefaultRouteTable) add(key Key, client RpcClient) {
 	rt.uplinkClients[key] = client
 }
 
-func (rt *DefaultRouteTable) clients() map[Key]LookupClient {
+func (rt *DefaultRouteTable) clients() map[Key]RpcClient {
 	return rt.uplinkClients
 }
 

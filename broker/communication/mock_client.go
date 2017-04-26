@@ -15,12 +15,12 @@ package communication
 
 import "github.com/ottenwbe/golook/broker/models"
 
-type MockGolookClient struct {
+type MockClient struct {
 	VisitedCall int
 	Name        string
 }
 
-func (client *MockGolookClient) Call(router string, message interface{}) (models.MsgParams, error) {
+func (client *MockClient) Call(router string, message interface{}) (models.EncapsulatedValues, error) {
 	client.Name = router
 	client.VisitedCall += 1
 	return nil, nil

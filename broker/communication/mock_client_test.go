@@ -21,7 +21,7 @@ import (
 var _ = Describe("The mock client", func() {
 
 	It("should record the name of the latest Call() and the number of calls.", func() {
-		m := &MockGolookClient{}
+		m := &MockClient{}
 		m.Call("test", nil)
 		Expect(m.Name).To(Equal("test"))
 		Expect(m.VisitedCall).To(Equal(1))

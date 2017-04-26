@@ -11,26 +11,25 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package routing
 
 import (
-	"github.com/ottenwbe/golook/broker/communication"
-	"runtime"
+	com "github.com/ottenwbe/golook/broker/communication"
 )
 
 func NewRouter(name string) Router {
-	result := newBroadcastRouter(name)
+	result := newFloodingRouter(name)
 
-	communication.RouterRegistrar.RegisterClient(name, result, RequestMessage{}, ResponseMessage{})
-	runtime.SetFinalizer(result, finalizer)
+	com.MessageDispatcher.RegisterHandler(name, result, RequestMessage{}, ResponseMessage{})
+
+	for _, peer := range DefaultPeers {
+		result.NewPeer(NewKey(peer), com.NewRPCClient(peer))
+	}
 
 	return result
 }
 
-func finalizer(r Router) {
-	DeleteRouter(r.Name())
-}
-
 func DeleteRouter(name string) {
-	communication.RouterRegistrar.RemoveClient(name)
+	com.MessageDispatcher.RemoveHandler(name)
 }

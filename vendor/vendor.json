@@ -31,13 +31,6 @@
 			"revisionTime": "2017-04-24T16:02:39Z"
 		},
 		{
-			"checksumSHA1": "QvibMZwbRw2ltwyNCza/0fXUbF0=",
-			"origin": "github.com/docker/docker/vendor/github.com/Sirupsen/logrus",
-			"path": "github.com/Sirupsen/logrus",
-			"revision": "8cb9d7ec2e56ca360da55d66bc77e799faca1dd0",
-			"revisionTime": "2017-04-24T16:02:39Z"
-		},
-		{
 			"checksumSHA1": "/lfHM/3grPP89PRjqVm57+kMkgA=",
 			"path": "github.com/alecthomas/jsonschema",
 			"revision": "7284d683b3771acbbc194b5829dd734711644ddc",

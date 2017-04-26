@@ -30,16 +30,15 @@ func Run() {
 }
 
 var RootCmd = &cobra.Command{
-	Use:   GOLOOK_NAME,
+	Use:   Golook_Name,
 	Short: "Golook Broker",
 	Long:  "Golook Broker which implements a Servent (Client/Server) for a distributed file search",
 	Run: func(_ *cobra.Command, _ []string) {
 
-		//TODO configuration of routing
-		configRouting()
 		ConfigurationHandler.Execute()
 
 		log.Info("Starting up Golook...")
+		go RpcServer.StartServer()
 		HttpServer.StartServer()
 		log.Info("Shutting down server...")
 	},

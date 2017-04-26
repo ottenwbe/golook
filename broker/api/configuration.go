@@ -11,6 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package api
 
 import (
@@ -20,18 +21,18 @@ import (
 )
 
 /*
-	Configuration of the api
+Configuration of the API
 */
 
 const (
-	/*GolookAPIVersion describes the currently supported implemented http api version*/
+	/*GolookAPIVersion describes the currently supported and implemented http api version*/
 	GolookAPIVersion = "/v1"
 
-	//systemPath = "system"
-	FILE_PATH = "file"
+	//SystemPath = "system"
+	FilePath = "file"
 
 	FILE_EP       = GolookAPIVersion + "/file"
-	FILE_QUERY_EP = FILE_EP + "/{" + FILE_PATH + "}"
+	FILE_QUERY_EP = FILE_EP + "/{" + FilePath + "}"
 	FOLDER_EP     = GolookAPIVersion + "/folder"
 	INFO_EP       = "/info"
 )

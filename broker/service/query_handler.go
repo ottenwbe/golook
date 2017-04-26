@@ -23,19 +23,28 @@ const (
 	FILE_QUERY = "file query"
 )
 
-type QueryTransfer struct {
-	Query string
-}
-
 func handleFileQuery(params interface{}) interface{} {
 
-	var systemMessage QueryTransfer
-	if err := UnmarshalB(params, &systemMessage); err == nil {
-		return GoLookRepository.FindSystemAndFiles(systemMessage.Query)
-	} else {
-		log.WithError(err).Error("Could not handle file query")
+	var (
+		systemMessage PeerFileQuery
+		response      PeerResponse
+	)
+
+	err := Unmarshal(params, &systemMessage)
+
+	if err == nil {
+		var tmp []byte
+		result := GoLookRepository.FindSystemAndFiles(systemMessage.SearchString)
+		tmp, err = MarshalB(result)
+		response = PeerResponse{Error: false, Message: "Processed file query", Data: tmp}
 	}
-	return nil
+
+	if err != nil {
+		log.WithError(err).Error("Could not handle file query")
+		response = PeerResponse{Error: true, Message: "Problem Unmarshalling file query", Data: nil}
+	}
+
+	return response
 }
 
 func init() {

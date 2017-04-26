@@ -18,31 +18,31 @@ package integration
 
 import (
 	//"encoding/json"
+	"encoding/json"
 	"github.com/fsouza/go-dockerclient"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	//"github.com/ottenwbe/golook/broker/api"
+	"github.com/ottenwbe/golook/broker/api"
 	"github.com/ottenwbe/golook/broker/communication"
 	"github.com/ottenwbe/golook/broker/models"
 	"github.com/ottenwbe/golook/broker/routing"
 	"github.com/ottenwbe/golook/broker/runtime"
 	"github.com/ottenwbe/golook/broker/service"
-	log "github.com/sirupsen/logrus"
-	//"io/ioutil"
-	//"net/http"
 	"github.com/ottenwbe/golook/broker/utils"
-	"time"
+	"github.com/sirupsen/logrus"
+	"io/ioutil"
+	"net/http"
 )
 
 var _ = Describe("The golook server's", func() {
 
-	/*Context("http api", func() {
+	Context("http api", func() {
 		It("allows clients to query the application's /info endpoint from a server running in a docker container", func() {
 			RunInDockerContainer(func(client *docker.Client, container *docker.Container) {
 
 				appInfo := &runtime.AppInfo{}
 				compareInfo := runtime.NewAppInfo()
-				containerInfo := getContainerInfo(client, container)
+				containerInfo := GetContainerInfo(client, container)
 
 				// make test request
 				r, errGet := http.Get("http://" + containerInfo.NetworkSettings.IPAddress + ":8383" + api.INFO_EP)
@@ -60,26 +60,18 @@ var _ = Describe("The golook server's", func() {
 				Expect(appInfo.System.IP).To(Equal(containerInfo.NetworkSettings.IPAddress))
 			})
 		})
-	})*/
+	})
 })
-
-func getContainerInfo(client *docker.Client, container *docker.Container) *docker.Container {
-	containerInfo, errC := client.InspectContainer(container.ID)
-	if errC != nil {
-		log.Fatal("Could not query for the container's info")
-	}
-	return containerInfo
-}
 
 var _ = Describe("The golook server's", func() {
 	Context("rpc api", func() {
 		It("registers a system via the rest api", func() {
-
 			RunInDockerContainer(func(client *docker.Client, container *docker.Container) {
-
-				var testRouter = routing.NewRouter("system")
-				containerInfo, _ := client.InspectContainer(container.ID)
-				testRpcClient := communication.NewLookupRPCClient("http://" + containerInfo.NetworkSettings.IPAddress + ":8382")
+				var (
+					containerInfo = GetContainerInfo(client, container)
+					testRouter    = routing.NewRouter("system")
+					testRpcClient = communication.NewRPCClient("http://" + containerInfo.NetworkSettings.IPAddress + ":8382")
+				)
 				testRouter.NewPeer(routing.NewKey(containerInfo.NetworkSettings.MacAddress), testRpcClient)
 
 				testSystem := &models.SystemFiles{System: runtime.GolookSystem, Files: nil}
@@ -87,54 +79,89 @@ var _ = Describe("The golook server's", func() {
 					&service.SystemTransfer{Uuid: runtime.GolookSystem.UUID, System: testSystem, IsDeletion: false})
 
 				actualResponse := service.PeerResponse{}
-				err := utils.UnmarshalS(res, &actualResponse)
+				err := utils.Unmarshal(res, &actualResponse)
 
 				Expect(err).To(BeZero())
-				Expect(actualResponse.Success).To(BeTrue())
+				Expect(actualResponse.Error).To(BeFalse())
 			})
 		})
+
+		It("deletes a registered system via the rest api", func() {
+			RunInDockerContainer(func(client *docker.Client, container *docker.Container) {
+				var (
+					containerInfo = GetContainerInfo(client, container)
+					testRouter    = routing.NewRouter("system")
+					testRpcClient = communication.NewRPCClient("http://" + containerInfo.NetworkSettings.IPAddress + ":8382")
+				)
+				testRouter.NewPeer(routing.NewKey(containerInfo.NetworkSettings.MacAddress), testRpcClient)
+
+				testSystem := &models.SystemFiles{System: runtime.GolookSystem, Files: nil}
+				testRouter.BroadCast(service.SYSTEM_REPORT,
+					&service.SystemTransfer{Uuid: runtime.GolookSystem.UUID, System: testSystem, IsDeletion: false})
+				res := testRouter.BroadCast(service.SYSTEM_REPORT,
+					&service.SystemTransfer{Uuid: runtime.GolookSystem.UUID, System: testSystem, IsDeletion: true})
+
+				actualResponse := service.PeerResponse{}
+				err := utils.Unmarshal(res, &actualResponse)
+
+				Expect(err).To(BeZero())
+				Expect(actualResponse.Error).To(BeFalse())
+			})
+		})
+
+		It("handles and stores a file in order to query it afterwards", func() {
+			RunInDockerContainer(func(client *docker.Client, container *docker.Container) {
+				var (
+					containerInfo = GetContainerInfo(client, container)
+					testRouter    = routing.NewRouter("system")
+					testRpcClient = communication.NewRPCClient("http://" + containerInfo.NetworkSettings.IPAddress + ":8382")
+				)
+				testRouter.NewPeer(routing.NewKey(containerInfo.NetworkSettings.MacAddress), testRpcClient)
+
+				testSystem := &models.SystemFiles{System: runtime.GolookSystem, Files: nil}
+				testRouter.BroadCast(service.SYSTEM_REPORT,
+					&service.SystemTransfer{Uuid: runtime.GolookSystem.UUID, System: testSystem, IsDeletion: false})
+				defer testRouter.BroadCast(service.SYSTEM_REPORT,
+					&service.SystemTransfer{Uuid: runtime.GolookSystem.UUID, System: testSystem, IsDeletion: true})
+
+				f, err := models.NewFile("integration_test.go")
+				Expect(err).To(BeZero())
+
+				res_fr := testRouter.BroadCast(service.FILE_REPORT,
+					&service.PeerFileReport{
+						Files:   map[string]*models.File{f.ShortName: f},
+						Replace: false,
+						System:  runtime.GolookSystem.UUID,
+					})
+
+				actualResponse := service.PeerResponse{}
+				err = utils.Unmarshal(res_fr, &actualResponse)
+
+				Expect(err).To(BeZero())
+				Expect(actualResponse.Error).To(BeFalse())
+
+				res_q := testRouter.BroadCast(service.FILE_QUERY, service.PeerFileQuery{
+					SearchString: "integration_test.go",
+				})
+
+				actualResponse2 := service.PeerResponse{}
+				err = utils.Unmarshal(res_q, &actualResponse2)
+
+				logrus.Info("Result of query: " + res_q.(string))
+
+				var files map[string]*models.SystemFiles
+				err = utils.Unmarshal(actualResponse2.Data, &files)
+
+				Expect(err).To(BeZero())
+				Expect(actualResponse2.Error).To(BeFalse())
+
+				_, ok := files[runtime.GolookSystem.UUID]
+				Expect(ok).To(BeTrue())
+
+				_, ok2 := files[runtime.GolookSystem.UUID].Files[f.Name]
+				Expect(ok2).To(BeTrue())
+			})
+		})
+
 	})
 })
-
-func RunInDockerContainer(f func(client *docker.Client, container *docker.Container)) {
-	client, err := docker.NewClientFromEnv()
-	if err != nil {
-		log.Fatalf("Cannot connect to Docker daemon: %s", err)
-	}
-	container, err := client.CreateContainer(createOptions("golook:latest"))
-	if err != nil {
-		log.Fatalf("Cannot create Docker container; make sure docker daemon is started: %s", err)
-	}
-	defer func() { //ensure container stops again
-		if err := client.RemoveContainer(docker.RemoveContainerOptions{
-			ID:    container.ID,
-			Force: true,
-		}); err != nil {
-			log.Fatalf("cannot remove container: %s", err)
-		}
-	}()
-
-	err = client.StartContainer(container.ID, &docker.HostConfig{})
-	if err != nil {
-		log.Fatalf("Cannot start Docker container: %s", err)
-	}
-
-	// some time for the container
-	time.Sleep(time.Second)
-
-	f(client, container)
-}
-
-func createOptions(containerName string) docker.CreateContainerOptions {
-	ports := make(map[docker.Port]struct{})
-	ports["8383"] = struct{}{}
-	ports["8382"] = struct{}{}
-	opts := docker.CreateContainerOptions{
-		Config: &docker.Config{
-			Image:        containerName,
-			ExposedPorts: ports,
-		},
-	}
-
-	return opts
-}

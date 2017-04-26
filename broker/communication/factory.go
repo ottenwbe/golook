@@ -11,16 +11,12 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+package communication
 
-package runtime
+func newRPCServer(associatedHandler string) RpcServer {
+	return &JsonRPCServerStub{handler: associatedHandler}
+}
 
-import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-)
-
-var _ = Describe(" Server ", func() {
-	It("should not be nil after startup", func() {
-		Expect(HttpServer).ToNot(BeNil())
-	})
-})
+func NewRPCClient(url string) RpcClient {
+	return newJsonRPCClient(url)
+}

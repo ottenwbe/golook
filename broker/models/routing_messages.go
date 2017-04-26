@@ -13,6 +13,6 @@
 //limitations under the License.
 package models
 
-type MsgParams interface {
-	GetObject(v interface{}) error
+type EncapsulatedValues interface {
+	Unmarshal(v interface{}) error
 }

@@ -25,7 +25,7 @@ var _ = Describe("Marshalling a message", func() {
 
 		msg, err1 := MarshalB(testString)
 		var s string
-		err2 := UnmarshalB(msg, &s)
+		err2 := Unmarshal(msg, &s)
 
 		Expect(err1).To(BeNil())
 		Expect(err2).To(BeNil())
@@ -37,7 +37,7 @@ var _ = Describe("Marshalling a message", func() {
 
 		msg, err1 := MarshalS(testString)
 		var s string
-		err2 := UnmarshalS(msg, &s)
+		err2 := Unmarshal(msg, &s)
 
 		Expect(err1).To(BeNil())
 		Expect(err2).To(BeNil())
@@ -60,7 +60,7 @@ var _ = Describe("Marshalling a message", func() {
 		}
 		var t test
 
-		err := UnmarshalB([]byte(s), &t)
+		err := Unmarshal([]byte(s), &t)
 
 		Expect(err).ToNot(BeNil())
 	})

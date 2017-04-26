@@ -33,17 +33,17 @@ func handleSystemReport(params interface{}) interface{} {
 
 	log.Info("handleSystemReport will gather for %s", params.(string))
 
-	if err := UnmarshalS(params, &systemMessage); err == nil {
+	if err := Unmarshal(params, &systemMessage); err == nil {
 		if systemMessage.IsDeletion {
 			GoLookRepository.DelSystem(systemMessage.Uuid)
-			response = PeerResponse{true, fmt.Sprintf("Processed request for deleting system %s", systemMessage.Uuid)}
+			response = PeerResponse{false, fmt.Sprintf("Processed request for deleting system %s", systemMessage.Uuid), nil}
 		} else {
-			response.Success = GoLookRepository.StoreSystem(systemMessage.Uuid, systemMessage.System)
+			response.Error = !GoLookRepository.StoreSystem(systemMessage.Uuid, systemMessage.System)
 			response.Message = fmt.Sprintf("Processed request for adding system %s", systemMessage.Uuid)
 		}
 	} else {
-		response = PeerResponse{false, "Could not handle malformed system report"}
-		log.WithError(err).Error("Could not handle system report")
+		response = PeerResponse{true, "Cannot handle malformed system report", nil}
+		log.WithError(err).Error("Cannot handle malformed system report")
 	}
 
 	log.Info("handleSystemReport got a response %s", response.Message)

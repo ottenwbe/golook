@@ -11,6 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package routing
 
 import (
@@ -20,18 +21,18 @@ import (
 	"reflect"
 )
 
-var _ = Describe("The broadcast router", func() {
+var _ = Describe("The flood router", func() {
 	It("implements the 'Router' interface", func() {
-		r := newBroadcastRouter("test")
+		r := newFloodingRouter("test")
 
 		Expect(r).ToNot(BeNil())
-		Expect(reflect.TypeOf(r)).To(Equal(reflect.TypeOf(&BroadcastRouter{})))
+		Expect(reflect.TypeOf(r)).To(Equal(reflect.TypeOf(&FloodingRouter{})))
 	})
 
 	It("broadcasts messages to one or more peers", func() {
 		testPeers := []*mockPeer{{}, {}}
 
-		r := newBroadcastRouter("test")
+		r := newFloodingRouter("test")
 		r.NewPeer(NewKey("peer1"), testPeers[0])
 		r.NewPeer(NewKey("peer2"), testPeers[1])
 
@@ -44,10 +45,10 @@ var _ = Describe("The broadcast router", func() {
 		}
 	})
 
-	It("should broadcast instead of sending directed messages via 'Route'", func() {
+	It("should flood instead of sending directed messages via 'Route'", func() {
 		testPeers := []*mockPeer{{}, {}}
 
-		r := newBroadcastRouter("test")
+		r := newFloodingRouter("test")
 		r.NewPeer(NewKey("peer1"), testPeers[0])
 		r.NewPeer(NewKey("peer2"), testPeers[1])
 
@@ -66,7 +67,7 @@ type mockPeer struct {
 	request     *RequestMessage
 }
 
-func (p *mockPeer) Call(index string, message interface{}) (models.MsgParams, error) {
+func (p *mockPeer) Call(index string, message interface{}) (models.EncapsulatedValues, error) {
 	p.visitedCall += 1
 	p.request = message.(*RequestMessage)
 	return nil, nil

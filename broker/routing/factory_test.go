@@ -23,17 +23,16 @@ import (
 var _ = Describe("The router factory", func() {
 	It("creates a new router and registeres it", func() {
 		r := NewRouter("test")
-		defer finalizer(r)
 
 		Expect(r).ToNot(BeNil())
-		Expect(reflect.TypeOf(r)).To(Equal(reflect.TypeOf(&BroadcastRouter{})))
+		Expect(reflect.TypeOf(r)).To(Equal(reflect.TypeOf(&FloodingRouter{})))
 	})
 
 	It("registers and deregisters a created router", func() {
 		r := NewRouter("test")
 		Expect(r).ToNot(BeNil())
-		Expect(communication.RouterRegistrar.HasClient("test")).To(BeTrue())
+		Expect(communication.MessageDispatcher.HasHandler("test")).To(BeTrue())
 		DeleteRouter("test")
-		Expect(communication.RouterRegistrar.HasClient("test")).To(BeFalse())
+		Expect(communication.MessageDispatcher.HasHandler("test")).To(BeFalse())
 	})
 })

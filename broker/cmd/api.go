@@ -21,7 +21,7 @@ import (
 
 var apiCmd = &cobra.Command{
 	Use:   "api",
-	Short: fmt.Sprint("Print information about the API."),
+	Short: fmt.Sprint("Print some information about the API."),
 	Long:  fmt.Sprint("Print the supported versions of the API."),
 	Run: func(_ *cobra.Command, _ []string) {
 		fmt.Println(fmt.Sprintf("[%s]", api.GolookAPIVersion))
@@ -29,6 +29,5 @@ var apiCmd = &cobra.Command{
 }
 
 func init() {
-
 	RootCmd.AddCommand(apiCmd)
 }
