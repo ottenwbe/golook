@@ -1,5 +1,3 @@
-// +build !integration
-
 //Copyright 2016-2017 Beate Ottenwälder
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
