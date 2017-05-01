@@ -11,6 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package repositories
 
 import (
@@ -36,25 +37,25 @@ var _ = Describe("The repository implemented with maps", func() {
 	})
 
 	It("stores valid systems", func() {
-		sys := &models.SystemFiles{System: runtime.NewSystem(), Files: nil}
+		sys := runtime.NewSystem()
 
-		Expect(repo.StoreSystem(sys.System.Name, sys)).To(BeTrue())
-		_, ok := (*repo)[sys.System.Name]
+		Expect(repo.StoreSystem(sys.Name, sys)).To(BeTrue())
+		_, ok := (*repo)[sys.Name]
 		Expect(ok).To(BeTrue())
 	})
 
 	It("can retrieve a system by name", func() {
-		sys := &models.SystemFiles{System: runtime.NewSystem(), Files: nil}
-		repo.StoreSystem(sys.System.Name, sys)
+		sys := runtime.NewSystem()
+		repo.StoreSystem(sys.Name, sys)
 
-		sys, ok := repo.GetSystem(sys.System.Name)
+		sys, ok := repo.GetSystem(sys.Name)
 		Expect(sys).ToNot(BeNil())
 		Expect(ok).To(BeTrue())
 	})
 
 	It("allows to delete a stored System", func() {
-		sys := &models.SystemFiles{System: runtime.NewSystem(), Files: nil}
-		sysName := sys.System.Name
+		sys := runtime.NewSystem()
+		sysName := sys.Name
 		stored := repo.StoreSystem(sysName, sys)
 
 		repo.DelSystem(sysName)
@@ -63,38 +64,41 @@ var _ = Describe("The repository implemented with maps", func() {
 		Expect(ok).To(BeFalse())
 	})
 
-	It("rejects files if no valid System is stored", func() {
-		Expect(repo.StoreFiles("unknown", map[string]*models.File{})).To(BeFalse())
+	It("accepts files if no valid System is stored and creates an entry for that system", func() {
+		stored := repo.UpdateFiles("unknown", map[string]*models.File{})
+		_, found := (*repo)["unknown"]
+		Expect(stored).To(BeTrue())
+		Expect(found).To(BeTrue())
 	})
 
 	It("accepts files for valid systems", func() {
 		f := newTestFile()
-		sys := &models.SystemFiles{System: runtime.NewSystem(), Files: nil}
-		sysName := sys.System.Name
+		sys := runtime.NewSystem()
+		sysName := sys.Name
 		repo.StoreSystem(sysName, sys)
 
-		Expect(repo.StoreFiles(sysName, map[string]*models.File{f.ShortName: f})).To(BeTrue())
+		Expect(repo.UpdateFiles(sysName, map[string]*models.File{f.ShortName: f})).To(BeTrue())
 	})
 
 	It("should find files that have been stored", func() {
 		f := newTestFile()
-		sys := &models.SystemFiles{System: runtime.NewSystem(), Files: nil}
-		sysName := sys.System.Name
+		sys := runtime.NewSystem()
+		sysName := sys.Name
 
 		repo.StoreSystem(sysName, sys)
-		repo.StoreFiles(sysName, map[string]*models.File{f.ShortName: f})
+		repo.UpdateFiles(sysName, map[string]*models.File{f.Name: f})
 
 		res := repo.FindSystemAndFiles(f.ShortName)
 		Expect(len(res)).To(Equal(1))
-		Expect(len(res[sysName].Files)).To(Equal(1))
-		Expect(*res[sysName].Files[f.Name]).To(Equal(*f))
+		Expect(len(res[sysName])).To(Equal(1))
+		Expect(*res[sysName][0]).To(Equal(*f))
 	})
 })
 
 func newTestFile() *models.File {
-	f, err := models.NewFile("repository_map_test.go")
+	f, err := models.NewFile("map_repository_test.go")
 	if err != nil {
-		logrus.WithField("file", "repository_map_test.go").Panic("File could not be created in test")
+		logrus.WithField("file", "map_repository_test.go").Panic("File could not be created in test")
 	}
 	return f
 }

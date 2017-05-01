@@ -16,33 +16,44 @@ package service
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/ottenwbe/golook/broker/routing"
+
 	"github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
 	"time"
 )
 
+type testReporter struct {
+	monitorReports int
+}
+
+func (t *testReporter) reportHandler(file string) {
+	t.monitorReports += 1
+}
+
 var _ = Describe("The file monitor", func() {
+
+	var (
+		fm *FileMonitor
+		tr *testReporter
+	)
+
+	BeforeEach(func() {
+		tr = &testReporter{}
+		fm = &FileMonitor{
+			reporter: tr.reportHandler,
+		}
+		fm.Start()
+	})
+
+	AfterEach(func() {
+		fm.Close()
+		fm = nil
+	})
 
 	Context("initialization", func() {
 		It("is running after the initialization", func() {
-			Expect(watcher).ToNot(BeNil())
-		})
-	})
-
-	Context("add and remove", func() {
-		It("added files are buffered in watchedFiles", func() {
-			AddFileMonitor("test.txt")
-			defer RemoveFileMonitor("test.txt")
-			Expect(watchedFiles["test.txt"]).To(BeTrue())
-		})
-
-		It("removed files are no longer buffered", func() {
-			AddFileMonitor("test.txt")
-			RemoveFileMonitor("test.txt")
-			_, ok := watchedFiles["test.txt"]
-			Expect(ok).To(BeFalse())
+			Expect(fm.watcher).ToNot(BeNil())
 		})
 	})
 
@@ -50,62 +61,34 @@ var _ = Describe("The file monitor", func() {
 
 		const TEST_FILE = "test.txt"
 
-		It("does not monitor files when the monitor is stopped", func() {
-			StopMonitor()
-			defer StartMonitor()
-			routing.RunWithMockedRouter(&systemIndex, func() {
-
-				// Monitor the current directory for changes
-				currentDirectory, _ := filepath.Abs(".")
-				AddFileMonitor(currentDirectory)
-				defer RemoveFileMonitor(currentDirectory)
-
-				_, err := os.Create(TEST_FILE)
-				if err != nil {
-					logrus.Fatal(err)
-				}
-
-				err = os.Remove(TEST_FILE)
-				if err != nil {
-					logrus.Fatal(err)
-				}
-
-				Expect(watcher).ToNot(BeNil())
-				Expect(routing.AccessMockedRouter(systemIndex).Visited).To(BeZero())
-			})
-		})
-
 		It("is triggered by adding and removing a file", func() {
 
-			routing.RunWithMockedRouter(&systemIndex, func() {
+			// Monitor the current directory for changes
+			currentDirectory, _ := filepath.Abs(".")
+			fm.Monitor(currentDirectory)
 
-				// Monitor the current directory for changes
-				currentDirectory, _ := filepath.Abs(".")
-				AddFileMonitor(currentDirectory)
-				defer RemoveFileMonitor(currentDirectory)
+			_, err := os.Create(TEST_FILE) // For read access.
+			if err != nil {
+				logrus.Fatal(err)
+			}
 
-				_, err := os.Create(TEST_FILE) // For read access.
-				if err != nil {
-					logrus.Fatal(err)
-				}
+			err = os.Remove(TEST_FILE) // For read access.
+			if err != nil {
+				logrus.Fatal(err)
+			}
 
-				err = os.Remove(TEST_FILE) // For read access.
-				if err != nil {
-					logrus.Fatal(err)
-				}
+			// wait for both events, or wait for 1 second to ensure that the test eventually stops
+			numEvents := 0
+			elapsed := time.Now().Second()
+			for numEvents < 1 && time.Now().Second()-elapsed < 1 {
+				numEvents = tr.monitorReports
+			}
 
-				// wait for both events, or wait for 1 second to ensure that the test eventually stops
-				numEvents := 0
-				elapsed := time.Now().Second()
-				for numEvents < 1 && time.Now().Second()-elapsed < 1 {
-					numEvents = routing.AccessMockedRouter(systemIndex).Visited
-				}
+			Expect(fm.watcher).ToNot(BeNil())
+			// Due to timings, the test might be flaky and miss the create event
+			// Therefore, only check for at least one event that
+			Expect(numEvents >= 1).To(BeTrue())
 
-				Expect(watcher).ToNot(BeNil())
-				// Due to timings, the test might be flaky and miss the create event
-				// Therefore, only check for at least one event that
-				Expect(numEvents >= 1).To(BeTrue())
-			})
 		})
 	})
 })

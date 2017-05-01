@@ -11,6 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package routing
 
 import (
@@ -22,17 +23,27 @@ import (
 
 var _ = Describe("The router factory", func() {
 	It("creates a new router and registeres it", func() {
-		r := NewRouter("test")
+		r := NewRouter("test", BroadcastRouter)
 
 		Expect(r).ToNot(BeNil())
-		Expect(reflect.TypeOf(r)).To(Equal(reflect.TypeOf(&FloodingRouter{})))
+		Expect(reflect.TypeOf(r)).To(Equal(reflect.TypeOf(&BroadCastRouter{})))
 	})
 
-	It("registers and deregisters a created router", func() {
-		r := NewRouter("test")
-		Expect(r).ToNot(BeNil())
+	It("registers a created router with the communication layer", func() {
+		r := NewRouter("test", BroadcastRouter)
+
+		ActivateRouter(r)
+		defer DeactivateRouter(r)
+
 		Expect(communication.MessageDispatcher.HasHandler("test")).To(BeTrue())
-		DeleteRouter("test")
-		Expect(communication.MessageDispatcher.HasHandler("test")).To(BeFalse())
+	})
+
+	It("deregisters am registered router from the communication layer", func() {
+		r := NewRouter("test", BroadcastRouter)
+		ActivateRouter(r)
+
+		DeactivateRouter(r)
+
+		Expect(communication.MessageDispatcher.HasHandler("test")).ToNot(BeTrue())
 	})
 })

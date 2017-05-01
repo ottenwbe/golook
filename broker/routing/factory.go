@@ -16,20 +16,51 @@ package routing
 
 import (
 	com "github.com/ottenwbe/golook/broker/communication"
+	log "github.com/sirupsen/logrus"
 )
 
-func NewRouter(name string) Router {
-	result := newFloodingRouter(name)
+/*
+RouterType ...
+*/
+type RouterType string
 
-	com.MessageDispatcher.RegisterHandler(name, result, RequestMessage{}, ResponseMessage{})
+const (
+	BroadcastRouter RouterType = "broadcast"
+)
 
-	for _, peer := range DefaultPeers {
-		result.NewPeer(NewKey(peer), com.NewRPCClient(peer))
+var (
+	defaultPeers = []string{}
+)
+
+/*
+NewRouter creates a new router of type "routerType" with a unique human readable name to identify the router.
+Note, however, that a new router cannot receive messages, yet. To this end, the router needs to activated; see ActivateRouter(r Router).
+*/
+func NewRouter(name string, routerType RouterType) (result Router) {
+
+	switch routerType {
+	case BroadcastRouter:
+		result = newBroadcastRouter(name)
+	default:
+		log.WithField("type", routerType).Error("Cannot instantiate new router for unknown type.")
+		return nil
+	}
+
+	for _, peer := range defaultPeers {
+		result.NewPeer(NewKey(peer), peer)
 	}
 
 	return result
 }
 
-func DeleteRouter(name string) {
-	com.MessageDispatcher.RemoveHandler(name)
+/*
+ActivateRouter enables the router to receive messages.
+NOTE: To clean up after the router is no longer used DeactivateRouter(r Router) has to be called
+*/
+func ActivateRouter(r Router) {
+	com.MessageDispatcher.RegisterHandler(r.Name(), r, RequestMessage{}, ResponseMessage{})
+}
+
+func DeactivateRouter(r Router) {
+	com.MessageDispatcher.RemoveHandler(r.Name())
 }

@@ -11,25 +11,27 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package utils
+
+package service
 
 import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	//com "github.com/ottenwbe/golook/broker/communication"
+	//golook "github.com/ottenwbe/golook/broker/runtime"
+
+	"github.com/spf13/viper"
 )
 
-var _ = Describe("uuids", func() {
+func GetConfiguration() map[string]map[string]interface{} {
 
 	var (
-		uuid1, uuid2 string
+		configurations = map[string]map[string]interface{}{}
+		configGeneral  = map[string]interface{}{}
 	)
 
-	BeforeEach(func() {
-		uuid1 = NewUUID()
-		uuid2 = NewUUID()
-	})
+	configGeneral["file"] = viper.ConfigFileUsed()
+	configGeneral["settings"] = viper.AllSettings()
+	configGeneral["keys"] = viper.AllKeys()
+	configurations["config"] = configGeneral
 
-	It("generated at random should differ", func() {
-		Expect(uuid1).ToNot(Equal(uuid2))
-	})
-})
+	return configurations
+}

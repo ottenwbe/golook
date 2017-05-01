@@ -11,17 +11,34 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package cmd
+
+package utils
 
 import (
-	"github.com/ottenwbe/golook/broker/api"
-
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	"fmt"
+	"io/ioutil"
+	"os"
 )
 
-var _ = Describe("The api command", func() {
-	It("should return the supported api versions", func() {
-		Expect(stringFromStdIn(func() { apiCmd.Run(nil, []string{}) })).To(ContainSubstring(api.GolookAPIVersion))
-	})
-})
+//see https://play.golang.org/p/fXpK0ZhXXf
+func InterceptStdOut(f func()) string {
+
+	defer func(reset *os.File) {
+		os.Stdout = reset
+	}(os.Stdout)
+	r, w, errPipe := os.Pipe()
+	if errPipe != nil {
+		return fmt.Sprintf("Pipe Error: %s", errPipe)
+	}
+	os.Stdout = w
+
+	f()
+
+	w.Close()
+	b, err := ioutil.ReadAll(r)
+	if err != nil {
+		return fmt.Sprintf("Read Error: %s", err)
+	}
+
+	return string(b)
+}

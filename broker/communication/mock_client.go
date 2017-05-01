@@ -11,13 +11,24 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package communication
 
 import "github.com/ottenwbe/golook/broker/models"
 
 type MockClient struct {
 	VisitedCall int
+	VisitedUrl  int
 	Name        string
+}
+
+func newMockClient() RpcClient {
+	return &MockClient{}
+}
+
+func (client *MockClient) Url() string {
+	client.VisitedUrl += 1
+	return "test"
 }
 
 func (client *MockClient) Call(router string, message interface{}) (models.EncapsulatedValues, error) {

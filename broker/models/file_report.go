@@ -15,7 +15,5 @@
 package models
 
 type FileReport struct {
-	Path    string `json:"name"`
-	Monitor bool   `json:"monitor"`
-	Replace bool   `json:"replace"`
+	Path string `json:"name"`
 }

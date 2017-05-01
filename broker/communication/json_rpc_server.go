@@ -11,15 +11,16 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package communication
 
 import (
 	"context"
 	"encoding/json"
-	"github.com/ottenwbe/golook/broker/runtime"
 
 	"errors"
 	"github.com/osamingo/jsonrpc"
+	"github.com/ottenwbe/golook/broker/runtime"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -34,6 +35,10 @@ type (
 	}
 )
 
+var (
+	HttpRpcServer runtime.Server
+)
+
 var _ (jsonrpc.Handler) = (*JsonRPCServerStub)(nil)
 
 func (rpc *JsonRPCServerStub) ServeJSONRPC(_ context.Context, params *json.RawMessage) (interface{}, *jsonrpc.Error) {
@@ -43,7 +48,7 @@ func (rpc *JsonRPCServerStub) ServeJSONRPC(_ context.Context, params *json.RawMe
 		return nil, jsonrpc.ErrMethodNotFound()
 	}
 
-	log.Debug("Received RPC message: %s", string(*params))
+	log.Info("Received RPC message: %s", string(*params))
 
 	p := &JsonRPCParams{params: *params}
 
@@ -83,13 +88,4 @@ func (p *JsonRPCParams) Unmarshal(v interface{}) error {
 	}
 
 	return nil
-}
-
-func configRPC() {
-	runtime.RpcServer.RegisterFunctionRPC("/rpc", jsonrpc.HandlerFunc)
-	runtime.RpcServer.RegisterFunctionRPC("/rpc/debug", jsonrpc.DebugHandlerFunc)
-}
-
-func init() {
-	runtime.ConfigurationHandler.RegisterConfig(configRPC)
 }

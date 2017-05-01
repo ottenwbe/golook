@@ -14,21 +14,30 @@
 
 package runtime
 
-type (
-	ConfigHandler    func()
-	ConfigHandlerArr []func()
+import (
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"time"
 )
 
-var (
-	ConfigurationHandler = ConfigHandlerArr{}
-)
+var _ = Describe("The scheduler", func() {
 
-func (c *ConfigHandlerArr) RegisterConfig(handler ConfigHandler) {
-	*c = append(*c, handler)
+	It("takes jobs and schedules them, e.g., every millisecond", func() {
+		testJob := &testJob{}
+
+		Schedule("@every 1s", testJob)
+
+		// wait for some time and let the scheduler trigger the job several times
+		time.Sleep(time.Second * 2)
+		Expect(testJob.runCounter).To(BeNumerically(">=", 2))
+	})
+
+})
+
+type testJob struct {
+	runCounter uint8
 }
 
-func (c *ConfigHandlerArr) Execute() {
-	for _, config := range *c {
-		config()
-	}
+func (t *testJob) Run() {
+	t.runCounter += 1
 }

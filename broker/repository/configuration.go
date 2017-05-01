@@ -11,14 +11,17 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package utils
+
+package repositories
 
 import (
-	"github.com/satori/go.uuid"
+	"github.com/spf13/viper"
 )
 
-// Facade for uuid
-func NewUUID() string {
-	uuid := uuid.NewV4()
-	return uuid.String()
+func ApplyConfiguration() {
+	repositoryType = RepositoryType(viper.GetInt("repository.typeId"))
+}
+
+func InitConfiguration() {
+	viper.SetDefault("repository.typeId", MAP_REPOSITORY)
 }

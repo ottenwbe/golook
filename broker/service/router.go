@@ -15,27 +15,33 @@
 package service
 
 import (
-	. "github.com/ottenwbe/golook/broker/models"
+	"github.com/ottenwbe/golook/broker/routing"
 	"github.com/ottenwbe/golook/broker/runtime"
 )
 
-type PeerFileReport struct {
-	Files  map[string]*File `json:"files"`
-	System string           `json:"system"`
+type Router struct {
+	routing.Router
 }
 
-type PeerResponse struct {
-	Error   bool   `json:"error"`
-	Message string `json:"message"`
-	Data    []byte `json:"data"`
+var (
+	//broadCastRouter's instance is injected during the configuration
+	broadCastRouter Router
+)
+
+func newRouter(name string, routerTpye routing.RouterType) Router {
+	r := Router{routing.NewRouter(name, routerTpye)}
+
+	r.HandlerFunction(SYSTEM_REPORT, handleSystemReport)
+	r.HandlerFunction(FILE_QUERY, handleFileQuery)
+	r.HandlerFunction(fileReport, handleFileReport)
+
+	routing.ActivateRouter(r)
+
+	newSystemCallbacks.Add("broadcastRouter", r.handleNewSystem)
+
+	return r
 }
 
-type PeerSystemReport struct {
-	Uuid       string          `json:"uuid"`
-	System     *runtime.System `json:"system"`
-	IsDeletion bool            `json:"deletion"`
-}
-
-type PeerFileQuery struct {
-	SearchString string `json:"search"`
+func (r *Router) handleNewSystem(uuid string, system *runtime.System) {
+	r.NewPeer(routing.NewKey(uuid), system.IP)
 }

@@ -23,7 +23,7 @@ import (
 )
 
 type (
-	//JsonRpcClientStub implements the RPCClient interface
+	/*JsonRpcClientStub implements the RPCClient interface*/
 	JsonRpcClientStub struct {
 		serverUrl string
 		c         *jsonrpc.RPCClient
@@ -33,10 +33,16 @@ type (
 	}
 )
 
-func newJsonRPCClient(url string) RpcClient {
+func newJsonRPCClient(url string, port int) RpcClient {
+
+	serverUrl := fmt.Sprintf("http://%s", url)
+	if port >= 0 {
+		serverUrl = fmt.Sprintf("%s:%d", serverUrl, port)
+	}
+
 	return &JsonRpcClientStub{
-		serverUrl: url,
-		c:         jsonrpc.NewJsonRPCClient(fmt.Sprintf("%s/rpc", url)),
+		serverUrl: serverUrl,
+		c:         jsonrpc.NewJsonRPCClient(fmt.Sprintf("%s/rpc", serverUrl)),
 	}
 }
 
@@ -46,7 +52,7 @@ It returns a generic return value. Clients can retrieve the result by calling th
 */
 func (lc *JsonRpcClientStub) Call(method string, parameters interface{}) (EncapsulatedValues, error) {
 
-	log.WithField("method", method).Debugf("Making a call for %s with %s", method, parameters)
+	log.WithField("method", method).Infof("Making a call for %s with %s", method, parameters)
 
 	response, err := lc.c.Call(method, parameters)
 	if err != nil {
@@ -54,6 +60,7 @@ func (lc *JsonRpcClientStub) Call(method string, parameters interface{}) (Encaps
 	}
 
 	r := &JsonRPCReturnType{response: response}
+	log.WithField("method", method).Infof("Getting a response for %s with %s", method, r.response)
 
 	return r, nil
 }

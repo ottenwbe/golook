@@ -14,84 +14,51 @@
 package routing
 
 import (
-	. "github.com/ottenwbe/golook/broker/communication"
-	"sync"
+	com "github.com/ottenwbe/golook/broker/communication"
+	"github.com/ottenwbe/golook/broker/models"
 )
 
 type Router interface {
-	MessageHandler
+	com.MessageHandler
 	Route(key Key, method string, params interface{}) interface{}
 	BroadCast(method string, params interface{}) interface{}
-	HandlerFunction(name string, handler func(params interface{}) interface{})
-	NewPeer(key Key, peer RpcClient)
+	HandlerFunction(name string, handler func(params models.EncapsulatedValues) interface{})
+	NewPeer(key Key, url string)
 	Name() string
 }
 
-type HandlerTable map[string]func(params interface{}) interface{}
+type HandlerTable map[string]func(params models.EncapsulatedValues) interface{}
 
 type RouteTable interface {
-	clients() map[Key]RpcClient
-	get(key Key) (RpcClient, bool)
-	add(key Key, client RpcClient)
-	this() RpcServer
+	peers() map[Key]com.RpcClient
+	get(key Key) (com.RpcClient, bool)
+	add(key Key, client com.RpcClient)
+	this() com.RpcServer
 }
 
 type DefaultRouteTable struct {
-	uplinkClients map[Key]RpcClient
+	peerClients map[Key]com.RpcClient
 }
 
 func newDefaultRouteTable() RouteTable {
 	return &DefaultRouteTable{
-		uplinkClients: make(map[Key]RpcClient, 0),
+		peerClients: make(map[Key]com.RpcClient, 0),
 	}
 }
 
-func (rt *DefaultRouteTable) this() RpcServer {
+func (rt *DefaultRouteTable) this() com.RpcServer {
 	return nil
 }
 
-func (rt *DefaultRouteTable) get(key Key) (RpcClient, bool) {
-	client, ok := rt.uplinkClients[key]
+func (rt *DefaultRouteTable) get(key Key) (com.RpcClient, bool) {
+	client, ok := rt.peerClients[key]
 	return client, ok
 }
 
-func (rt *DefaultRouteTable) add(key Key, client RpcClient) {
-	rt.uplinkClients[key] = client
+func (rt *DefaultRouteTable) add(key Key, client com.RpcClient) {
+	rt.peerClients[key] = client
 }
 
-func (rt *DefaultRouteTable) clients() map[Key]RpcClient {
-	return rt.uplinkClients
-}
-
-type DuplicateFilter map[int]bool
-type DuplicateMap map[string]DuplicateFilter
-
-var (
-	duplicateMap DuplicateMap = make(DuplicateMap, 0)
-	duplicateMtx sync.Mutex   = sync.Mutex{}
-)
-
-func (m DuplicateMap) watchForDuplicatesFrom(system string) {
-	if _, ok := duplicateMap[system]; !ok {
-		duplicateMap[system] = make(DuplicateFilter, 0)
-	}
-}
-
-func (m DuplicateMap) isDuplicate(source Source) bool {
-	ok := m[source.System][source.Id]
-	return ok
-}
-
-func (m DuplicateMap) add(source Source) {
-	m[source.System][source.Id] = true
-}
-
-func (m DuplicateMap) CheckForDuplicates(source Source) bool {
-	duplicateMtx.Lock()
-	defer duplicateMtx.Unlock()
-
-	m.watchForDuplicatesFrom(source.System)
-	result := m.isDuplicate(source)
-	m.add(source)
-	return result
+func (rt *DefaultRouteTable) peers() map[Key]com.RpcClient {
+	return rt.peerClients
 }

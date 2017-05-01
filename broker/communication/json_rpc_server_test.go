@@ -43,7 +43,7 @@ type aType struct {
 
 var _ = Describe("The rpc params", func() {
 
-	It("allow handler to unmarshal the parameters", func() {
+	It("can be unmarshalled", func() {
 		expectedResult := []aType{{123}}
 
 		b, err := json.Marshal(expectedResult)
@@ -60,6 +60,24 @@ var _ = Describe("The rpc params", func() {
 
 		Expect(err).To(BeNil())
 		Expect(testResult).To(Equal(expectedResult[0]))
+	})
+
+	It("returns an error when a slice shoud be unmarshalled", func() {
+		expectedResult := []aType{{123}, {234}}
+
+		b, err := json.Marshal(expectedResult)
+		if err != nil {
+			Fail("Error while preparig a test")
+		}
+		jsonRPCParams := JsonRPCParams{
+			params: json.RawMessage(b),
+		}
+
+		// test unmarshalling the data
+		var testResult aType
+		err = jsonRPCParams.Unmarshal(&testResult)
+
+		Expect(err).ToNot(BeNil())
 	})
 })
 

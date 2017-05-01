@@ -19,11 +19,12 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/ottenwbe/golook/broker/utils"
 )
 
 var _ = Describe("The version command", func() {
 	It("should return the current version", func() {
-		Expect(stringFromStdIn(func() { versionCmd.Run(nil, []string{}) })).To(Equal(Version + "\n"))
+		Expect(utils.InterceptStdOut(func() { versionCmd.Run(nil, []string{}) })).To(Equal(Version + "\n"))
 	})
 
 })

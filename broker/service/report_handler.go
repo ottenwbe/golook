@@ -11,36 +11,38 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package service
 
 import (
 	"fmt"
+	"github.com/ottenwbe/golook/broker/models"
 	. "github.com/ottenwbe/golook/broker/repository"
-	. "github.com/ottenwbe/golook/broker/utils"
 	log "github.com/sirupsen/logrus"
 )
 
 const (
-	FILE_REPORT = "file_report"
+	fileReport = "file_report"
 )
 
-func handleFileReport(params interface{}) interface{} {
+func handleFileReport(params models.EncapsulatedValues) interface{} {
 	var (
 		fileMessage PeerFileReport
 		response    PeerResponse
 	)
 
-	if err := Unmarshal(params, &fileMessage); err == nil {
-		response.Error = !GoLookRepository.StoreFiles(fileMessage.System, fileMessage.Files)
-		response.Message = fmt.Sprintf("Processed file report for system %s", fileMessage.System)
+	if err := params.Unmarshal(&fileMessage); err == nil {
+		response = processFileReport(&fileMessage)
 	} else {
-		log.WithError(err).Error("Could not handle file report.")
+		log.WithError(err).Error("Cannot handle file report.")
 		response = PeerResponse{Error: true, Message: "Malformed file report", Data: nil}
 	}
 
 	return response
 }
 
-func init() {
-	systemIndex.HandlerFunction(FILE_REPORT, handleFileReport)
+func processFileReport(fileMessage *PeerFileReport) (response PeerResponse) {
+	response.Error = !GoLookRepository.UpdateFiles(fileMessage.System, fileMessage.Files)
+	response.Message = fmt.Sprintf("Processed file report for system %s", fileMessage.System)
+	return
 }

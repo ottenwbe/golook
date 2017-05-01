@@ -19,10 +19,15 @@ import (
 
 	"github.com/fsouza/go-dockerclient"
 
+	"errors"
+	"fmt"
 	log "github.com/sirupsen/logrus"
+	"net/http"
 )
 
-func RunInDockerContainer(f func(client *docker.Client, container *docker.Container)) {
+// based on https://divan.github.io/posts/integration_testing/
+
+func RunPeerInDocker(f func(client *docker.Client, container *docker.Container)) {
 	var (
 		client    *docker.Client
 		container *docker.Container
@@ -47,8 +52,10 @@ func RunInDockerContainer(f func(client *docker.Client, container *docker.Contai
 	err = client.StartContainer(container.ID, &docker.HostConfig{})
 	failOnError(err, "Cannot start Docker container")
 
-	// some time for the container to start up
-	time.Sleep(time.Second)
+	container, err = GetContainerInfo(client, container)
+	failOnError(err, "Cannot inspect the container.")
+
+	waitForGolook(container.NetworkSettings.IPAddress, 5*time.Second)
 
 	f(client, container)
 }
@@ -67,10 +74,44 @@ func createOptions(containerName string) docker.CreateContainerOptions {
 	return opts
 }
 
-func GetContainerInfo(client *docker.Client, container *docker.Container) *docker.Container {
-	information, err := client.InspectContainer(container.ID)
-	failOnError(err, "Cannot inspect the container.")
-	return information
+func GetContainerInfo(client *docker.Client, container *docker.Container) (information *docker.Container, err error) {
+	// wait for container to wake up
+	err = waitForDocker(client, container.ID, 5*time.Second)
+	if err != nil {
+		return nil, err
+	}
+
+	information, err = client.InspectContainer(container.ID)
+
+	return information, err
+}
+
+func waitForDocker(client *docker.Client, id string, maxWait time.Duration) error {
+	done := time.Now().Add(maxWait)
+	for time.Now().Before(done) {
+		c, err := client.InspectContainer(id)
+		if err != nil {
+			break
+		}
+		if c.State.Running {
+			return nil
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+	return fmt.Errorf("Cannot start container %s for %v", id, maxWait)
+}
+
+func waitForGolook(ip string, maxWait time.Duration) error {
+	done := time.Now().Add(maxWait)
+	for time.Now().Before(done) {
+		r, _ := http.Get("http://" + ip + ":8383/")
+
+		if r != nil {
+			return nil
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+	return errors.New("Golook is not starting up in container.")
 }
 
 func failOnError(err error, message string) error {

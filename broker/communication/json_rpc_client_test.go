@@ -25,6 +25,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
+	"github.com/ybbus/jsonrpc"
 )
 
 type TestParams struct {
@@ -65,7 +66,10 @@ var _ = Describe("The rpc client", func() {
 			fmt.Fprintf(w, `{"jsonrpc":"2.0","result":%s,"id":0}`, string(b))
 		}))
 
-		testClient = newJsonRPCClient(httpServer.URL)
+		testClient = &JsonRpcClientStub{
+			serverUrl: httpServer.URL,
+			c:         jsonrpc.NewJsonRPCClient(fmt.Sprintf("%s/rpc", httpServer.URL)),
+		}
 	})
 
 	AfterEach(func() {

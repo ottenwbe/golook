@@ -25,7 +25,7 @@ var _ = Describe("The encapsulated message", func() {
 		Expect(err).To(BeNil())
 		Expect(m.Method).To(Equal("method"))
 		Expect(len(m.Params)).ToNot(BeZero())
-		Expect(m.Params).To(ContainSubstring("msg"))
+		Expect(string(m.Params)).To(ContainSubstring("msg"))
 	})
 
 	It("should support to get the encapsulated method", func() {

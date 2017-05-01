@@ -17,7 +17,6 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/fsnotify/fsnotify"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
@@ -38,7 +37,7 @@ var _ = Describe("The file's", func() {
 		Expect(errFile).To(BeNil())
 		Expect(file).To(Not(BeNil()))
 		Expect(file.Name).To(Equal(fp))
-		Expect(file.Meta.State).To(Equal(fsnotify.Create))
+		Expect(file.Meta.State).To(Equal(Created))
 	})
 
 	It("non existing file is not read and marked as removed", func() {
@@ -47,7 +46,7 @@ var _ = Describe("The file's", func() {
 		file, errFile := NewFile(fp)
 
 		Expect(errFile).To(BeNil())
-		Expect(file.Meta.State).To(Equal(fsnotify.Remove))
+		Expect(file.Meta.State).To(Equal(Removed))
 	})
 
 })

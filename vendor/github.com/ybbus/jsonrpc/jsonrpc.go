@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"sync"
 )
@@ -137,6 +138,7 @@ func (client *RPCClient) Call(method string, params ...interface{}) (*RPCRespons
 
 	httpResponse, err := client.httpClient.Do(httpRequest)
 	if err != nil {
+		logrus.Info("error was in http")
 		return nil, err
 	}
 	defer httpResponse.Body.Close()
@@ -146,6 +148,7 @@ func (client *RPCClient) Call(method string, params ...interface{}) (*RPCRespons
 	decoder.UseNumber()
 	err = decoder.Decode(&rpcResponse)
 	if err != nil {
+		logrus.Info("error was in decoding result")
 		return nil, err
 	}
 

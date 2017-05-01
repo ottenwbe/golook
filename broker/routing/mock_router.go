@@ -11,10 +11,10 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package routing
 
 import (
-	"github.com/ottenwbe/golook/broker/communication"
 	. "github.com/ottenwbe/golook/broker/models"
 	. "github.com/ottenwbe/golook/broker/utils"
 )
@@ -24,7 +24,7 @@ type MockRouter struct {
 	VisitedMethod string
 }
 
-func (lr *MockRouter) NewPeer(key Key, neighbor communication.RpcClient) {
+func (lr *MockRouter) NewPeer(key Key, url string) {
 	lr.Visited += 1
 }
 
@@ -46,7 +46,7 @@ func (lr *MockRouter) Handle(method string, params EncapsulatedValues) interface
 	return nil
 }
 
-func (lr *MockRouter) HandlerFunction(name string, handler func(params interface{}) interface{}) {
+func (lr *MockRouter) HandlerFunction(name string, handler func(params EncapsulatedValues) interface{}) {
 	lr.Visited += 1
 	lr.VisitedMethod = name
 }

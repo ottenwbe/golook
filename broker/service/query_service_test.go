@@ -11,6 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package service
 
 import (
@@ -21,19 +22,26 @@ import (
 )
 
 var _ = Describe("The query service", func() {
-	It("creates a default query service when new is called", func() {
-		q := newQueryService()
+	It("creates a local query service by default", func() {
+		q := newQueryService(LocalQueries)
 		Expect(q).ToNot(BeNil())
-		Expect(reflect.TypeOf(q)).To(Equal(reflect.TypeOf(&defaultQueryService{})))
+		Expect(reflect.TypeOf(q)).To(Equal(reflect.TypeOf(&localQueryService{})))
+	})
+
+	It("creates broadcast query service when BCastQueries is specified", func() {
+		q := newQueryService(BCastQueries)
+		Expect(q).ToNot(BeNil())
+		Expect(reflect.TypeOf(q)).To(Equal(reflect.TypeOf(&broadcastQueryService{})))
 	})
 
 	It("calls the routing service to initiate the query", func() {
-		routing.RunWithMockedRouter(&systemIndex, func() {
-			q := newQueryService()
+		tmp := routing.Router(broadCastRouter)
+		routing.RunWithMockedRouter(&tmp, func() {
+			q := broadcastQueryService{}
 			q.MakeFileQuery("test.txt")
 
-			Expect(routing.AccessMockedRouter(systemIndex).Visited).To(Equal(1))
-			Expect(routing.AccessMockedRouter(systemIndex).VisitedMethod).To(Equal(FILE_QUERY))
+			Expect(routing.AccessMockedRouter(broadCastRouter).Visited).To(Equal(1))
+			Expect(routing.AccessMockedRouter(broadCastRouter).VisitedMethod).To(Equal(FILE_QUERY))
 		})
 	})
 

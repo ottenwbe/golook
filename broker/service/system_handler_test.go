@@ -18,25 +18,32 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	repo "github.com/ottenwbe/golook/broker/repository"
-	"github.com/ottenwbe/golook/broker/routing"
 	golook "github.com/ottenwbe/golook/broker/runtime"
 )
 
-var _ = Describe("The system service", func() {
+var _ = Describe("The system handler", func() {
 
-	It("stores and forwards the system's information", func() {
-		tmp := routing.Router(broadCastRouter)
-		routing.RunWithMockedRouter(&tmp, func() {
-			sysUUID := golook.GolookSystem.UUID
-			repo.GoLookRepository.DelSystem(sysUUID)
-			s := SystemService{}
+	It("handles valid system reports and returns a peer response", func() {
 
-			s.Run()
+		sysUUID := golook.GolookSystem.UUID
+		repo.GoLookRepository.DelSystem(sysUUID)
+		report := PeerSystemReport{Uuid: sysUUID, System: golook.GolookSystem, IsDeletion: false}
 
-			_, isSystemInRepo := repo.GoLookRepository.GetSystem(sysUUID)
-			Expect(isSystemInRepo).To(BeTrue())
-			Expect(routing.AccessMockedRouter(broadCastRouter).Visited).To(Equal(1))
-		})
+		result := handleSystemReport(testEncapsulatedSystemReport{report: &report})
+
+		_, systemInRepo := repo.GoLookRepository.GetSystem(sysUUID)
+		Expect(systemInRepo).To(BeTrue())
+		Expect(result).ToNot(BeNil())
+		Expect(result.(PeerResponse).Error).To(BeFalse())
+
 	})
-
 })
+
+type testEncapsulatedSystemReport struct {
+	report *PeerSystemReport
+}
+
+func (e testEncapsulatedSystemReport) Unmarshal(v interface{}) error {
+	*v.(*PeerSystemReport) = *e.report
+	return nil
+}

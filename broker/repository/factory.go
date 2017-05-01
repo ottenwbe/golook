@@ -21,6 +21,7 @@ const ( // iota is reset to 0
 )
 
 var (
+	// value is injected through configuration (see configuration.go)
 	repositoryType RepositoryType = MAP_REPOSITORY
 )
 

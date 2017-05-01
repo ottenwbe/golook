@@ -11,19 +11,63 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package service
 
-type QueryService interface {
-	MakeFileQuery(searchString string) interface{}
+import (
+	"github.com/ottenwbe/golook/broker/utils"
+)
+
+const (
+	MockQueries  = "mock"
+	LocalQueries = "local"
+	BCastQueries = "broadcast"
+)
+
+type (
+	queryService interface {
+		MakeFileQuery(searchString string) (interface{}, error)
+	}
+	localQueryService     struct{}
+	broadcastQueryService struct{}
+	MockQueryService      struct {
+		SearchString string
+	}
+)
+
+func newQueryService(queryType string) queryService {
+	switch queryType {
+	case MockQueries:
+		return &MockQueryService{}
+	case BCastQueries:
+		return &broadcastQueryService{}
+	default:
+		return &localQueryService{}
+
+	}
 }
 
-func newQueryService() QueryService {
-	return &defaultQueryService{}
-}
-
-type defaultQueryService struct{}
-
-func (*defaultQueryService) MakeFileQuery(searchString string) interface{} {
+func (*localQueryService) MakeFileQuery(searchString string) (interface{}, error) {
 	fq := PeerFileQuery{SearchString: searchString}
-	return systemIndex.BroadCast(FILE_QUERY, fq)
+	return string(processFileQuery(fq).Data), nil
+}
+
+func (*broadcastQueryService) MakeFileQuery(searchString string) (interface{}, error) {
+	fq := PeerFileQuery{SearchString: searchString}
+	queryResult := broadCastRouter.BroadCast(FILE_QUERY, fq)
+
+	var response PeerResponse
+	err := utils.Unmarshal(queryResult, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	//TODO: response error
+
+	return response.Data, nil
+}
+
+func (mock *MockQueryService) MakeFileQuery(searchString string) (interface{}, error) {
+	mock.SearchString = searchString
+	return "{}", nil
 }

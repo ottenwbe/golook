@@ -11,15 +11,23 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-
-package cmd
+package service
 
 import (
-	. "github.com/ottenwbe/golook/broker/runtime"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"reflect"
 )
 
-//TODO move it?
-func init() {
-	//NOTE: Requires that HTTPServer is instantiated!
-	RootCmd.Flags().StringVarP(&HttpServer.Address, "httpserver", "s", ":8383", "(optional) Default address of the http server. Default: ':8383'")
-}
+var _ = Describe("The file services", func() {
+	It("create a pair of report and query service", func() {
+		OpenFileServices(BroadcastFiles)
+		r, q := ReportService, QueryService
+
+		Expect(r).ToNot(BeNil())
+		Expect(q).ToNot(BeNil())
+
+		Expect(reflect.TypeOf(r).String()).To(Equal(reflect.TypeOf(&broadcastReportService{}).String()))
+		Expect(reflect.TypeOf(q).String()).To(Equal(reflect.TypeOf(&localQueryService{}).String()))
+	})
+})

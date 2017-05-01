@@ -21,21 +21,20 @@ import (
 	"path/filepath"
 	"syscall"
 	"time"
-
-	"github.com/fsnotify/fsnotify"
 )
 
+/*
+NewFile takes a file path and returns a meta data to that file, iff it exists.
+If the file does not exist, we return anyway a file representation and declare it as 'Removed'.
+Any other error will be returned.
+*/
 func NewFile(filePath string) (f *File, err error) {
 
-	//TODO refactor
-
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+	fi, err := os.Stat(filePath)
+	if os.IsNotExist(err) {
 		f = newRemovedFile(filePath)
 		return f, nil
-	}
-
-	fi, err := os.Stat(filePath)
-	if err != nil {
+	} else if err != nil {
 		return nil, err
 	}
 
@@ -44,7 +43,7 @@ func NewFile(filePath string) (f *File, err error) {
 		return nil, err
 	}
 
-	f = newValidFile(fileName, filePath, fi.Sys().(*syscall.Stat_t))
+	f = newValidFile(fileName, filePath, fi.Sys().(*syscall.Stat_t), fi.IsDir(), fi.Size())
 	return f, nil
 }
 
@@ -55,17 +54,20 @@ func newRemovedFile(filePath string) *File {
 		Created:   time.Unix(0, 0),
 		Modified:  time.Unix(0, 0),
 		Accessed:  time.Unix(0, 0),
-		Meta:      FileMeta{fsnotify.Remove},
+		Meta:      FileMeta{Removed},
 	}
 }
 
-func newValidFile(fileName string, filePath string, stat *syscall.Stat_t) *File {
+func newValidFile(fileName string, filePath string, stat *syscall.Stat_t, isDir bool, size int64) *File {
+
 	return &File{
 		Name:      fileName,
 		ShortName: filepath.Base(filePath),
 		Created:   time.Unix(stat.Ctim.Sec, stat.Ctim.Nsec),
 		Modified:  time.Unix(stat.Mtim.Sec, stat.Mtim.Nsec),
 		Accessed:  time.Unix(stat.Atim.Sec, stat.Atim.Nsec),
-		Meta:      FileMeta{fsnotify.Create},
+		Directory: isDir,
+		Size:      size,
+		Meta:      FileMeta{Created},
 	}
 }

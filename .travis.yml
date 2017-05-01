@@ -6,9 +6,6 @@ services:
 go: 
   - 1.8
 
-before_script:
-  - for d in $(go list ./... | grep -v vendor); do go vet $d; done
-
 install:
   - go get -v -t ./...
   - go get github.com/onsi/ginkgo/ginkgo
@@ -18,6 +15,7 @@ install:
   - sudo docker build --rm=true --file=test/integration/Dockerfile --tag=golook:latest .
 
 script:
+  - for d in $(go list ./... | grep -v vendor); do go vet $d; done
   - test/integration/run_integration_tests.sh
 
 after_success:

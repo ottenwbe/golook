@@ -33,7 +33,6 @@ type System struct {
 }
 
 var (
-	sysUuid              = uuid.NewV4()
 	GolookSystem *System = NewSystem()
 )
 
@@ -78,7 +77,7 @@ func DecodeSystem(sysReader io.Reader) (System, error) {
 }
 
 func getUuid() string {
-	return sysUuid.String()
+	return uuid.NewV5(uuid.NamespaceURL, getIP()).String()
 }
 
 func getName() string {

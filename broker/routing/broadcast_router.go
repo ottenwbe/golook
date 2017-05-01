@@ -22,18 +22,18 @@ import (
 )
 
 /*
-FloodingRouter implements a router which by default delivers ALL messages to its peers. This
+BroadCastRouter implements a router which by default delivers ALL messages to its peerClients. This
 means that direct message requests (see Route) are also flooded.
 */
-type FloodingRouter struct {
+type BroadCastRouter struct {
 	routeTable    RouteTable
 	routeHandlers HandlerTable
 	name          string
 	reqId         int
 }
 
-func newFloodingRouter(name string) Router {
-	return &FloodingRouter{
+func newBroadcastRouter(name string) Router {
+	return &BroadCastRouter{
 		routeTable:    newDefaultRouteTable(),
 		routeHandlers: HandlerTable{},
 		name:          name,
@@ -41,7 +41,7 @@ func newFloodingRouter(name string) Router {
 	}
 }
 
-func (router *FloodingRouter) BroadCast(method string, message interface{}) interface{} {
+func (router *BroadCastRouter) BroadCast(method string, message interface{}) interface{} {
 
 	m, err := NewRequestMessage(NilKey(), router.nextRequestId(), method, message)
 	if err != nil {
@@ -49,7 +49,7 @@ func (router *FloodingRouter) BroadCast(method string, message interface{}) inte
 		return nil
 	}
 
-	response := router.flood(m)
+	response := router.disseminate(m)
 	if response == nil {
 		return nil
 	}
@@ -57,13 +57,13 @@ func (router *FloodingRouter) BroadCast(method string, message interface{}) inte
 	return response.Params
 }
 
-func (router *FloodingRouter) nextRequestId() int {
+func (router *BroadCastRouter) nextRequestId() int {
 	result := router.reqId
 	router.reqId += 1
 	return result
 }
 
-func (router *FloodingRouter) flood(m *RequestMessage) *ResponseMessage {
+func (router *BroadCastRouter) disseminate(m *RequestMessage) *ResponseMessage {
 	var (
 		responseChannel                   = make(chan *ResponseMessage)
 		goRoutineCounter                  = 0
@@ -71,8 +71,8 @@ func (router *FloodingRouter) flood(m *RequestMessage) *ResponseMessage {
 		result           *ResponseMessage = nil
 	)
 
-	// forward message to all registered clients concurrently
-	for _, client := range router.routeTable.clients() {
+	// forward message to all registered peerClients concurrently
+	for _, client := range router.routeTable.peers() {
 		go forward(client, m, router.name, responseChannel)
 		goRoutineCounter += 1
 	}
@@ -87,10 +87,10 @@ func (router *FloodingRouter) flood(m *RequestMessage) *ResponseMessage {
 }
 
 func forward(client com.RpcClient, request *RequestMessage, router string, responseChannel chan *ResponseMessage) {
-	log.WithField("router", router).Debugf("Routing message to client: %s", client.Url())
+	log.WithField("router", router).Infof("Routing message to client: %s", client.Url())
 
 	// Make the call
-	tmpResponse, err := client.Call(router, request)
+	tmpResponse, err := client.Call(router, *request)
 	if tmpResponse != nil && err == nil {
 		actualResponse := &ResponseMessage{}
 		tmpResponse.Unmarshal(actualResponse)
@@ -101,16 +101,19 @@ func forward(client com.RpcClient, request *RequestMessage, router string, respo
 	}
 }
 
-func (router *FloodingRouter) Route(_ Key, method string, message interface{}) (result interface{}) {
+func (router *BroadCastRouter) Route(_ Key, method string, message interface{}) (result interface{}) {
 	return router.BroadCast(method, message)
 }
 
-func (router *FloodingRouter) NewPeer(key Key, neighbor com.RpcClient) {
-	log.WithField("router", router.name).WithField("neighbor", neighbor.Url()).Info("New neighbor.")
-	router.routeTable.add(key, neighbor)
+func (router *BroadCastRouter) NewPeer(key Key, url string) {
+	if _, found := router.routeTable.get(key); !found {
+		log.WithField("router", router.name).WithField("peer", url).Info("New neighbor.")
+		peer := com.NewRPCClient(url)
+		router.routeTable.add(key, peer)
+	}
 }
 
-func (router *FloodingRouter) Handle(routerName string, msg models.EncapsulatedValues) interface{} {
+func (router *BroadCastRouter) Handle(routerName string, msg models.EncapsulatedValues) interface{} {
 
 	var (
 		response *ResponseMessage
@@ -132,17 +135,17 @@ func (router *FloodingRouter) Handle(routerName string, msg models.EncapsulatedV
 	responseParams := router.deliver(request.Method, request.Params)
 	response = newResponse(responseParams, &request)
 
-	// treat every message as flooding, therefore:
-	// forward message to all other peers
-	floodingResponse := router.flood(&request)
+	// treat every message as BroadcastRouter, therefore:
+	// forward message to all other peerClients
+	floodingResponse := router.disseminate(&request)
 
-	// choose one result
-	response = choose(response, floodingResponse)
+	// chooseResponse one result
+	response = chooseResponse(response, floodingResponse)
 
 	return *response
 }
 
-func choose(message *ResponseMessage, contender *ResponseMessage) *ResponseMessage {
+func chooseResponse(message *ResponseMessage, contender *ResponseMessage) *ResponseMessage {
 	if contender == nil || contender.Params == "{}" || contender.Params == "" {
 		return message
 	}
@@ -164,7 +167,7 @@ func newResponse(responseParams interface{}, requestMsg *RequestMessage) (result
 	return result
 }
 
-func (router *FloodingRouter) deliver(method string, params interface{}) interface{} {
+func (router *BroadCastRouter) deliver(method string, params models.EncapsulatedValues) interface{} {
 	if handler, ok := router.routeHandlers[method]; ok {
 		return handler(params)
 	} else {
@@ -176,14 +179,14 @@ func (router *FloodingRouter) deliver(method string, params interface{}) interfa
 /*
 Name of the router
 */
-func (router *FloodingRouter) Name() string {
+func (router *BroadCastRouter) Name() string {
 	return router.name
 }
 
 /*
 HandlerFunction registers a handler with the router. The handler is called when a message for this handler arrives.
 */
-func (router *FloodingRouter) HandlerFunction(name string, handler func(params interface{}) interface{}) {
+func (router *BroadCastRouter) HandlerFunction(name string, handler func(params models.EncapsulatedValues) interface{}) {
 	log.WithField("router", router.Name()).WithField("handler", name).Info("Router registered new callback.")
 	router.routeHandlers[name] = handler
 }

@@ -11,23 +11,14 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package cmd
+
+package api
 
 import (
-	"fmt"
-	"github.com/ottenwbe/golook/broker/api"
-	"github.com/spf13/cobra"
+	golook "github.com/ottenwbe/golook/broker/runtime"
 )
 
-var apiCmd = &cobra.Command{
-	Use:   "api",
-	Short: fmt.Sprint("Print some information about the API."),
-	Long:  fmt.Sprint("Print the supported versions of the API."),
-	Run: func(_ *cobra.Command, _ []string) {
-		fmt.Println(fmt.Sprintf("[%s]", api.GolookAPIVersion))
-	},
-}
-
-func init() {
-	RootCmd.AddCommand(apiCmd)
-}
+/*
+HTTPServer serves the http api. The server will be interjected by the configuration.
+*/
+var HTTPServer golook.Server

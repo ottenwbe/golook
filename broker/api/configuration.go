@@ -18,6 +18,8 @@ import (
 	"net/http"
 
 	golook "github.com/ottenwbe/golook/broker/runtime"
+
+	"github.com/spf13/viper"
 )
 
 /*
@@ -29,21 +31,45 @@ const (
 	GolookAPIVersion = "/v1"
 
 	//SystemPath = "system"
+
+	/*FilePath in an url*/
 	FilePath = "file"
 
-	FILE_EP       = GolookAPIVersion + "/file"
-	FILE_QUERY_EP = FILE_EP + "/{" + FilePath + "}"
-	FOLDER_EP     = GolookAPIVersion + "/folder"
-	INFO_EP       = "/info"
+	/*FileEndpoint is the base url for querying and monitoring files*/
+	FileEndpoint = GolookAPIVersion + "/file"
+	/*QueryEndpoint is the url for querying files*/
+	QueryEndpoint = FileEndpoint + "/{" + FilePath + "}"
+	/*InfoEndpoint is the url for basic information about the application*/
+	InfoEndpoint = "/info"
+	/*HTTPApiEndpoint is the url for information about the api*/
+	HTTPApiEndpoint = "/api"
+	/*ConfigEndpoint is the url for querying the configuration*/
+	ConfigEndpoint = GolookAPIVersion + "/config"
+	/*LogEndpoint is the url for querying the log*/
+	LogEndpoint = "/log"
 )
 
-func configAPI() {
-	golook.HttpServer.RegisterFunction(FILE_QUERY_EP, putFile, http.MethodPut)
-	golook.HttpServer.RegisterFunction(FILE_EP, getFiles, http.MethodGet)
-	golook.HttpServer.RegisterFunction(FOLDER_EP, putFolder, http.MethodPut)
-	golook.HttpServer.RegisterFunction(INFO_EP, getInfo, http.MethodGet)
+/*
+ApplyConfiguration applies the configuration
+*/
+func ApplyConfiguration() {
+	HTTPServer = golook.GetOrCreate(viper.GetString("api.server.address"), golook.ServerHttp)
+
+	HTTPServer.(*golook.HTTPSever).RegisterFunction(FileEndpoint, putFile, http.MethodPut)
+	HTTPServer.(*golook.HTTPSever).RegisterFunction(QueryEndpoint, getFiles, http.MethodGet)
+	HTTPServer.(*golook.HTTPSever).RegisterFunction(ConfigEndpoint, getConfiguration, http.MethodGet)
+	HTTPServer.(*golook.HTTPSever).RegisterFunction(HTTPApiEndpoint, getAPI, http.MethodGet)
+	HTTPServer.(*golook.HTTPSever).RegisterFunction(LogEndpoint, getLog, http.MethodGet)
+
+	if viper.GetBool("api.info") {
+		HTTPServer.(*golook.HTTPSever).RegisterFunction(InfoEndpoint, getInfo, http.MethodGet)
+	}
 }
 
-func init() {
-	golook.ConfigurationHandler.RegisterConfig(configAPI)
+/*
+InitConfiguration initializes the configuration
+*/
+func InitConfiguration() {
+	viper.SetDefault("api.info", true)
+	viper.SetDefault("api.server.address", ":8383")
 }

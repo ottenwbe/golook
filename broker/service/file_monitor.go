@@ -11,6 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package service
 
 import (
@@ -19,56 +20,68 @@ import (
 	"sync"
 )
 
-var (
-	watcher      *fsnotify.Watcher
-	watchedFiles map[string]bool = make(map[string]bool)
-	once                         = &sync.Once{}
-)
-
-func StartMonitor() {
-	var err error
-
-	watcher, err = fsnotify.NewWatcher()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	once.Do(func() { go cMonitor() })
-
-	//Future Work: read all previously monitored files from a persistence layer and start monitoring them
+/*
+FileMonitor
+*/
+type FileMonitor struct {
+	watcher  *fsnotify.Watcher
+	once     sync.Once
+	done     chan bool
+	reporter func(string)
 }
 
-func cMonitor() {
-	for {
+func (fm *FileMonitor) Start() {
+	var err error
+
+	fm.watcher, err = fsnotify.NewWatcher()
+	if err != nil {
+		log.WithError(err).Fatal("Cannot start file monitor")
+	}
+
+	fm.once.Do(func() {
+		fm.done = make(chan bool)
+		go cMonitor(fm)
+	})
+}
+
+func (fm *FileMonitor) Close() {
+	if fm.done != nil {
+		fm.done <- true
+	}
+	if fm.watcher != nil {
+		fm.watcher.Close()
+	}
+}
+
+func cMonitor(fm *FileMonitor) {
+	var stop bool = false
+	for !stop {
 		select {
-		case event := <-watcher.Events:
+		case event := <-fm.watcher.Events:
 			if event.Name != "" {
-				log.Infof("Event %s triggered api", event.String())
-				routeFile(event.Name, false)
+				log.Infof("Event %s triggered report", event.String())
+				if fm.reporter != nil {
+					fm.reporter(event.Name)
+				} else {
+					log.Error("Not reporting monitored file change, since reporter is nil!")
+				}
 			}
-		case err := <-watcher.Errors:
+		case err := <-fm.watcher.Errors:
 			log.WithError(err).Error("Error from file watcher")
+		case stop = <-fm.done:
+			log.WithField("stop", stop).Info("Stopping file monitor")
 		}
 	}
 }
 
-func StopMonitor() {
-	if watcher != nil {
-		watcher.Close()
-	}
+/*
+Monitor registers paths to files or folders with the FileMonitor. The FileMonitor can then report changes to the fies,
+respectively files in the folders.
+*/
+func (fm *FileMonitor) Monitor(file string) {
+	fm.watcher.Add(file)
 }
 
-func AddFileMonitor(file string) {
-	watcher.Add(file)
-	watchedFiles[file] = true
-}
-
-func RemoveFileMonitor(file string) {
-	watchedFiles[file] = false
-	delete(watchedFiles, file)
-	watcher.Remove(file)
-}
-
-func init() {
-	StartMonitor()
+func (fm *FileMonitor) RemoveMonitored(file string) {
+	fm.watcher.Remove(file)
 }

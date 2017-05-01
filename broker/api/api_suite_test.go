@@ -21,6 +21,9 @@ import (
 	"testing"
 )
 
+/*
+TestApi tells 'ginkgo' to run the tests of the api package
+*/
 func TestApi(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Api Test Suite")

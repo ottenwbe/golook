@@ -16,26 +16,51 @@ package api
 import (
 	"fmt"
 
-	"github.com/ottenwbe/golook/broker/runtime"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/spf13/viper"
+
+	"github.com/ottenwbe/golook/broker/runtime"
 )
 
 var _ = Describe("The api configuration", func() {
 
 	Context("for the endpoints", func() {
 
-		It("should register all http end points", func() {
+		It("should initialize default values in the configuration file", func() {
 
-			configAPI()
+			viper.Reset()
 
-			ep := runtime.HttpServer.RegisteredEndpoints()
-			Expect(extractStringFromSlice(INFO_EP, ep)).To(Equal(INFO_EP))
-			Expect(extractStringFromSlice(FILE_EP, ep)).To(Equal(FILE_EP))
-			Expect(extractStringFromSlice(FILE_QUERY_EP, ep)).To(Equal(FILE_QUERY_EP))
-			Expect(extractStringFromSlice(FOLDER_EP, ep)).To(Equal(FOLDER_EP))
+			InitConfiguration()
+
+			Expect(viper.GetBool("api.info")).To(BeTrue())
+			Expect(viper.GetString("api.server.address")).To(Equal(":8383"))
 		})
+
+		It("should initialize the Server as HTTPServer", func() {
+
+			ApplyConfiguration()
+
+			httpServer, ok := HTTPServer.(*runtime.HTTPSever)
+
+			Expect(httpServer).ToNot(BeNil())
+			Expect(ok).To(BeTrue())
+		})
+
+		It("should register all http end points", func() {
+			viper.SetDefault("api.info", true)
+
+			ApplyConfiguration()
+
+			ep := HTTPServer.(*runtime.HTTPSever).RegisteredEndpoints()
+			Expect(extractStringFromSlice(InfoEndpoint, ep)).To(Equal(InfoEndpoint))
+			Expect(extractStringFromSlice(FileEndpoint, ep)).To(Equal(FileEndpoint))
+			Expect(extractStringFromSlice(QueryEndpoint, ep)).To(Equal(QueryEndpoint))
+			Expect(extractStringFromSlice(HTTPApiEndpoint, ep)).To(Equal(HTTPApiEndpoint))
+			Expect(extractStringFromSlice(ConfigEndpoint, ep)).To(Equal(ConfigEndpoint))
+			Expect(extractStringFromSlice(LogEndpoint, ep)).To(Equal(LogEndpoint))
+		})
+
 	})
 })
 

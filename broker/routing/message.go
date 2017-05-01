@@ -16,36 +16,41 @@ package routing
 import (
 	. "github.com/ottenwbe/golook/broker/runtime"
 	. "github.com/ottenwbe/golook/broker/utils"
+	log "github.com/sirupsen/logrus"
 )
 
-type Source struct {
-	Id     int    `json:"id"`
-	System string `json:"system"`
-}
+type (
+	Source struct {
+		Id     int    `json:"id"`
+		System string `json:"system"`
+	}
 
-type Destination struct {
-	Key Key `json:"key"`
-}
+	Destination struct {
+		Key Key `json:"key"`
+	}
 
-type RequestMessage struct {
-	Src    Source      `json:"source"`
-	Dst    Destination `json:"destination"`
-	Method string      `json:"method"`
-	Params string      `json:"params"` //TODO: Change to []byte?
-}
+	RequestParams string
 
-type ResponseMessage struct {
-	Src      Source `json:"source"`
-	Receiver Source `json:"receiver"`
-	Params   string `json:"params"` //TODO: Change to []byte?
-}
+	RequestMessage struct {
+		Src    Source        `json:"source"`
+		Dst    Destination   `json:"destination"`
+		Method string        `json:"method"`
+		Params RequestParams `json:"params"`
+	}
+
+	ResponseMessage struct {
+		Src      Source `json:"source"`
+		Receiver Source `json:"receiver"`
+		Params   string `json:"params"`
+	}
+)
 
 func NewRequestMessage(key Key, reqId int, method string, params interface{}) (*RequestMessage, error) {
 	p, err := MarshalS(params)
 	if err != nil {
 		return nil, err
 	}
-	return &RequestMessage{Method: method, Params: p, Dst: Destination{Key: key}, Src: Source{Id: reqId, System: GolookSystem.UUID}}, nil
+	return &RequestMessage{Method: method, Params: RequestParams(p), Dst: Destination{Key: key}, Src: Source{Id: reqId, System: GolookSystem.UUID}}, nil
 }
 
 func NewResponseMessage(rm *RequestMessage, params interface{}) (*ResponseMessage, error) {
@@ -54,6 +59,12 @@ func NewResponseMessage(rm *RequestMessage, params interface{}) (*ResponseMessag
 		return nil, err
 	}
 	return &ResponseMessage{Src: rm.Src, Receiver: Source{Id: 0, System: GolookSystem.UUID}, Params: p}, nil
+}
+
+func (p RequestParams) Unmarshal(v interface{}) error {
+	log.Debugf("Unmarshalling: %s", string(p))
+	err := Unmarshal(string(p), v)
+	return err
 }
 
 /*
@@ -65,5 +76,5 @@ var s string
 m.GetEncapsulated(&s)
 */
 func (m *RequestMessage) GetEncapsulated(v interface{}) error {
-	return Unmarshal(m.Params, v)
+	return Unmarshal(string(m.Params), v)
 }

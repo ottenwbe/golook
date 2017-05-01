@@ -11,20 +11,21 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package service
+
+package utils
 
 import (
+	"fmt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"reflect"
 )
 
-var _ = Describe("The service factory", func() {
-	It("creates a pair of report and query service", func() {
-		r, q := NewFileServices()
-		Expect(r).ToNot(BeNil())
-		Expect(q).ToNot(BeNil())
-		Expect(reflect.TypeOf(r)).To(Equal(reflect.TypeOf(&defaultReportService{})))
-		Expect(reflect.TypeOf(q)).To(Equal(reflect.TypeOf(&defaultQueryService{})))
+var _ = Describe("The io utils", func() {
+
+	It("can intercept messages written  by functions to os.Stdout and return them as string instead.", func() {
+		testResult := InterceptStdOut(func() {
+			fmt.Print("test")
+		})
+		Expect(testResult).To(Equal("test"))
 	})
 })

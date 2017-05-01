@@ -18,50 +18,91 @@ import (
 	"fmt"
 	"net/http"
 
-	. "github.com/ottenwbe/golook/broker/runtime"
-	. "github.com/ottenwbe/golook/broker/service"
+	golook "github.com/ottenwbe/golook/broker/runtime"
+	"github.com/ottenwbe/golook/broker/service"
+	"github.com/ottenwbe/golook/broker/utils"
 )
 
-var (
-	reportService, queryService = NewFileServices()
-)
-
-// Endpoint: GET /file
+//getFiles implements the http endpoint: GET /file
 func getFiles(writer http.ResponseWriter, request *http.Request) {
 	file := extractFileFromPath(request)
 
-	result := queryService.MakeFileQuery(file)
+	result, err := service.QueryService.MakeFileQuery(file)
+	if err != nil {
+		returnAndLogError(writer, "Cannot process query.", err, http.StatusInternalServerError)
+	}
 
 	fmt.Fprint(writer, result)
 }
 
-// Endpoint: GET /info
-func getInfo(writer http.ResponseWriter, request *http.Request) {
-	fmt.Fprint(writer, EncodeAppInfo(NewAppInfo()))
-}
-
-// Endpoint: PUT /file
+//putFile implements the Endpoint: PUT /file
 func putFile(writer http.ResponseWriter, request *http.Request) {
 
 	fileReport, err := extractReport(request)
-
 	if err != nil {
-		returnNackAndLogError(writer, "No valid request for: /file", err, http.StatusBadRequest)
-	} else {
-		reportService.MakeFileReport(fileReport)
-		returnAck(writer)
+		returnAndLogError(writer, "No valid request for: /file", err, http.StatusBadRequest)
+		return
+	}
+
+	files, err := service.ReportService.MakeFileReport(fileReport)
+	if err != nil {
+		returnAndLogError(writer, "No valid request for: /file", err, http.StatusBadRequest)
+		return
+	}
+
+	jsonResult, err := utils.MarshalS(files)
+	if err != nil {
+		returnAndLogError(writer, "Cannot marshal response.", err, http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Fprint(writer, jsonResult)
+
+}
+
+//getAPI implements the http Endpoint: GET /api
+func getAPI(writer http.ResponseWriter, _ *http.Request) {
+
+	if HTTPServer == nil {
+		returnAndLogError(writer, "HTTPServer appears to be down.", nil, http.StatusInternalServerError)
+		return
+	}
+
+	infoAPI := HTTPServer.Info()
+
+	jsonResponse, err := utils.MarshalS(infoAPI)
+	if err != nil {
+		returnAndLogError(writer, "Cannot marshal Api information.", err, http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Fprint(writer, jsonResponse)
+}
+
+//getLog implements the Endpoint: GET /log
+func getLog(writer http.ResponseWriter, _ *http.Request) {
+	err := service.RewriteLog(writer)
+	if err != nil {
+		returnAndLogError(writer, "Cannot open log file", err, http.StatusInternalServerError)
+		return
 	}
 }
 
-// Endpoint: PUT /folder
-func putFolder(writer http.ResponseWriter, request *http.Request) {
+//getConfiguration implements the Endpoint: GET /config
+func getConfiguration(writer http.ResponseWriter, _ *http.Request) {
 
-	folderReport, err := extractReport(request)
+	configurations := service.GetConfiguration()
 
+	jsonResponse, err := utils.MarshalS(configurations)
 	if err != nil {
-		returnNackAndLogError(writer, "No valid request for: /folder", err, http.StatusBadRequest)
-	} else {
-		reportService.MakeFolderReport(folderReport)
-		returnAck(writer)
+		returnAndLogError(writer, "Cannot marshal configuration.", err, http.StatusInternalServerError)
+		return
 	}
+
+	fmt.Fprint(writer, jsonResponse)
+}
+
+//getInfo implements the Endpoint: GET /info
+func getInfo(writer http.ResponseWriter, _ *http.Request) {
+	fmt.Fprint(writer, golook.EncodeAppInfo(golook.NewAppInfo()))
 }

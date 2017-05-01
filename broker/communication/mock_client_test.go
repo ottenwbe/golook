@@ -27,4 +27,11 @@ var _ = Describe("The mock client", func() {
 		Expect(m.VisitedCall).To(Equal(1))
 	})
 
+	It("should record the number of calls to Url().", func() {
+		m := &MockClient{}
+		m.Url()
+		m.Url()
+		Expect(m.VisitedUrl).To(Equal(2))
+	})
+
 })

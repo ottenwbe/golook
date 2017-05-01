@@ -63,14 +63,14 @@ var _ = Describe("The mocked router", func() {
 	Context("RunWithMockedRouter", func() {
 		It("should replace a router with a mock, execute a function in a block with the replaced router,"+
 			" and then reset the original router afterwards", func() {
-			index := NewRouter("r")
+			index := NewRouter("r", BroadcastRouter)
 			RunWithMockedRouter(&index, func() {
-				Expect(reflect.TypeOf(index)).ToNot(Equal(reflect.TypeOf(NewRouter("r"))))
+				Expect(reflect.TypeOf(index)).ToNot(Equal(reflect.TypeOf(NewRouter("r", BroadcastRouter))))
 				//Test if original router was successfully set
 				Expect(reflect.TypeOf(index)).To(Equal(reflect.TypeOf(NewMockedRouter())))
 			})
 			//Test if reset to original router was successful
-			Expect(reflect.TypeOf(index)).To(Equal(reflect.TypeOf(NewRouter("r"))))
+			Expect(reflect.TypeOf(index)).To(Equal(reflect.TypeOf(NewRouter("r", BroadcastRouter))))
 		})
 	})
 })

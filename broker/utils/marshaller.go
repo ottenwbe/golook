@@ -11,6 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package utils
 
 import (
@@ -20,11 +21,12 @@ import (
 )
 
 func MarshalB(message interface{}) ([]byte, error) {
-	if b, err := json.Marshal(message); err == nil {
+	b, err := json.Marshal(message)
+	if err == nil {
 		return b, nil
-	} else {
-		return []byte{}, err
 	}
+	return []byte{}, err
+
 }
 
 func MarshalS(message interface{}) (string, error) {

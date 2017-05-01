@@ -11,45 +11,74 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package service
 
 import (
 	"fmt"
-	. "github.com/ottenwbe/golook/broker/repository"
-	. "github.com/ottenwbe/golook/broker/utils"
+
 	log "github.com/sirupsen/logrus"
+
+	"github.com/ottenwbe/golook/broker/models"
+	repo "github.com/ottenwbe/golook/broker/repository"
+	"github.com/ottenwbe/golook/broker/runtime"
 )
 
 const (
 	SYSTEM_REPORT = "system_report"
 )
 
-func handleSystemReport(params interface{}) interface{} {
-	log.Info("handleSystemReport !!!")
+func handleSystemReport(params models.EncapsulatedValues) interface{} {
 	var (
-		systemMessage SystemTransfer
-		response      PeerResponse
+		systemReport PeerSystemReport
 	)
 
-	log.Info("handleSystemReport will gather for %s", params.(string))
-
-	if err := Unmarshal(params, &systemMessage); err == nil {
-		if systemMessage.IsDeletion {
-			GoLookRepository.DelSystem(systemMessage.Uuid)
-			response = PeerResponse{false, fmt.Sprintf("Processed request for deleting system %s", systemMessage.Uuid), nil}
-		} else {
-			response.Error = !GoLookRepository.StoreSystem(systemMessage.Uuid, systemMessage.System)
-			response.Message = fmt.Sprintf("Processed request for adding system %s", systemMessage.Uuid)
-		}
-	} else {
-		response = PeerResponse{true, "Cannot handle malformed system report", nil}
+	if err := params.Unmarshal(&systemReport); err != nil {
 		log.WithError(err).Error("Cannot handle malformed system report")
+		return PeerResponse{true, "Cannot handle malformed system report", nil}
 	}
 
-	log.Info("handleSystemReport got a response %s", response.Message)
-	return response
+	return processSystemReport(systemReport)
 }
 
-func init() {
-	systemIndex.HandlerFunction(SYSTEM_REPORT, handleSystemReport)
+func processSystemReport(systemReport PeerSystemReport) PeerResponse {
+	var err error
+	if systemReport.IsDeletion {
+		repo.GoLookRepository.DelSystem(systemReport.Uuid)
+	} else {
+		err = handleNewSystem(systemReport)
+	}
+
+	if err != nil {
+		return PeerResponse{true, fmt.Sprintf("%s", err), nil}
+	}
+	return PeerResponse{false, fmt.Sprintf("Processed request for system %s", systemReport.Uuid), nil}
+
+}
+
+func handleNewSystem(systemMessage PeerSystemReport) error {
+	_, found := repo.GoLookRepository.GetSystem(systemMessage.System.UUID)
+	if !found {
+		newSystemCallbacks.Call(systemMessage.Uuid, systemMessage.System)
+	}
+	repo.GoLookRepository.StoreSystem(systemMessage.Uuid, systemMessage.System)
+	return nil
+}
+
+type NewSystemCallbacks map[string]func(uuid string, system *runtime.System)
+
+var newSystemCallbacks = NewSystemCallbacks{}
+
+func (c *NewSystemCallbacks) Add(id string, callback func(uuid string, system *runtime.System)) {
+	(*c)[id] = callback
+}
+
+func (c *NewSystemCallbacks) Delete(id string) {
+	delete(*c, id)
+}
+
+func (c *NewSystemCallbacks) Call(uuid string, system *runtime.System) {
+	for _, callback := range *c {
+		callback(uuid, system)
+	}
 }

@@ -17,38 +17,68 @@ package runtime
 import (
 	"net/http"
 
+	"errors"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
+	"reflect"
+	"sync"
 )
 
-type lookSever struct {
-	Address string
-	server  *http.Server
-	router  http.Handler
-}
+type (
+	Server interface {
+		StartServer(wg *sync.WaitGroup)
+		Info() map[string]interface{}
+	}
+	HTTPSever struct {
+		Address string
+		server  *http.Server
+		router  http.Handler
+	}
+)
+
+type ServerType string
+
+const (
+	ServerHttp ServerType = "http"
+)
 
 var (
-	HttpServer *lookSever = &lookSever{
-		server:  nil,
-		router:  mux.NewRouter().StrictSlash(true),
-		Address: "",
-	}
-
-	RpcServer *lookSever = &lookSever{
-		server:  nil,
-		router:  http.DefaultServeMux,
-		Address: ":8382",
-	}
+	servers = []Server{}
 )
 
-func (s *lookSever) StartServer() {
+func GetOrCreate(address string, serverType ServerType) (server Server) {
+	switch serverType {
+	case ServerHttp:
+		server = &HTTPSever{
+			server:  nil,
+			router:  mux.NewRouter().StrictSlash(true),
+			Address: address,
+		}
+	default:
+		log.WithField("type", string(serverType)).Error("Server could not be created. Type is not supported.")
+	}
+
+	if server != nil {
+		servers = append(servers, server)
+	}
+
+	return server
+}
+
+func (s *HTTPSever) StartServer(wg *sync.WaitGroup) {
+	if wg == nil || s.router == nil || s.Address == "" {
+		log.Error("Http server cannot be started. Please ensure that all parameters are set: Address and router. Moreover, ensure that a wg is provided during startup.")
+	}
+
+	defer wg.Done()
+
 	s.server = &http.Server{Addr: s.Address, Handler: s.router}
 
 	// start the httpServer and listen
 	log.Fatal(s.server.ListenAndServe())
 }
 
-//func (s *lookSever) StopServer() error {
+//func (s *LookSever) StopServer() error {
 //TODO: wait for graceful shutdown in go 1.8
 // 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 //	defer cancel()
@@ -56,19 +86,35 @@ func (s *lookSever) StartServer() {
 //}
 
 /*
-RegisterFunctionRPC registers an endpoint and the corresponding controller.
-*/
-func (s *lookSever) RegisterFunctionRPC(path string, f func(http.ResponseWriter, *http.Request)) {
-	log.Infof("Register http endpoint: %s", path)
-	http.HandleFunc(path, f)
-}
-
-/*
 RegisterFunction registers an endpoint and the corresponding controller for a specific http method.
 */
-func (s *lookSever) RegisterFunction(path string, f func(http.ResponseWriter, *http.Request), method string) {
+func (s *HTTPSever) RegisterFunction(path string, f func(http.ResponseWriter, *http.Request), methods ...string) error {
 	log.Infof("Register http endpoint: %s", path)
-	s.router.(*mux.Router).HandleFunc(path, f).Methods(method)
+	if router, ok := s.router.(*mux.Router); ok {
+		router.HandleFunc(path, f).Methods(methods...)
+		return nil
+	}
+	return errors.New("Cannot register http function")
+
+}
+
+func (s *HTTPSever) Info() map[string]interface{} {
+	info := map[string]interface{}{}
+
+	info["endpoints"] = s.RegisteredEndpoints()
+	serverInfo := map[string]interface{}{}
+	if s.server != nil {
+		serverInfo["address"] = s.server.Addr
+		serverInfo["readTimeOut"] = s.server.ReadTimeout
+		serverInfo["writeTimeOut"] = s.server.WriteTimeout
+		serverInfo["maxHeaderBytes"] = s.server.MaxHeaderBytes
+	} else {
+		serverInfo["address"] = s.Address
+	}
+	serverInfo["router"] = reflect.TypeOf(s.router).String()
+	info["server"] = serverInfo
+
+	return info
 }
 
 /*
@@ -77,15 +123,32 @@ RegisteredEndpoints returns all registered endpoints as an array of string.
 Example result:
 ["/info","/system/{system}","/foo/bar"]
 */
-func (s *lookSever) RegisteredEndpoints() []string {
+func (s *HTTPSever) RegisteredEndpoints() []string {
 	result := []string{}
 
-	s.router.(*mux.Router).Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
-		if s, err := route.GetPathTemplate(); err == nil {
-			result = append(result, s)
-		}
-		return nil
-	})
+	if router, ok := s.router.(*mux.Router); ok {
+		router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+			if s, err := route.GetPathTemplate(); err == nil {
+				result = append(result, s)
+			}
+			return nil
+		})
+	}
 
 	return result
+}
+
+/**
+RunServer starts all server and waits for them to return, i.e. they gracefully shut down.
+*/
+func RunServer() {
+	var wg = &sync.WaitGroup{}
+
+	wg.Add(len(servers))
+
+	for _, server := range servers {
+		go server.StartServer(wg)
+	}
+
+	wg.Wait()
 }

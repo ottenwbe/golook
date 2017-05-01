@@ -11,6 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package api
 
 import (
@@ -25,6 +26,8 @@ import (
 	"github.com/gorilla/mux"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/ottenwbe/golook/broker/service"
+	"sync"
 )
 
 var _ = Describe("The management endpoint", func() {
@@ -33,32 +36,72 @@ var _ = Describe("The management endpoint", func() {
 		rr *httptest.ResponseRecorder
 		m  *mux.Router
 
-		testHttpCall = func(req *http.Request, path string, f func(http.ResponseWriter, *http.Request)) {
+		testHTTPCall = func(req *http.Request, path string, f func(http.ResponseWriter, *http.Request)) {
 			rr = httptest.NewRecorder()
 			m = mux.NewRouter()
 			m.HandleFunc(path, f)
 			m.ServeHTTP(rr, req)
 		}
-
-		savedReportService = reportService
-		savedQueryService  = queryService
 	)
 
 	BeforeEach(func() {
-		reportService = &testService{}
-		queryService = &testService{}
+		service.CloseFileServices()
+		service.OpenFileServices(service.MockFileServices)
 	})
 
 	AfterEach(func() {
-		reportService = savedReportService
-		queryService = savedQueryService
+		service.CloseFileServices()
+		service.OpenFileServices(service.BroadcastFiles)
 	})
 
-	Context(INFO_EP, func() {
+	Context(HTTPApiEndpoint, func() {
+		It("should return the api information", func() {
+			ApplyConfiguration() //Ensure server is up
+
+			req, err := http.NewRequest(http.MethodGet, HTTPApiEndpoint, nil)
+			testHTTPCall(req, HTTPApiEndpoint, getAPI)
+
+			Expect(err).To(BeNil())
+			Expect(rr.Code).To(Equal(http.StatusOK))
+		})
+
+		It("should return an error when the server is not running."+
+			"However, this should not happen, since in this case the endpoint should not be called at all.", func() {
+			HTTPServer = nil
+			defer ApplyConfiguration()
+
+			req, _ := http.NewRequest(http.MethodGet, HTTPApiEndpoint, nil)
+			testHTTPCall(req, HTTPApiEndpoint, getAPI)
+
+			Expect(rr.Code).To(Equal(http.StatusInternalServerError))
+		})
+
+		It("should return an error when the http server's information cannot be marshalled.", func() {
+			HTTPServer = &testHTTPServer{}
+			defer ApplyConfiguration()
+
+			req, _ := http.NewRequest(http.MethodGet, HTTPApiEndpoint, nil)
+			testHTTPCall(req, HTTPApiEndpoint, getAPI)
+
+			Expect(rr.Code).To(Equal(http.StatusInternalServerError))
+		})
+	})
+
+	Context(LogEndpoint, func() {
+		It("should return no errors, when ....", func() {
+			req, err := http.NewRequest(http.MethodGet, LogEndpoint, nil)
+			testHTTPCall(req, LogEndpoint, getLog)
+
+			Expect(err).To(BeNil())
+			Expect(rr.Code).To(Equal(http.StatusOK))
+		})
+	})
+
+	Context(InfoEndpoint, func() {
 
 		It("should return the current app info", func() {
-			req, err := http.NewRequest(http.MethodPut, INFO_EP, nil)
-			testHttpCall(req, INFO_EP, getInfo)
+			req, err := http.NewRequest(http.MethodPut, InfoEndpoint, nil)
+			testHTTPCall(req, InfoEndpoint, getInfo)
 
 			Expect(err).To(BeNil())
 			Expect(rr.Code).To(Equal(http.StatusOK))
@@ -66,108 +109,62 @@ var _ = Describe("The management endpoint", func() {
 		})
 	})
 
-	Context(FILE_EP, func() {
+	Context(FileEndpoint, func() {
 
-		It("should return an error 400 and nack, when body is empty", func() {
-			req, err := http.NewRequest(http.MethodPut, FILE_EP, nil)
-			testHttpCall(req, FILE_EP, putFile)
+		It("should return an error 400, when the request's body is empty", func() {
+			req, err := http.NewRequest(http.MethodPut, FileEndpoint, nil)
+			testHTTPCall(req, FileEndpoint, putFile)
 
 			Expect(err).To(BeNil())
 			Expect(rr.Code).To(Equal(http.StatusBadRequest))
-			Expect(rr.Body.String()).To(ContainSubstring(NACK))
 		})
 
-		It("should return an error 400 and nack, when the body is invalid", func() {
+		It("should return an error 400, when the body is invalid", func() {
 			b := []byte("{invalid}")
 
-			req, err := http.NewRequest(http.MethodPut, FILE_EP, bytes.NewBuffer(b))
-			testHttpCall(req, FILE_EP, putFile)
+			req, err := http.NewRequest(http.MethodPut, FileEndpoint, bytes.NewBuffer(b))
+			testHTTPCall(req, FileEndpoint, putFile)
 
 			Expect(err).To(BeNil())
-			Expect(reportService.(*testService).fileReport).To(BeNil())
+			Expect(service.ReportService.(*service.MockReportService).FileReport).To(BeNil())
 			Expect(rr.Code).To(Equal(http.StatusBadRequest))
-			Expect(rr.Body.String()).To(ContainSubstring(NACK))
 		})
 
 		It("should call the report service to report the file", func() {
 
 			fp := &models.FileReport{
-				Path:    "test.txt",
-				Monitor: false,
-				Replace: false,
+				Path: "test.txt",
 			}
 
 			b, _ := json.Marshal(fp)
-			req, err := http.NewRequest(http.MethodPut, FILE_EP, bytes.NewBuffer(b))
-			testHttpCall(req, FILE_EP, putFile)
+			req, err := http.NewRequest(http.MethodPut, FileEndpoint, bytes.NewBuffer(b))
+			testHTTPCall(req, FileEndpoint, putFile)
 
 			Expect(err).To(BeNil())
 			Expect(rr.Code).To(Equal(http.StatusOK))
-			Expect(rr.Body.String()).To(Equal(ACK))
-			Expect(*reportService.(*testService).fileReport).To(Equal(*fp))
+			Expect(*service.ReportService.(*service.MockReportService).FileReport).To(Equal(*fp))
 
 		})
 
 		It("should call the query service", func() {
 
-			req, err := http.NewRequest(http.MethodPut, FILE_EP+"/test.txt", nil)
-			testHttpCall(req, FILE_QUERY_EP, getFiles)
+			req, err := http.NewRequest(http.MethodPut, FileEndpoint+"/test.txt", nil)
+			testHTTPCall(req, QueryEndpoint, getFiles)
 
 			Expect(err).To(BeNil())
 			Expect(rr.Code).To(Equal(http.StatusOK))
 			Expect(rr.Body.String()).To(Equal("{}"))
-			Expect(queryService.(*testService).searchString).To(Equal("test.txt"))
+			Expect(service.QueryService.(*service.MockQueryService).SearchString).To(Equal("test.txt"))
 		})
-	})
-
-	Context(FOLDER_EP, func() {
-		It("should return an error 400 and nack, when body is empty", func() {
-			req, err := http.NewRequest(http.MethodPut, FOLDER_EP, nil)
-			testHttpCall(req, FOLDER_EP, putFolder)
-
-			Expect(err).To(BeNil())
-			Expect(rr.Code).To(Equal(http.StatusBadRequest))
-			Expect(rr.Body.String()).To(ContainSubstring(NACK))
-		})
-
-		It("should call the report service to report the folder", func() {
-
-			testFileReport := &models.FileReport{
-				Path:    "a_folder",
-				Monitor: false,
-				Replace: false,
-			}
-			expectedFileReport := *testFileReport
-
-			b, _ := json.Marshal(testFileReport)
-			req, err := http.NewRequest(http.MethodPut, FOLDER_EP, bytes.NewBuffer(b))
-			testHttpCall(req, FOLDER_EP, putFolder)
-
-			Expect(err).To(BeNil())
-			Expect(rr.Code).To(Equal(http.StatusOK))
-			Expect(rr.Body.String()).To(Equal(ACK))
-			Expect(*reportService.(*testService).folderReport).To(Equal(expectedFileReport))
-
-		})
-
 	})
 })
 
-type testService struct {
-	searchString string
-	fileReport   *models.FileReport
-	folderReport *models.FileReport
+type testHTTPServer struct {
 }
 
-func (ts *testService) MakeFileQuery(searchString string) interface{} {
-	ts.searchString = searchString
-	return "{}"
+func (*testHTTPServer) StartServer(_ *sync.WaitGroup) {
 }
 
-func (ts *testService) MakeFileReport(fileReport *models.FileReport) {
-	ts.fileReport = fileReport
-}
-
-func (ts *testService) MakeFolderReport(folderReport *models.FileReport) {
-	ts.folderReport = folderReport
+func (*testHTTPServer) Info() map[string]interface{} {
+	return map[string]interface{}{"{": make(chan bool)}
 }

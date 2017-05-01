@@ -15,24 +15,19 @@
 package routing
 
 import (
-	"github.com/ottenwbe/golook/broker/runtime"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
-var (
-	DefaultPeers = []string{}
+const (
+	peers = "routing.peers"
 )
 
-const peers = "routing.peers"
-
-func configureRouting() {
+func ApplyConfiguration() {
 	log.Info("Configure routing layer")
-	DefaultPeers = viper.GetStringSlice(peers)
+	defaultPeers = viper.GetStringSlice(peers)
 }
 
-func init() {
-	viper.SetDefault(peers, []string{"http://127.0.0.1:8383"})
-
-	runtime.ConfigurationHandler.RegisterConfig(configureRouting)
+func InitConfiguration() {
+	viper.SetDefault(peers, []string{""})
 }

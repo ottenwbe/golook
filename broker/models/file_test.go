@@ -11,6 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package models
 
 import (
@@ -18,7 +19,6 @@ import (
 	"io"
 	"time"
 
-	"github.com/fsnotify/fsnotify"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
@@ -92,7 +92,7 @@ func PipeWriteFile(pipeWriter *io.PipeWriter, file File) {
 }
 
 func PipeReadFile(pipeReader *io.PipeReader, c chan *File) {
-	if f, err := UnmarshalFile(pipeReader); err == nil && f.Name == testFileName && f.Meta.State == fsnotify.Create {
+	if f, err := UnmarshalFile(pipeReader); err == nil && f.Name == testFileName && f.Meta.State == Created {
 		c <- &f
 	} else {
 		log.Printf("Error expected nil, got %s", err)
@@ -107,12 +107,11 @@ func newTestFile(fileName string) File {
 	f.Accessed = time.Time{}
 	f.Created = time.Time{}
 	f.Modified = time.Time{}
-	f.Meta.State = fsnotify.Create
+	f.Meta.State = Created
 	return f
 }
 
 func expectedResultFile(fileName string) File {
 	f := newTestFile(fileName)
-	f.Meta.State = fsnotify.Create
 	return f
 }

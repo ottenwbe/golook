@@ -11,11 +11,25 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package service
 
-import . "github.com/ottenwbe/golook/broker/routing"
-
-var (
-	systemIndex = NewRouter("system")
-	//fileIndex   = NewRouter("file")
+import (
+	"github.com/ottenwbe/golook/broker/routing"
+	"github.com/ottenwbe/golook/broker/runtime"
+	"github.com/spf13/viper"
 )
+
+func ApplyServiceConfiguration() {
+
+	runtime.Schedule(viper.GetString("service.informer.specification"), SystemService{})
+
+	broadCastRouter = newRouter("broadcast", routing.BroadcastRouter)
+
+	OpenFileServices(FileServiceType(viper.GetString("service.type")))
+}
+
+func InitServiceConfiguration() {
+	viper.SetDefault("service.type", string(BroadcastFiles))
+	viper.SetDefault("service.informer.specification", "@every 5m0s")
+}

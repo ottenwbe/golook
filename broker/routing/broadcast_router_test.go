@@ -17,47 +17,49 @@ package routing
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/ottenwbe/golook/broker/communication"
 	"github.com/ottenwbe/golook/broker/models"
 	"reflect"
 )
 
 var _ = Describe("The flood router", func() {
-	It("implements the 'Router' interface", func() {
-		r := newFloodingRouter("test")
 
-		Expect(r).ToNot(BeNil())
-		Expect(reflect.TypeOf(r)).To(Equal(reflect.TypeOf(&FloodingRouter{})))
+	BeforeEach(func() {
+		communication.ClientType = communication.MockRPC
 	})
 
-	It("broadcasts messages to one or more peers", func() {
-		testPeers := []*mockPeer{{}, {}}
+	It("implements the 'Router' interface", func() {
+		r := newBroadcastRouter("test")
 
-		r := newFloodingRouter("test")
-		r.NewPeer(NewKey("peer1"), testPeers[0])
-		r.NewPeer(NewKey("peer2"), testPeers[1])
+		Expect(r).ToNot(BeNil())
+		Expect(reflect.TypeOf(r)).To(Equal(reflect.TypeOf(&BroadCastRouter{})))
+	})
+
+	It("broadcasts messages to one or more peerClients", func() {
+
+		r := newBroadcastRouter("test")
+		r.NewPeer(NewKey("peer1"), "1")
+		r.NewPeer(NewKey("peer2"), "2")
 
 		r.BroadCast("test", 123)
 
-		for i := range testPeers {
-			Expect(testPeers[i].visitedCall).To(Equal(1))
-			Expect(testPeers[i].request.Method).To(Equal("test"))
-			Expect(testPeers[i].request.Params).To(Equal("123"))
+		for _, peer := range r.(*BroadCastRouter).routeTable.peers() {
+			Expect(peer.(*communication.MockClient).VisitedCall).To(Equal(1))
+			Expect(peer.(*communication.MockClient).Name).To(Equal("test"))
 		}
 	})
 
 	It("should flood instead of sending directed messages via 'Route'", func() {
-		testPeers := []*mockPeer{{}, {}}
 
-		r := newFloodingRouter("test")
-		r.NewPeer(NewKey("peer1"), testPeers[0])
-		r.NewPeer(NewKey("peer2"), testPeers[1])
+		r := newBroadcastRouter("test")
+		r.NewPeer(NewKey("peer1"), "1")
+		r.NewPeer(NewKey("peer2"), "2")
 
 		r.Route(NewKey("peer2"), "test", 123)
 
-		for i := range testPeers {
-			Expect(testPeers[i].visitedCall).To(Equal(1))
-			Expect(testPeers[i].request.Method).To(Equal("test"))
-			Expect(testPeers[i].request.Params).To(Equal("123"))
+		for _, peer := range r.(*BroadCastRouter).routeTable.peers() {
+			Expect(peer.(*communication.MockClient).VisitedCall).To(Equal(1))
+			Expect(peer.(*communication.MockClient).Name).To(Equal("test"))
 		}
 	})
 })

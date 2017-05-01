@@ -11,12 +11,33 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package communication
+
+const (
+	jsonRPC = "jsonrpc"
+	MockRPC = "mockrpc"
+)
+
+var (
+	// value is injected through configuration (see configuration.go)
+	serverType string
+	// value is injected through configuration (see configuration.go)
+	ClientType string
+
+	port int = 8382
+)
 
 func newRPCServer(associatedHandler string) RpcServer {
 	return &JsonRPCServerStub{handler: associatedHandler}
 }
 
 func NewRPCClient(url string) RpcClient {
-	return newJsonRPCClient(url)
+	switch ClientType {
+	case MockRPC:
+		return newMockClient()
+	default:
+		return newJsonRPCClient(url, port)
+	}
+
 }

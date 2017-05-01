@@ -11,13 +11,21 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package models
 
 import (
 	"encoding/json"
-	"github.com/fsnotify/fsnotify"
 	"io"
 	"time"
+)
+
+//FileState represents the current state of the file, i.e., if it has been recently created or removed
+type FileState int
+
+const (
+	Created FileState = iota
+	Removed FileState = iota
 )
 
 type File struct {
@@ -26,11 +34,13 @@ type File struct {
 	Created   time.Time `json:"created"`
 	Modified  time.Time `json:"modified"`
 	Accessed  time.Time `json:"accessed"`
+	Directory bool      `json:"directory"`
+	Size      int64     `json:"size"`
 	Meta      FileMeta  `json:"meta"`
 }
 
 type FileMeta struct {
-	State fsnotify.Op `json:"state"`
+	State FileState `json:"state"`
 }
 
 func UnmarshalFiles(fileReader io.Reader) (map[string]File, error) {

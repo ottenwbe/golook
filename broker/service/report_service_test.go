@@ -11,6 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package service
 
 //
@@ -18,102 +19,47 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/ottenwbe/golook/broker/models"
+	"github.com/ottenwbe/golook/broker/repository"
 	"github.com/ottenwbe/golook/broker/routing"
-	"path/filepath"
+	"github.com/ottenwbe/golook/broker/runtime"
 )
 
-var _ = Describe("The report service", func() {
+var _ = Describe("The broadcast report service", func() {
 
-	var rs = newReportService()
+	var rs *broadcastReportService
+
+	BeforeEach(func() {
+		rs = newReportService(BCastReport).(*broadcastReportService)
+	})
+
+	AfterEach(func() {
+		rs.Close()
+	})
 
 	It("ignores nil file reports", func() {
-		routing.RunWithMockedRouter(&systemIndex, func() {
+		tmp := routing.Router(broadCastRouter)
+		routing.RunWithMockedRouter(&tmp, func() {
 
 			rs.MakeFileReport(nil)
-			Expect(routing.AccessMockedRouter(systemIndex).Visited).To(BeZero())
+			Expect(routing.AccessMockedRouter(broadCastRouter).Visited).To(BeZero())
 		})
 	})
 
-	It("adds files which sepecify a monitoring flag to the file monitor", func() {
-		routing.RunWithMockedRouter(&systemIndex, func() {
+	It("broadcasts file reports and adds them to the local repository", func() {
+		tmp := routing.Router(broadCastRouter)
+		routing.RunWithMockedRouter(&tmp, func() {
 
-			testFileName := "test_add_remove.txt"
+			testFileName := "report_service_test.go"
 			rs.MakeFileReport(
 				&models.FileReport{
-					Path:    testFileName,
-					Monitor: true,
-					Replace: true,
+					Path: testFileName,
 				},
 			)
-			defer RemoveFileMonitor(testFileName)
 
-			Expect(watchedFiles[testFileName]).To(BeTrue())
-			Expect(routing.AccessMockedRouter(systemIndex).Visited >= 1).To(BeTrue())
-		})
-	})
+			storedFiles := repositories.GoLookRepository.GetFiles(runtime.GolookSystem.UUID)
 
-	It("does not add file reports without monitoring flag to the file monitor", func() {
-		routing.RunWithMockedRouter(&systemIndex, func() {
-
-			testFileName := "test_add_remove.txt"
-			rs.MakeFileReport(
-				&models.FileReport{
-					Path:    testFileName,
-					Monitor: false,
-					Replace: true,
-				},
-			)
-			defer RemoveFileMonitor(testFileName)
-
-			_, ok := watchedFiles[testFileName]
-			Expect(ok).To(BeFalse())
-			Expect(routing.AccessMockedRouter(systemIndex).Visited >= 1).To(BeTrue())
-		})
-	})
-
-	It("ignores nil folder reports", func() {
-		routing.RunWithMockedRouter(&systemIndex, func() {
-
-			rs.MakeFolderReport(nil)
-			Expect(routing.AccessMockedRouter(systemIndex).Visited).To(BeZero())
-		})
-	})
-
-	It("does add folders specifying the monitor flag to the monitor and ignores invalid folders", func() {
-		routing.RunWithMockedRouter(&systemIndex, func() {
-
-			folderName := "test_add_remove"
-			rs.MakeFolderReport(
-				&models.FileReport{
-					Path:    folderName,
-					Monitor: true,
-					Replace: true,
-				},
-			)
-			defer RemoveFileMonitor(folderName)
-
-			_, ok := watchedFiles[folderName]
-			Expect(ok).To(BeTrue())
-			Expect(routing.AccessMockedRouter(systemIndex).Visited).To(BeZero())
-		})
-	})
-
-	It("does add folders specifying the monitor flag to the file monitor", func() {
-		routing.RunWithMockedRouter(&systemIndex, func() {
-
-			folderName, _ := filepath.Abs(".")
-			rs.MakeFolderReport(
-				&models.FileReport{
-					Path:    folderName,
-					Monitor: false,
-					Replace: true,
-				},
-			)
-			defer RemoveFileMonitor(folderName)
-
-			_, ok := watchedFiles[folderName]
-			Expect(ok).To(BeFalse())
-			Expect(routing.AccessMockedRouter(systemIndex).Visited).To(Equal(1))
+			Expect(len(storedFiles) >= 1).To(BeTrue())
+			Expect(routing.AccessMockedRouter(broadCastRouter).Visited >= 1).To(BeTrue())
 		})
 	})
 
