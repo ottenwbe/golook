@@ -29,7 +29,7 @@ var _ = Describe("The repository implemented with maps", func() {
 	)
 
 	BeforeEach(func() {
-		repo = &MapRepository{}
+		repo = newMapRepository()
 	})
 
 	It("does not accept nil systems", func() {
@@ -40,7 +40,7 @@ var _ = Describe("The repository implemented with maps", func() {
 		sys := runtime.NewSystem()
 
 		Expect(repo.StoreSystem(sys.Name, sys)).To(BeTrue())
-		_, ok := (*repo)[sys.Name]
+		_, ok := (repo.systemFiles)[sys.Name]
 		Expect(ok).To(BeTrue())
 	})
 
@@ -59,14 +59,14 @@ var _ = Describe("The repository implemented with maps", func() {
 		stored := repo.StoreSystem(sysName, sys)
 
 		repo.DelSystem(sysName)
-		_, ok := (*repo)[sysName]
+		_, ok := (repo.systemFiles)[sysName]
 		Expect(stored).To(BeTrue())
 		Expect(ok).To(BeFalse())
 	})
 
 	It("accepts files if no valid System is stored and creates an entry for that system", func() {
 		stored := repo.UpdateFiles("unknown", map[string]*models.File{})
-		_, found := (*repo)["unknown"]
+		_, found := (repo.systemFiles)["unknown"]
 		Expect(stored).To(BeTrue())
 		Expect(found).To(BeTrue())
 	})

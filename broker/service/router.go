@@ -19,29 +19,28 @@ import (
 	"github.com/ottenwbe/golook/broker/runtime"
 )
 
+/*
+Router dispatches messages. To this end, it implements an embedded routing.Router.
+Router informs the embedded routing.Router about possible candidates for peers by registering to the system service's callbacks.
+*/
 type Router struct {
 	routing.Router
 }
 
-var (
-	//broadCastRouter's instance is injected during the configuration
-	broadCastRouter Router
-)
-
-func newRouter(name string, routerTpye routing.RouterType) Router {
-	r := Router{routing.NewRouter(name, routerTpye)}
-
-	r.HandlerFunction(SYSTEM_REPORT, handleSystemReport)
-	r.HandlerFunction(FILE_QUERY, handleFileQuery)
-	r.HandlerFunction(fileReport, handleFileReport)
-
+func newRouter(name string, routerType routing.RouterType) *Router {
+	r := &Router{routing.NewRouter(name, routerType)}
 	routing.ActivateRouter(r)
-
-	newSystemCallbacks.Add("broadcastRouter", r.handleNewSystem)
-
+	newSystemCallbacks.Add(name, r.handleNewSystem)
 	return r
 }
 
-func (r *Router) handleNewSystem(uuid string, system *runtime.System) {
-	r.NewPeer(routing.NewKey(uuid), system.IP)
+func (r *Router) close() {
+	routing.DeactivateRouter(r)
+	newSystemCallbacks.Delete(r.Router.Name())
+}
+
+func (r *Router) handleNewSystem(uuid string, systems map[string]*runtime.System) {
+	for _, s := range systems {
+		r.NewPeer(routing.NewKey(s.UUID), s.IP)
+	}
 }

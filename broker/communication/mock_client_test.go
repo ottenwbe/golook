@@ -11,16 +11,24 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package communication
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"reflect"
 )
 
 var _ = Describe("The mock client", func() {
 
-	It("should record the name of the latest Call() and the number of calls.", func() {
+	It("provides a builder function.", func() {
+		m := newMockClient()
+		Expect(m).ToNot(BeNil())
+		Expect(reflect.TypeOf(m).String()).To(Equal(reflect.TypeOf(&MockClient{}).String()))
+	})
+
+	It("should record the name of the latest call() and the number of calls.", func() {
 		m := &MockClient{}
 		m.Call("test", nil)
 		Expect(m.Name).To(Equal("test"))

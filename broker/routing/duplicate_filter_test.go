@@ -23,17 +23,23 @@ import (
 
 var _ = Describe("The duplicate filter", func() {
 	It("detects dulicates from the same system.", func() {
+
+		d := newDuplicateMap()
+
 		source1 := Source{1, runtime.GolookSystem.UUID}
 		source2 := Source{1, runtime.GolookSystem.UUID}
 
-		Expect(duplicateMap.CheckForDuplicates(source1)).To(BeFalse())
-		Expect(duplicateMap.CheckForDuplicates(source2)).To(BeTrue())
+		Expect(d.CheckForDuplicates(source1)).To(BeFalse())
+		Expect(d.CheckForDuplicates(source2)).To(BeTrue())
 	})
 	It("ignores duplicated ids from different systems", func() {
+
+		d := newDuplicateMap()
+
 		source1 := Source{1, uuid.NewV4().String()}
 		source2 := Source{1, uuid.NewV4().String()}
 
-		Expect(duplicateMap.CheckForDuplicates(source1)).To(BeFalse())
-		Expect(duplicateMap.CheckForDuplicates(source2)).To(BeFalse())
+		Expect(d.CheckForDuplicates(source1)).To(BeFalse())
+		Expect(d.CheckForDuplicates(source2)).To(BeFalse())
 	})
 })

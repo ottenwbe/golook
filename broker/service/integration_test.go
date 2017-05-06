@@ -19,47 +19,100 @@ package service
 import (
 	"path/filepath"
 
+	"fmt"
 	"github.com/fsouza/go-dockerclient"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ottenwbe/golook/broker/models"
 	"github.com/ottenwbe/golook/broker/routing"
 	"github.com/ottenwbe/golook/broker/runtime"
-	"github.com/ottenwbe/golook/broker/utils"
+	"github.com/ottenwbe/golook/client"
 	int "github.com/ottenwbe/golook/test/integration"
+	log "github.com/sirupsen/logrus"
+	"time"
 )
 
 var _ = Describe("The service layer's", func() {
 
 	var (
 		systemService *SystemService
+		fileServices  fileServices
+		routerSystem  *Router
+		routerFiles   *Router
 	)
 
 	BeforeEach(func() {
-		systemService = &SystemService{}
+		fileServices = newFileServices(BroadcastFiles)
+		fileServices.open()
+		routerFiles = fileServices.(*scenarioBroadcastFiles).r
+
+		systemService = newSystemService()
+		routerSystem = systemService.router
+	})
+
+	AfterEach(func() {
+		systemService.close()
+		fileServices.close()
 	})
 
 	Context("broadcast query service", func() {
-		It("informs peers about files in folders", func() {
+		It("informs ALL peers about files in folders", func() {
+			d1 := &int.DockerizedGolook{}
+			d2 := &int.DockerizedGolook{}
+			d1.Init()
+			defer d1.Stop()
+			d2.Init()
+			defer d2.Stop()
+			d1.Start()
+			d2.Start()
+
+			routerFiles.NewPeer(routing.NewKey(d1.Container.NetworkSettings.IPAddress), d1.Container.NetworkSettings.IPAddress)
+			routerSystem.NewPeer(routing.NewKey(d1.Container.NetworkSettings.IPAddress), d1.Container.NetworkSettings.IPAddress)
+			routerFiles.NewPeer(routing.NewKey(d2.Container.NetworkSettings.IPAddress), d2.Container.NetworkSettings.IPAddress)
+			routerSystem.NewPeer(routing.NewKey(d2.Container.NetworkSettings.IPAddress), d2.Container.NetworkSettings.IPAddress)
+
+			systemService.Run()
+			_, err := fileServices.Report(&models.FileReport{Path: "integration_test.go"})
+			if err != nil {
+				log.Fatal("Cannot make file report in test.")
+			}
+
+			time.Sleep(time.Second)
+
+			// query one of the neighbor hosts
+			client.Host = fmt.Sprintf("http://%s:8383", d1.Container.NetworkSettings.IPAddress)
+			files, err := client.GetFiles("integration_test")
+			log.Info(files)
+
+			// query one of the neighbor hosts
+			client.Host = fmt.Sprintf("http://%s:8383", d1.Container.NetworkSettings.IPAddress)
+			system, err := client.GetSystem()
+			log.Info(system)
+
+			Expect(err).To(BeNil())
+			Expect(files).To(ContainSubstring(runtime.GolookSystem.UUID))
+		})
+	})
+
+	Context("broadcast query service", func() {
+		It("informs ONE peers about files in folders", func() {
 			int.RunPeerInDocker(func(client *docker.Client, container *docker.Container) {
-				reportService := newReportService(BCastReport)
-				queryService := newQueryService(BCastQueries)
-				broadCastRouter.NewPeer(routing.NewKey(container.NetworkSettings.IPAddress), container.NetworkSettings.IPAddress)
+
+				routerFiles.NewPeer(routing.NewKey(container.NetworkSettings.IPAddress), container.NetworkSettings.IPAddress)
+				routerSystem.NewPeer(routing.NewKey(container.NetworkSettings.IPAddress), container.NetworkSettings.IPAddress)
+
 				systemService.Run()
-				_, err := reportService.MakeFileReport(&models.FileReport{Path: "integration_test.go"})
+				_, err := fileServices.Report(&models.FileReport{Path: "integration_test.go"})
 				if err != nil {
-					log.Fatal("Cannot make file report in test.")
+					log.WithError(err).Fatal("Cannot make file report in test.")
 				}
 
-				result, _ := queryService.MakeFileQuery("integration_test")
+				result, _ := fileServices.Query("integration_test")
 
-				var files map[string][]*models.File
-				err = utils.Unmarshal(result, &files)
-				if err != nil {
-					log.Fatal("Cannot unmarshal files in test.")
-				}
+				log.WithField("test", "integration").Debug("Files retrieved:"+
+					"num=%d", len(result.(FileQueryData)))
+
+				var files = result.(FileQueryData)
 
 				Expect(files).To(HaveKey(runtime.GolookSystem.UUID))
 			})
@@ -69,11 +122,13 @@ var _ = Describe("The service layer's", func() {
 	Context("broadcast report service", func() {
 		It("informs peers about files in folders", func() {
 			int.RunPeerInDocker(func(client *docker.Client, container *docker.Container) {
-				reportService := newReportService(BCastReport)
-				broadCastRouter.NewPeer(routing.NewKey(container.NetworkSettings.IPAddress), container.NetworkSettings.IPAddress)
+
+				routerFiles.NewPeer(routing.NewKey(container.NetworkSettings.IPAddress), container.NetworkSettings.IPAddress)
+				routerSystem.NewPeer(routing.NewKey(container.NetworkSettings.IPAddress), container.NetworkSettings.IPAddress)
+
 				systemService.Run()
 
-				result, err := reportService.MakeFileReport(&models.FileReport{Path: "integration_test.go"})
+				result, err := fileServices.Report(&models.FileReport{Path: "integration_test.go"})
 
 				Expect(err).To(BeNil())
 				expectedKey, err := filepath.Abs("integration_test.go")
@@ -88,15 +143,21 @@ var _ = Describe("The service layer's", func() {
 	Context("system service", func() {
 		It("can inform peers about the system.", func() {
 			int.RunPeerInDocker(func(client *docker.Client, container *docker.Container) {
-				broadCastRouter.NewPeer(routing.NewKey(container.NetworkSettings.IPAddress), container.NetworkSettings.IPAddress)
+				routerFiles.NewPeer(routing.NewKey(container.NetworkSettings.IPAddress), container.NetworkSettings.IPAddress)
+				routerSystem.NewPeer(routing.NewKey(container.NetworkSettings.IPAddress), container.NetworkSettings.IPAddress)
 
-				result := systemService.broadcastSystem(false)
+				log.Info("Sending broadcast")
+				result := systemService.broadcastSystem(
+					PeerSystemReport{
+						Uuid: runtime.GolookSystem.UUID,
+						System: map[string]*runtime.System{
+							runtime.GolookSystem.UUID: runtime.GolookSystem,
+						},
+						IsDeletion: false,
+					},
+				)
 
 				Expect(result).ToNot(BeNil())
-				var peerResponse PeerResponse
-				err := utils.Unmarshal(result, &peerResponse)
-				Expect(err).To(BeNil())
-				Expect(peerResponse.Error).To(BeFalse())
 			})
 		})
 	})

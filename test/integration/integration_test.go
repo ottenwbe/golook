@@ -30,12 +30,12 @@ import (
 var _ = Describe("The golook server's", func() {
 
 	Context("http api", func() {
-		It("allows clients to query the application's /info endpoint from a server running in a docker container", func() {
+		It("allows clients to query the application's /info endpoint from a server running in a docker Container", func() {
 			RunPeerInDocker(func(client *docker.Client, container *docker.Container) {
 
 				appInfo := &runtime.AppInfo{}
 				compareInfo := runtime.NewAppInfo()
-				//containerInfo := GetContainerInfo(client, container)
+				//containerInfo := GetContainerInfo(Client, Container)
 
 				// make test request
 				r, errGet := http.Get("http://" + container.NetworkSettings.IPAddress + ":8383" + api.InfoEndpoint)

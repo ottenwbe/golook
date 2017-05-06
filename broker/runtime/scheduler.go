@@ -30,7 +30,7 @@ Job is a facade for the actual cron job type.
 type Job cron.Job
 
 func init() {
-	// Note, that jobrunner.Start() would print out to StdOut. To this end, this message is intercepted and discarded.
+	// Note, that jobrunner.Start() prints directly to StdOut. To this end, this message is intercepted and discarded.
 	utils.InterceptStdOut(func() { jobrunner.Start() })
 }
 

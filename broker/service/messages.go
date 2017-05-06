@@ -24,16 +24,10 @@ type PeerFileReport struct {
 	System string           `json:"system"`
 }
 
-type PeerResponse struct {
-	Error   bool   `json:"error"`
-	Message string `json:"message"`
-	Data    []byte `json:"data"`
-}
-
 type PeerSystemReport struct {
-	Uuid       string          `json:"uuid"`
-	System     *runtime.System `json:"system"`
-	IsDeletion bool            `json:"deletion"`
+	Uuid       string                     `json:"uuid"`
+	System     map[string]*runtime.System `json:"systems"`
+	IsDeletion bool                       `json:"deletion,omitempty"`
 }
 
 type PeerFileQuery struct {

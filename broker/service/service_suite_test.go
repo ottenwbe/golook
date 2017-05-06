@@ -11,15 +11,24 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package service
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
 	"testing"
 )
 
+/*
+TestServices tells 'ginkgo' to run the tests of the service package
+*/
 func TestServices(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Service Test Suite")
 }
+
+var _ = BeforeSuite(func() {
+	log.SetLevel(log.DebugLevel)
+})

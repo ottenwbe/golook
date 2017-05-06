@@ -16,18 +16,17 @@ package api
 
 import (
 	"fmt"
-	"net/http"
-
 	golook "github.com/ottenwbe/golook/broker/runtime"
 	"github.com/ottenwbe/golook/broker/service"
 	"github.com/ottenwbe/golook/broker/utils"
+	"net/http"
 )
 
 //getFiles implements the http endpoint: GET /file
 func getFiles(writer http.ResponseWriter, request *http.Request) {
 	file := extractFileFromPath(request)
 
-	result, err := service.QueryService.MakeFileQuery(file)
+	result, err := service.FileServices.Query(file)
 	if err != nil {
 		returnAndLogError(writer, "Cannot process query.", err, http.StatusInternalServerError)
 	}
@@ -44,7 +43,7 @@ func putFile(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	files, err := service.ReportService.MakeFileReport(fileReport)
+	files, err := service.FileServices.Report(fileReport)
 	if err != nil {
 		returnAndLogError(writer, "No valid request for: /file", err, http.StatusBadRequest)
 		return
@@ -86,6 +85,20 @@ func getLog(writer http.ResponseWriter, _ *http.Request) {
 		returnAndLogError(writer, "Cannot open log file", err, http.StatusInternalServerError)
 		return
 	}
+}
+
+//getSystem implements the Endpoint: GET /system
+func getSystem(writer http.ResponseWriter, _ *http.Request) {
+
+	systems := service.GetSystems()
+
+	jsonResponse, err := utils.MarshalS(systems)
+	if err != nil {
+		returnAndLogError(writer, "Cannot marshal systems.", err, http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Fprint(writer, jsonResponse)
 }
 
 //getConfiguration implements the Endpoint: GET /config

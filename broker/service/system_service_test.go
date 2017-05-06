@@ -24,19 +24,73 @@ import (
 
 var _ = Describe("The system service", func() {
 
+	var (
+		s          *SystemService
+		mockRouter *routing.MockRouter
+		sysUUID    = golook.GolookSystem.UUID
+	)
+
+	BeforeEach(func() {
+		mockRouter = routing.NewMockedRouter().(*routing.MockRouter)
+		s = &SystemService{router: &Router{mockRouter}}
+		repo.GoLookRepository.DelSystem(sysUUID)
+	})
+
+	AfterEach(func() {
+		repo.GoLookRepository.DelSystem(sysUUID)
+	})
+
 	It("stores and forwards the system's information", func() {
-		tmp := routing.Router(broadCastRouter)
-		routing.RunWithMockedRouter(&tmp, func() {
-			sysUUID := golook.GolookSystem.UUID
-			repo.GoLookRepository.DelSystem(sysUUID)
-			s := SystemService{}
 
-			s.Run()
+		s.Run()
 
-			_, isSystemInRepo := repo.GoLookRepository.GetSystem(sysUUID)
-			Expect(isSystemInRepo).To(BeTrue())
-			Expect(routing.AccessMockedRouter(broadCastRouter).Visited).To(Equal(1))
-		})
+		_, isSystemInRepo := repo.GoLookRepository.GetSystem(sysUUID)
+		Expect(isSystemInRepo).To(BeTrue())
+		Expect(mockRouter.Visited).To(Equal(1))
+
+	})
+
+	It("handles valid system reports, stores the system.", func() {
+
+		report := PeerSystemReport{Uuid: sysUUID, System: map[string]*golook.System{golook.GolookSystem.UUID: golook.GolookSystem}, IsDeletion: false}
+
+		result := s.handleSystemReport(testEncapsulatedSystemReport{report: &report})
+
+		_, systemInRepo := repo.GoLookRepository.GetSystem(sysUUID)
+		Expect(systemInRepo).To(BeTrue())
+		Expect(result).ToNot(BeNil())
+
+	})
+
+	It("handles valid system reports that delete systems. As a result, it removes the system, and returns a valid peer response.", func() {
+
+		addReport := PeerSystemReport{Uuid: sysUUID, System: map[string]*golook.System{golook.GolookSystem.UUID: golook.GolookSystem}, IsDeletion: false}
+		s.handleSystemReport(testEncapsulatedSystemReport{report: &addReport})
+		delReport := PeerSystemReport{Uuid: sysUUID, System: map[string]*golook.System{golook.GolookSystem.UUID: golook.GolookSystem}, IsDeletion: true}
+		result := s.handleSystemReport(testEncapsulatedSystemReport{report: &delReport})
+
+		_, systemInRepo := repo.GoLookRepository.GetSystem(sysUUID)
+		Expect(systemInRepo).To(BeFalse())
+		Expect(result).ToNot(BeNil())
+
+	})
+
+	It("handles invalid system reports and returns an empty result.", func() {
+
+		result := s.handleSystemReport(nil)
+
+		_, systemInRepo := repo.GoLookRepository.GetSystem(sysUUID)
+		Expect(systemInRepo).To(BeFalse())
+		Expect(result).ToNot(BeNil())
 	})
 
 })
+
+type testEncapsulatedSystemReport struct {
+	report *PeerSystemReport
+}
+
+func (e testEncapsulatedSystemReport) Unmarshal(v interface{}) error {
+	*v.(*PeerSystemReport) = *e.report
+	return nil
+}

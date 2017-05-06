@@ -11,6 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package communication
 
 import (
@@ -47,12 +48,12 @@ func newJsonRPCClient(url string, port int) RpcClient {
 }
 
 /*
-Call executes a RPC call with the given method name and the given parameters.
+call executes a RPC call with the given method name and the given parameters.
 It returns a generic return value. Clients can retrieve the result by calling the Unmarshal method on the result.
 */
 func (lc *JsonRpcClientStub) Call(method string, parameters interface{}) (EncapsulatedValues, error) {
 
-	log.WithField("method", method).Infof("Making a call for %s with %s", method, parameters)
+	log.WithField("method", method).WithField("com", "jsonrpc").Debugf("Making a call for %s with %s", method, parameters)
 
 	response, err := lc.c.Call(method, parameters)
 	if err != nil {
@@ -60,7 +61,7 @@ func (lc *JsonRpcClientStub) Call(method string, parameters interface{}) (Encaps
 	}
 
 	r := &JsonRPCReturnType{response: response}
-	log.WithField("method", method).Infof("Getting a response for %s with %s", method, r.response)
+	log.WithField("method", method).WithField("com", "jsonrpc").Debugf("Getting a response for %s with %s", method, r.response)
 
 	return r, nil
 }

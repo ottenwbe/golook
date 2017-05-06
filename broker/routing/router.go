@@ -11,29 +11,51 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package routing
 
 import (
 	com "github.com/ottenwbe/golook/broker/communication"
 	"github.com/ottenwbe/golook/broker/models"
+	log "github.com/sirupsen/logrus"
 )
 
 type Router interface {
 	com.MessageHandler
 	Route(key Key, method string, params interface{}) interface{}
-	BroadCast(method string, params interface{}) interface{}
-	HandlerFunction(name string, handler func(params models.EncapsulatedValues) interface{})
+	BroadCast(method string, params interface{}) models.EncapsulatedValues
+	AddHandler(name string, handler *Handler)
 	NewPeer(key Key, url string)
 	Name() string
 }
 
-type HandlerTable map[string]func(params models.EncapsulatedValues) interface{}
+type Handler struct {
+	requestHandler func(params models.EncapsulatedValues) interface{}
+	mergeCallback  func(raw1 models.EncapsulatedValues, raw2 models.EncapsulatedValues) interface{}
+}
+
+func NewHandler(requestHandler func(params models.EncapsulatedValues) interface{}, mergeCallack func(raw1 models.EncapsulatedValues, raw2 models.EncapsulatedValues) interface{}) *Handler {
+	return &Handler{
+		requestHandler: requestHandler,
+		mergeCallback:  mergeCallack,
+	}
+}
+
+type HandlerTable map[string]*Handler
 
 type RouteTable interface {
 	peers() map[Key]com.RpcClient
 	get(key Key) (com.RpcClient, bool)
 	add(key Key, client com.RpcClient)
 	this() com.RpcServer
+}
+
+func routerLoggerS(rt Router) *log.Entry {
+	return log.WithFields(log.Fields{"router": rt.Name()})
+}
+
+func routerLogger(rt Router, method string) *log.Entry {
+	return log.WithFields(log.Fields{"router": rt.Name(), "method": method})
 }
 
 type DefaultRouteTable struct {

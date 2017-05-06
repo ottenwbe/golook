@@ -30,15 +30,14 @@ type FileMonitor struct {
 	reporter func(string)
 }
 
-func (fm *FileMonitor) Start() {
-	var err error
-
-	fm.watcher, err = fsnotify.NewWatcher()
-	if err != nil {
-		log.WithError(err).Fatal("Cannot start file monitor")
-	}
-
+func (fm *FileMonitor) Open() {
 	fm.once.Do(func() {
+		var err error
+		fm.watcher, err = fsnotify.NewWatcher()
+		if err != nil {
+			log.WithError(err).Fatal("Cannot start file monitor")
+		}
+
 		fm.done = make(chan bool)
 		go cMonitor(fm)
 	})
@@ -51,6 +50,7 @@ func (fm *FileMonitor) Close() {
 	if fm.watcher != nil {
 		fm.watcher.Close()
 	}
+	fm.once = sync.Once{}
 }
 
 func cMonitor(fm *FileMonitor) {
@@ -63,7 +63,7 @@ func cMonitor(fm *FileMonitor) {
 				if fm.reporter != nil {
 					fm.reporter(event.Name)
 				} else {
-					log.Error("Not reporting monitored file change, since reporter is nil!")
+					log.Error("Not reporting monitored file change; reporter is nil!")
 				}
 			}
 		case err := <-fm.watcher.Errors:

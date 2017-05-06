@@ -19,14 +19,12 @@ Common (helper) functions and constants, required by all controllers.
 package api
 
 import (
-	"errors"
-	"net/http"
-
-	"github.com/ottenwbe/golook/broker/models"
-
 	"encoding/json"
+	"errors"
 	"github.com/gorilla/mux"
+	"github.com/ottenwbe/golook/broker/models"
 	log "github.com/sirupsen/logrus"
+	"net/http"
 )
 
 func isValidRequest(request *http.Request) bool {

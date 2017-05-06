@@ -21,6 +21,7 @@ import (
 type Repository interface {
 	StoreSystem(systemName string, system *runtime.System) bool
 	GetSystem(systemName string) (*runtime.System, bool)
+	GetSystems() map[string]*runtime.System
 	DelSystem(systemName string)
 	UpdateFiles(systemName string, files map[string]*File) bool
 	FindSystemAndFiles(findString string) map[string][]*File

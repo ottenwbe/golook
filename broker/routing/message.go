@@ -29,19 +29,19 @@ type (
 		Key Key `json:"key"`
 	}
 
-	RequestParams string
+	Params string
 
 	RequestMessage struct {
-		Src    Source        `json:"source"`
-		Dst    Destination   `json:"destination"`
-		Method string        `json:"method"`
-		Params RequestParams `json:"params"`
+		Src    Source      `json:"source"`
+		Dst    Destination `json:"destination"`
+		Method string      `json:"method"`
+		Params Params      `json:"params"`
 	}
 
 	ResponseMessage struct {
 		Src      Source `json:"source"`
 		Receiver Source `json:"receiver"`
-		Params   string `json:"params"`
+		Params   Params `json:"params"`
 	}
 )
 
@@ -50,18 +50,27 @@ func NewRequestMessage(key Key, reqId int, method string, params interface{}) (*
 	if err != nil {
 		return nil, err
 	}
-	return &RequestMessage{Method: method, Params: RequestParams(p), Dst: Destination{Key: key}, Src: Source{Id: reqId, System: GolookSystem.UUID}}, nil
+	return &RequestMessage{
+		Method: method,
+		Params: Params(p),
+		Dst:    Destination{Key: key},
+		Src:    Source{Id: reqId, System: GolookSystem.UUID},
+	}, nil
 }
 
-func NewResponseMessage(rm *RequestMessage, params interface{}) (*ResponseMessage, error) {
+func NewResponseMessage(src Source, params interface{}) (*ResponseMessage, error) {
 	p, err := MarshalS(params)
 	if err != nil {
 		return nil, err
 	}
-	return &ResponseMessage{Src: rm.Src, Receiver: Source{Id: 0, System: GolookSystem.UUID}, Params: p}, nil
+	return &ResponseMessage{
+		Src:      src,
+		Receiver: Source{Id: 0, System: GolookSystem.UUID},
+		Params:   Params(p),
+	}, nil
 }
 
-func (p RequestParams) Unmarshal(v interface{}) error {
+func (p Params) Unmarshal(v interface{}) error {
 	log.Debugf("Unmarshalling: %s", string(p))
 	err := Unmarshal(string(p), v)
 	return err

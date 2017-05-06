@@ -43,7 +43,7 @@ var _ = Describe("The file monitor", func() {
 		fm = &FileMonitor{
 			reporter: tr.reportHandler,
 		}
-		fm.Start()
+		fm.Open()
 	})
 
 	AfterEach(func() {

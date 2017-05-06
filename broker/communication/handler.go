@@ -11,11 +11,13 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package communication
 
 import (
 	"errors"
 	"github.com/ottenwbe/golook/broker/models"
+	log "github.com/sirupsen/logrus"
 )
 
 type (
@@ -35,6 +37,7 @@ func (r *DispatcherBindings) handleMessage(router string, message models.Encapsu
 	if reg, ok := (*r)[router]; ok && reg.handler != nil {
 		return reg.handler.Handle(router, message), nil
 	} else {
+		log.Info("Method dropped before handing it over to handler. No handler registered.")
 		return nil, errors.New("Method dropped before handing it over to handler. No handler registered.")
 	}
 

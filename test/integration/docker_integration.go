@@ -12,52 +12,70 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
+// based on https://divan.github.io/posts/integration_testing/
+
 package integration
 
 import (
-	"time"
-
-	"github.com/fsouza/go-dockerclient"
-
 	"errors"
 	"fmt"
+	"github.com/fsouza/go-dockerclient"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"time"
 )
 
-// based on https://divan.github.io/posts/integration_testing/
+type DockerizedGolook struct {
+	Client    *docker.Client
+	Container *docker.Container
+}
+
+func (d *DockerizedGolook) Init() {
+	var err error
+
+	d.Client, err = docker.NewClientFromEnv()
+	failOnError(err, "Cannot connect to Docker daemon")
+
+	d.Container, err = d.Client.CreateContainer(createOptions("golook:latest"))
+	failOnError(err, "Cannot create Docker Container; make sure docker daemon is started: %s")
+
+}
+
+func (d *DockerizedGolook) Start() {
+	var err error
+	err = d.Client.StartContainer(d.Container.ID, &docker.HostConfig{})
+	failOnError(err, "Cannot start Docker Container")
+
+	d.Container, err = GetContainerInfo(d.Client, d.Container)
+	failOnError(err, "Cannot inspect the Container.")
+
+	waitForGolook(d.Container.NetworkSettings.IPAddress, 5*time.Second)
+
+}
+
+func (d *DockerizedGolook) Stop() {
+	if d.Client != nil {
+		if err := d.Client.RemoveContainer(docker.RemoveContainerOptions{
+			ID:    d.Container.ID,
+			Force: true,
+		}); err != nil {
+			log.Fatalf("cannot remove Container: %s", err)
+		}
+	}
+}
 
 func RunPeerInDocker(f func(client *docker.Client, container *docker.Container)) {
 	var (
-		client    *docker.Client
-		container *docker.Container
-		err       error
+		d = &DockerizedGolook{}
 	)
 
-	client, err = docker.NewClientFromEnv()
-	failOnError(err, "Cannot connect to Docker daemon")
+	d.Init()
+	//ensure Container stops again
+	defer d.Stop()
 
-	container, err = client.CreateContainer(createOptions("golook:latest"))
-	failOnError(err, "Cannot create Docker container; make sure docker daemon is started: %s")
+	d.Start()
 
-	defer func() { //ensure container stops again
-		if err := client.RemoveContainer(docker.RemoveContainerOptions{
-			ID:    container.ID,
-			Force: true,
-		}); err != nil {
-			log.Fatalf("cannot remove container: %s", err)
-		}
-	}()
-
-	err = client.StartContainer(container.ID, &docker.HostConfig{})
-	failOnError(err, "Cannot start Docker container")
-
-	container, err = GetContainerInfo(client, container)
-	failOnError(err, "Cannot inspect the container.")
-
-	waitForGolook(container.NetworkSettings.IPAddress, 5*time.Second)
-
-	f(client, container)
+	f(d.Client, d.Container)
 }
 
 func createOptions(containerName string) docker.CreateContainerOptions {
@@ -75,7 +93,7 @@ func createOptions(containerName string) docker.CreateContainerOptions {
 }
 
 func GetContainerInfo(client *docker.Client, container *docker.Container) (information *docker.Container, err error) {
-	// wait for container to wake up
+	// wait for Container to wake up
 	err = waitForDocker(client, container.ID, 5*time.Second)
 	if err != nil {
 		return nil, err
@@ -98,7 +116,7 @@ func waitForDocker(client *docker.Client, id string, maxWait time.Duration) erro
 		}
 		time.Sleep(100 * time.Millisecond)
 	}
-	return fmt.Errorf("Cannot start container %s for %v", id, maxWait)
+	return fmt.Errorf("Cannot start Container %s for %v", id, maxWait)
 }
 
 func waitForGolook(ip string, maxWait time.Duration) error {
@@ -111,7 +129,7 @@ func waitForGolook(ip string, maxWait time.Duration) error {
 		}
 		time.Sleep(100 * time.Millisecond)
 	}
-	return errors.New("Golook is not starting up in container.")
+	return errors.New("Golook is not starting up in Container.")
 }
 
 func failOnError(err error, message string) error {

@@ -17,34 +17,38 @@ package routing
 import "sync"
 
 type DuplicateFilter map[int]bool
-type DuplicateMap map[string]DuplicateFilter
+type DuplicateMap struct {
+	filters      map[string]DuplicateFilter
+	duplicateMtx sync.Mutex
+}
 
-var (
-	duplicateMap DuplicateMap = make(DuplicateMap, 0)
-	duplicateMtx sync.Mutex   = sync.Mutex{}
-)
-
-func (m DuplicateMap) watchForDuplicatesFrom(system string) {
-	if _, ok := duplicateMap[system]; !ok {
-		duplicateMap[system] = make(DuplicateFilter, 0)
+func newDuplicateMap() *DuplicateMap {
+	return &DuplicateMap{
+		filters: make(map[string]DuplicateFilter, 0),
 	}
 }
 
-func (m DuplicateMap) isDuplicate(source Source) bool {
-	ok := m[source.System][source.Id]
+func (m *DuplicateMap) watchForDuplicatesFrom(system string) {
+	if _, ok := m.filters[system]; !ok {
+		m.filters[system] = make(DuplicateFilter, 0)
+	}
+}
+
+func (m *DuplicateMap) isDuplicate(source Source) bool {
+	ok := m.filters[source.System][source.Id]
 	return ok
 }
 
-func (m DuplicateMap) add(source Source) {
-	m[source.System][source.Id] = true
+func (m *DuplicateMap) add(source Source) {
+	m.filters[source.System][source.Id] = true
 }
 
 /*
 CheckForDuplicates returns false if called multiple times the same (id and system-uuid) of a source. Otherwise it will return true.
 */
-func (m DuplicateMap) CheckForDuplicates(source Source) bool {
-	duplicateMtx.Lock()
-	defer duplicateMtx.Unlock()
+func (m *DuplicateMap) CheckForDuplicates(source Source) bool {
+	m.duplicateMtx.Lock()
+	defer m.duplicateMtx.Unlock()
 
 	m.watchForDuplicatesFrom(source.System)
 	result := m.isDuplicate(source)

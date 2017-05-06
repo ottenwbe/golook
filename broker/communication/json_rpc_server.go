@@ -67,7 +67,7 @@ func (rpc *JsonRPCServerStub) Associate(handlerName string, request interface{},
 }
 
 func (rpc *JsonRPCServerStub) Finalize() {
-	//Unfortuanetely jsonrpc has no method for removing a registered function, therefore we only mark it as deleted
+	//Unfortunately jsonrpc has no method for removing a registered function, therefore we only mark it as deleted
 	rpc.active = false
 }
 

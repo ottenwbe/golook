@@ -26,10 +26,11 @@ BroadCastRouter implements a router which by default delivers ALL messages to it
 means that direct message requests (see Route) are also flooded.
 */
 type BroadCastRouter struct {
+	name          string
 	routeTable    RouteTable
 	routeHandlers HandlerTable
-	name          string
 	reqId         int
+	duplicateMap  *DuplicateMap
 }
 
 func newBroadcastRouter(name string) Router {
@@ -38,19 +39,22 @@ func newBroadcastRouter(name string) Router {
 		routeHandlers: HandlerTable{},
 		name:          name,
 		reqId:         0,
+		duplicateMap:  newDuplicateMap(),
 	}
 }
 
-func (router *BroadCastRouter) BroadCast(method string, message interface{}) interface{} {
+func (router *BroadCastRouter) BroadCast(method string, message interface{}) models.EncapsulatedValues {
 
 	m, err := NewRequestMessage(NilKey(), router.nextRequestId(), method, message)
 	if err != nil {
-		log.WithError(err).Error("Request Message could not be created")
+		routerLogger(router, method).WithError(err).Error("Cannot create Request Message.")
 		return nil
 	}
 
+	// disseminate message to all peers
 	response := router.disseminate(m)
 	if response == nil {
+		routerLogger(router, method).Error("Response was nil.")
 		return nil
 	}
 
@@ -65,52 +69,62 @@ func (router *BroadCastRouter) nextRequestId() int {
 
 func (router *BroadCastRouter) disseminate(m *RequestMessage) *ResponseMessage {
 	var (
-		responseChannel                   = make(chan *ResponseMessage)
-		goRoutineCounter                  = 0
-		responseCounter                   = 0
-		result           *ResponseMessage = nil
+		responseChannel = make(chan *ResponseMessage)
+		sendCounter     int
+		responseCounter int
 	)
 
-	// forward message to all registered peerClients concurrently
+	// send message to all registered peerClients---concurrently
 	for _, client := range router.routeTable.peers() {
-		go forward(client, m, router.name, responseChannel)
-		goRoutineCounter += 1
+		go router.send(client, m, responseChannel)
+		sendCounter += 1
 	}
 
-	// wait for the first successful response (result != nil) or until all client requests responded
-	for result == nil && responseCounter < goRoutineCounter {
-		result = <-responseChannel
+	var result, newMsg *ResponseMessage
+	// wait until all client requests responded
+	for responseCounter < sendCounter {
+		newMsg = <-responseChannel
 		responseCounter += 1
-	}
 
+		result = router.merge(result, newMsg, m.Method)
+	}
 	return result
 }
 
-func forward(client com.RpcClient, request *RequestMessage, router string, responseChannel chan *ResponseMessage) {
-	log.WithField("router", router).Infof("Routing message to client: %s", client.Url())
+func (router *BroadCastRouter) send(client com.RpcClient, request *RequestMessage, responseChannel chan *ResponseMessage) {
+	routerLogger(router, request.Method).Debugf("Routing message to client: %s", client.Url())
 
 	// Make the call
-	tmpResponse, err := client.Call(router, *request)
+	tmpResponse, err := client.Call(router.Name(), *request)
 	if tmpResponse != nil && err == nil {
 		actualResponse := &ResponseMessage{}
 		tmpResponse.Unmarshal(actualResponse)
 		responseChannel <- actualResponse
 	} else {
-		log.WithError(err).Errorf("Error while routing message to client: %s", client.Url())
+		routerLogger(router, request.Method).WithError(err).Errorf("Error while routing message to client: %s", client.Url())
 		responseChannel <- nil
 	}
 }
 
-func (router *BroadCastRouter) Route(_ Key, method string, message interface{}) (result interface{}) {
-	return router.BroadCast(method, message)
-}
+func (router *BroadCastRouter) merge(oldMsg *ResponseMessage, newMsg *ResponseMessage, handlerName string) *ResponseMessage {
 
-func (router *BroadCastRouter) NewPeer(key Key, url string) {
-	if _, found := router.routeTable.get(key); !found {
-		log.WithField("router", router.name).WithField("peer", url).Info("New neighbor.")
-		peer := com.NewRPCClient(url)
-		router.routeTable.add(key, peer)
+	routerLogger(router, handlerName).Debugf("Merging messages.")
+
+	if oldMsg == nil {
+		routerLogger(router, handlerName).Debugf("Old message is nil.")
+		return newMsg
+	} else if newMsg == nil {
+		routerLogger(router, handlerName).Debugf("New message is nil.")
+		return oldMsg
 	}
+
+	// merge results on the fly; logic for merging has to be implemented by the "upper layer", e.g., the service layer
+	if mergeCallback := router.routeHandlers[handlerName].mergeCallback; mergeCallback != nil {
+		params := mergeCallback(oldMsg.Params, newMsg.Params)
+		return newResponseCopy(params, newMsg)
+	}
+
+	return oldMsg
 }
 
 func (router *BroadCastRouter) Handle(routerName string, msg models.EncapsulatedValues) interface{} {
@@ -120,16 +134,21 @@ func (router *BroadCastRouter) Handle(routerName string, msg models.Encapsulated
 		request  = RequestMessage{}
 	)
 
+	routerLoggerS(router).Debugf("Handle message.", routerName)
+
 	// cast request to RequestMessage from interface and verify it is a valid request
 	if err := msg.Unmarshal(&request); err != nil {
-		log.WithField("router", router.Name()).WithError(err).Infof("Could not read request while handling message.")
+		routerLoggerS(router).WithError(err).Infof("Cannot read request while handling message.")
 		return nil
 	}
 
 	// ignore duplicates to ensure an at least once semantic
-	if duplicateMap.CheckForDuplicates(request.Src) {
+	if router.duplicateMap.CheckForDuplicates(request.Src) {
+		routerLoggerS(router).WithField("src", request.Src.Id).Info("Dropped duplicate.")
 		return nil
 	}
+
+	log.WithField("router", router.Name()).Infof("No duplicate for: %s", routerName)
 
 	// callback to upper layer
 	responseParams := router.deliver(request.Method, request.Params)
@@ -137,41 +156,32 @@ func (router *BroadCastRouter) Handle(routerName string, msg models.Encapsulated
 
 	// treat every message as BroadcastRouter, therefore:
 	// forward message to all other peerClients
-	floodingResponse := router.disseminate(&request)
+	broadcastResponse := router.disseminate(&request)
 
 	// chooseResponse one result
-	response = chooseResponse(response, floodingResponse)
+	response = router.merge(response, broadcastResponse, request.Method)
 
 	return *response
 }
 
-func chooseResponse(message *ResponseMessage, contender *ResponseMessage) *ResponseMessage {
-	if contender == nil || contender.Params == "{}" || contender.Params == "" {
-		return message
-	}
-	if message == nil || message.Params == "{}" || message.Params == "" {
-		return contender
-	}
-	return message
+func (router *BroadCastRouter) Route(_ Key, method string, message interface{}) (result interface{}) {
+	return router.BroadCast(method, message)
 }
 
-func newResponse(responseParams interface{}, requestMsg *RequestMessage) (result *ResponseMessage) {
-
-	if responseParams == nil {
-		// Error ignored on purpose since result is nil anyway
-		result, _ = NewResponseMessage(requestMsg, "{}")
-	} else {
-		result, _ = NewResponseMessage(requestMsg, responseParams)
+func (router *BroadCastRouter) NewPeer(key Key, url string) {
+	if _, found := router.routeTable.get(key); !found {
+		routerLoggerS(router).WithField("peer", url).Info("New neighbor.")
+		peer := com.NewRPCClient(url)
+		router.routeTable.add(key, peer)
 	}
-
-	return result
 }
 
 func (router *BroadCastRouter) deliver(method string, params models.EncapsulatedValues) interface{} {
 	if handler, ok := router.routeHandlers[method]; ok {
-		return handler(params)
+		routerLogger(router, method).Info("Deliver message to handler.")
+		return handler.requestHandler(params)
 	} else {
-		log.Errorf("Handler for method %s not found in router %s", method, router.name)
+		routerLogger(router, method).Error("Handler not found.")
 	}
 	return nil
 }
@@ -184,9 +194,35 @@ func (router *BroadCastRouter) Name() string {
 }
 
 /*
-HandlerFunction registers a handler with the router. The handler is called when a message for this handler arrives.
+AddHandler registers a handler with the router. The handler is called when a message for this handler arrives.
 */
-func (router *BroadCastRouter) HandlerFunction(name string, handler func(params models.EncapsulatedValues) interface{}) {
-	log.WithField("router", router.Name()).WithField("handler", name).Info("Router registered new callback.")
+func (router *BroadCastRouter) AddHandler(name string, handler *Handler) {
+	routerLoggerS(router).WithField("handler", name).Info("Router registered new callback.")
 	router.routeHandlers[name] = handler
+}
+
+func newResponseCopy(responseParams interface{}, orig *ResponseMessage) *ResponseMessage {
+
+	if orig == nil {
+		return nil
+	}
+
+	result, err := NewResponseMessage(orig.Src, responseParams)
+	if err != nil {
+		return nil
+	}
+
+	return result
+}
+
+func newResponse(responseParams interface{}, requestMsg *RequestMessage) (result *ResponseMessage) {
+
+	if responseParams == nil {
+		// Error ignored on purpose: result is nil in this error case, which is the expected behaviour of newResponse
+		result, _ = NewResponseMessage(requestMsg.Src, "{}")
+	} else {
+		result, _ = NewResponseMessage(requestMsg.Src, responseParams)
+	}
+
+	return result
 }

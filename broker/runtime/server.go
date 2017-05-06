@@ -20,6 +20,7 @@ import (
 	"errors"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
+	"net"
 	"reflect"
 	"sync"
 )
@@ -27,12 +28,16 @@ import (
 type (
 	Server interface {
 		StartServer(wg *sync.WaitGroup)
+		Stop()
 		Info() map[string]interface{}
+		Name() string
+		IsRunning() bool
 	}
 	HTTPSever struct {
-		Address string
-		server  *http.Server
-		router  http.Handler
+		Address  string
+		server   *http.Server
+		router   http.Handler
+		listener net.Listener
 	}
 )
 
@@ -46,7 +51,7 @@ var (
 	servers = []Server{}
 )
 
-func GetOrCreate(address string, serverType ServerType) (server Server) {
+func NewServer(address string, serverType ServerType) (server Server) {
 	switch serverType {
 	case ServerHttp:
 		server = &HTTPSever{
@@ -65,6 +70,14 @@ func GetOrCreate(address string, serverType ServerType) (server Server) {
 	return server
 }
 
+func (s *HTTPSever) Name() string {
+	return s.Address
+}
+
+func (s *HTTPSever) IsRunning() bool {
+	return s.server != nil
+}
+
 func (s *HTTPSever) StartServer(wg *sync.WaitGroup) {
 	if wg == nil || s.router == nil || s.Address == "" {
 		log.Error("Http server cannot be started. Please ensure that all parameters are set: Address and router. Moreover, ensure that a wg is provided during startup.")
@@ -74,16 +87,21 @@ func (s *HTTPSever) StartServer(wg *sync.WaitGroup) {
 
 	s.server = &http.Server{Addr: s.Address, Handler: s.router}
 
+	var err error
+	// make our own listener
+	s.listener, err = net.Listen("tcp", s.Address)
+	if err != nil {
+		log.Panic(err)
+	}
+
 	// start the httpServer and listen
-	log.Fatal(s.server.ListenAndServe())
+	log.Error(s.server.Serve(s.listener))
 }
 
-//func (s *LookSever) StopServer() error {
-//TODO: wait for graceful shutdown in go 1.8
-// 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-//	defer cancel()
-//	s.server.Shutdown(ctx)
-//}
+func (s *HTTPSever) Stop() {
+	s.listener.Close()
+	s.server = nil
+}
 
 /*
 RegisterFunction registers an endpoint and the corresponding controller for a specific http method.
@@ -151,4 +169,21 @@ func RunServer() {
 	}
 
 	wg.Wait()
+}
+
+func StopServer() {
+	for _, server := range servers {
+		go server.Stop()
+	}
+}
+
+/**
+GetServer returns a list of registered servers
+*/
+func ServerState() map[string]bool {
+	result := map[string]bool{}
+	for _, server := range servers {
+		result[reflect.TypeOf(server).String()+"/"+server.Name()] = server.IsRunning()
+	}
+	return result
 }

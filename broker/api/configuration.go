@@ -15,11 +15,9 @@
 package api
 
 import (
-	"net/http"
-
 	golook "github.com/ottenwbe/golook/broker/runtime"
-
 	"github.com/spf13/viper"
+	"net/http"
 )
 
 /*
@@ -35,6 +33,8 @@ const (
 	/*FilePath in an url*/
 	FilePath = "file"
 
+	/*SystemEndpoint is the base url for querying and monitoring files*/
+	SystemEndpoint = GolookAPIVersion + "/system"
 	/*FileEndpoint is the base url for querying and monitoring files*/
 	FileEndpoint = GolookAPIVersion + "/file"
 	/*QueryEndpoint is the url for querying files*/
@@ -53,13 +53,14 @@ const (
 ApplyConfiguration applies the configuration
 */
 func ApplyConfiguration() {
-	HTTPServer = golook.GetOrCreate(viper.GetString("api.server.address"), golook.ServerHttp)
+	HTTPServer = golook.NewServer(viper.GetString("api.server.address"), golook.ServerHttp)
 
 	HTTPServer.(*golook.HTTPSever).RegisterFunction(FileEndpoint, putFile, http.MethodPut)
 	HTTPServer.(*golook.HTTPSever).RegisterFunction(QueryEndpoint, getFiles, http.MethodGet)
 	HTTPServer.(*golook.HTTPSever).RegisterFunction(ConfigEndpoint, getConfiguration, http.MethodGet)
 	HTTPServer.(*golook.HTTPSever).RegisterFunction(HTTPApiEndpoint, getAPI, http.MethodGet)
 	HTTPServer.(*golook.HTTPSever).RegisterFunction(LogEndpoint, getLog, http.MethodGet)
+	HTTPServer.(*golook.HTTPSever).RegisterFunction(SystemEndpoint, getSystem, http.MethodGet)
 
 	if viper.GetBool("api.info") {
 		HTTPServer.(*golook.HTTPSever).RegisterFunction(InfoEndpoint, getInfo, http.MethodGet)

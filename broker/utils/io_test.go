@@ -22,7 +22,7 @@ import (
 
 var _ = Describe("The io utils", func() {
 
-	It("can intercept messages written  by functions to os.Stdout and return them as string instead.", func() {
+	It("can intercept messages printed by functions to os.Stdout and return them as string instead.", func() {
 		testResult := InterceptStdOut(func() {
 			fmt.Print("test")
 		})

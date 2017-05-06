@@ -16,7 +16,9 @@ package cmd
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/ottenwbe/golook/broker/runtime"
 	"github.com/spf13/cobra"
+	"time"
 )
 
 var _ = Describe("The root command", func() {
@@ -36,5 +38,17 @@ var _ = Describe("The root command", func() {
 		RootCmd = mockCmd
 		Expect(func() { Run() }).To(Panic())
 		RootCmd = tmp
+	})
+
+	It("should start the servers when executed.", func() {
+
+		go RootCmd.Run(nil, nil)
+		//Wait for root command in go
+		time.Sleep(time.Millisecond * 600)
+
+		Expect(len(runtime.ServerState())).To(BeNumerically(">=", 2))
+		Expect(runtime.ServerState()).ToNot(ContainElement(false))
+
+		runtime.StopServer()
 	})
 })

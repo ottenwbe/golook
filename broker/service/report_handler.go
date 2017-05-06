@@ -15,7 +15,6 @@
 package service
 
 import (
-	"fmt"
 	"github.com/ottenwbe/golook/broker/models"
 	. "github.com/ottenwbe/golook/broker/repository"
 	log "github.com/sirupsen/logrus"
@@ -28,21 +27,23 @@ const (
 func handleFileReport(params models.EncapsulatedValues) interface{} {
 	var (
 		fileMessage PeerFileReport
-		response    PeerResponse
+		response    FileQueryData
 	)
+
+	log.Debug("New file report.")
 
 	if err := params.Unmarshal(&fileMessage); err == nil {
 		response = processFileReport(&fileMessage)
 	} else {
 		log.WithError(err).Error("Cannot handle file report.")
-		response = PeerResponse{Error: true, Message: "Malformed file report", Data: nil}
+		response = FileQueryData{}
 	}
 
 	return response
 }
 
-func processFileReport(fileMessage *PeerFileReport) (response PeerResponse) {
-	response.Error = !GoLookRepository.UpdateFiles(fileMessage.System, fileMessage.Files)
-	response.Message = fmt.Sprintf("Processed file report for system %s", fileMessage.System)
-	return
+func processFileReport(fileMessage *PeerFileReport) (response FileQueryData) {
+	log.Debug("Update file for: %s", fileMessage.System)
+	GoLookRepository.UpdateFiles(fileMessage.System, fileMessage.Files)
+	return FileQueryData{}
 }

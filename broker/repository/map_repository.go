@@ -17,12 +17,29 @@ package repositories
 import (
 	. "github.com/ottenwbe/golook/broker/models"
 	"github.com/ottenwbe/golook/broker/runtime"
+	"github.com/sirupsen/logrus"
 	"strings"
+	"sync"
 )
 
-type MapRepository map[string]*SystemFiles
+type systemFilesMap map[string]*SystemFiles
+
+type MapRepository struct {
+	systemFiles systemFilesMap
+	mutex       sync.RWMutex
+}
+
+func newMapRepository() *MapRepository {
+	return &MapRepository{
+		systemFiles: make(systemFilesMap, 0),
+		mutex:       sync.RWMutex{},
+	}
+}
 
 func (repo *MapRepository) StoreSystem(name string, system *runtime.System) bool {
+	repo.mutex.Lock()
+	defer repo.mutex.Unlock()
+
 	sys := repo.getOrCreateSystem(name)
 	if system != nil {
 		sys.System = system
@@ -32,6 +49,9 @@ func (repo *MapRepository) StoreSystem(name string, system *runtime.System) bool
 }
 
 func (repo *MapRepository) UpdateFiles(name string, files map[string]*File) bool {
+	repo.mutex.Lock()
+	defer repo.mutex.Unlock()
+
 	sys := repo.getOrCreateSystem(name)
 	if sys.Files == nil {
 		sys.Files = make(map[string]*File, 0)
@@ -47,16 +67,28 @@ func (repo *MapRepository) UpdateFiles(name string, files map[string]*File) bool
 
 }
 func (repo *MapRepository) getOrCreateSystem(name string) *SystemFiles {
-	sys, ok := (*repo)[name]
+
+	sys, ok := (repo.systemFiles)[name]
 	if !ok {
 		sys = &SystemFiles{}
-		(*repo)[name] = sys
+		(repo.systemFiles)[name] = sys
+	}
+	return sys
+}
+
+func (repo *MapRepository) GetSystems() map[string]*runtime.System {
+	sys := map[string]*runtime.System{}
+	for id, s := range repo.systemFiles {
+		sys[id] = s.System
 	}
 	return sys
 }
 
 func (repo *MapRepository) GetSystem(systemName string) (sys *runtime.System, ok bool) {
-	system, found := (*repo)[systemName]
+	repo.mutex.RLock()
+	defer repo.mutex.RUnlock()
+
+	system, found := (repo.systemFiles)[systemName]
 	if found {
 		sys = system.System
 	}
@@ -64,11 +96,17 @@ func (repo *MapRepository) GetSystem(systemName string) (sys *runtime.System, ok
 }
 
 func (repo *MapRepository) DelSystem(systemName string) {
-	delete(*repo, systemName)
+	repo.mutex.Lock()
+	defer repo.mutex.Unlock()
+
+	delete(repo.systemFiles, systemName)
 }
 
 func (repo *MapRepository) GetFiles(systemName string) map[string]*File {
-	if sys, found := (*repo)[systemName]; found {
+	repo.mutex.RLock()
+	defer repo.mutex.RUnlock()
+
+	if sys, found := (repo.systemFiles)[systemName]; found {
 		return sys.Files
 	}
 	return map[string]*File{}
@@ -76,9 +114,14 @@ func (repo *MapRepository) GetFiles(systemName string) map[string]*File {
 
 //TODO refactor
 func (repo *MapRepository) FindSystemAndFiles(findString string) map[string][]*File {
+	repo.mutex.RLock()
+	defer repo.mutex.RUnlock()
+
 	result := make(map[string][]*File, 0)
-	for sid, system := range *repo {
+	for sid, system := range repo.systemFiles {
+		logrus.Info("MapRepository: search for system %s", system)
 		for _, file := range system.Files {
+			logrus.Info("MapRepository: compare %s vs %", file.Name, findString)
 			if strings.Contains(file.Name, findString) {
 				if _, ok := result[sid]; !ok {
 					result[sid] = make([]*File, 0)

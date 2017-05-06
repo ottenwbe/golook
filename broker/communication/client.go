@@ -16,6 +16,9 @@ package communication
 
 import . "github.com/ottenwbe/golook/broker/models"
 
+/*
+RpcClient is the basic interface for all rpc client implementations.
+*/
 type RpcClient interface {
 	Call(index string, message interface{}) (EncapsulatedValues, error)
 	Url() string

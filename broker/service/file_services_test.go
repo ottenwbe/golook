@@ -20,14 +20,17 @@ import (
 )
 
 var _ = Describe("The file services", func() {
-	It("create a pair of report and query service", func() {
+	It("can create a file service where all files are broadcast.", func() {
 		OpenFileServices(BroadcastFiles)
-		r, q := ReportService, QueryService
+		defer CloseFileServices()
+		Expect(FileServices).ToNot(BeNil())
+		Expect(reflect.TypeOf(FileServices).String()).ToNot(Equal(reflect.TypeOf(scenarioBroadcastFiles{}).String()))
+	})
 
-		Expect(r).ToNot(BeNil())
-		Expect(q).ToNot(BeNil())
-
-		Expect(reflect.TypeOf(r).String()).To(Equal(reflect.TypeOf(&broadcastReportService{}).String()))
-		Expect(reflect.TypeOf(q).String()).To(Equal(reflect.TypeOf(&localQueryService{}).String()))
+	It("can create a file service where all queries are boradcast.", func() {
+		OpenFileServices(BroadcastQueries)
+		defer CloseFileServices()
+		Expect(FileServices).ToNot(BeNil())
+		Expect(reflect.TypeOf(FileServices).String()).ToNot(Equal(reflect.TypeOf(scenarioBroadcastQueries{}).String()))
 	})
 })

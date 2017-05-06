@@ -29,7 +29,7 @@ func ApplyCommunicationConfiguration() {
 	port = viper.GetInt("communication.jsonrpc.client.port")
 
 	serverType = viper.GetString("communication.server.type")
-	HttpRpcServer = golook.GetOrCreate(viper.GetString("communication.jsonrpc.server.address"), golook.ServerHttp)
+	HttpRpcServer = golook.NewServer(viper.GetString("communication.jsonrpc.server.address"), golook.ServerHttp)
 	HttpRpcServer.(*golook.HTTPSever).RegisterFunction("/rpc", jsonrpcServer.HandlerFunc, http.MethodGet, http.MethodPost)
 	HttpRpcServer.(*golook.HTTPSever).RegisterFunction("/rpc/debug", jsonrpcServer.DebugHandlerFunc, http.MethodGet, http.MethodPost)
 }

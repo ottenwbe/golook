@@ -14,6 +14,10 @@
 
 package models
 
+/*
+FileReport comprises the data which is sent from a client (e.g., the cli) to the server in order to report a file or folder.
+*/
 type FileReport struct {
-	Path string `json:"name"`
+	Path   string `json:"name"`
+	Delete bool   `json:"delete"`
 }

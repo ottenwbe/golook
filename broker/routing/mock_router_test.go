@@ -43,8 +43,8 @@ var _ = Describe("The mocked router", func() {
 			Expect(router.VisitedMethod).To(Equal("test_route"))
 		})
 
-		It("should increase the Visited flag with each call to HandlerFunction", func() {
-			router.HandlerFunction("test_handler", nil)
+		It("should increase the Visited flag with each call to AddHandler", func() {
+			router.AddHandler("test_handler", nil)
 			Expect(router.Visited).To(Equal(1))
 			Expect(router.VisitedMethod).To(Equal("test_handler"))
 		})

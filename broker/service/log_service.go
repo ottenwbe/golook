@@ -17,11 +17,10 @@ package service
 import (
 	"errors"
 	"fmt"
-	"io"
-	"os"
-
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"io"
+	"os"
 )
 
 const defaultLogFileName = "golook.log"
@@ -32,7 +31,7 @@ func RewriteLog(writer io.Writer) error {
 
 	f, err := os.Open(logFileName)
 	if os.IsNotExist(err) {
-		// when no log file exists, write nothing to the io.Writer
+		// when no log file exists, write nothing to the io.Writer and return
 		return nil
 	} else if err != nil {
 		return err
@@ -81,6 +80,7 @@ func ApplyLoggingConfig() {
 }
 
 func InitLogging() {
+
 	viper.SetDefault("log.level", "info")
 	viper.SetDefault("log.file", defaultLogFileName)
 }

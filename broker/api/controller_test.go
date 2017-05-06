@@ -36,11 +36,12 @@ var _ = Describe("The management endpoint", func() {
 		rr *httptest.ResponseRecorder
 		m  *mux.Router
 
-		testHTTPCall = func(req *http.Request, path string, f func(http.ResponseWriter, *http.Request)) {
+		testHTTPCall = func(req *http.Request, path string, f func(http.ResponseWriter, *http.Request)) *httptest.ResponseRecorder {
 			rr = httptest.NewRecorder()
 			m = mux.NewRouter()
 			m.HandleFunc(path, f)
 			m.ServeHTTP(rr, req)
+			return rr
 		}
 	)
 
@@ -52,6 +53,31 @@ var _ = Describe("The management endpoint", func() {
 	AfterEach(func() {
 		service.CloseFileServices()
 		service.OpenFileServices(service.BroadcastFiles)
+	})
+
+	Context(SystemEndpoint, func() {
+		It("should return the system's stored on this machine", func() {
+			ApplyConfiguration() //Ensure server is up
+
+			req, err := http.NewRequest(http.MethodGet, SystemEndpoint, nil)
+			testHTTPCall(req, SystemEndpoint, getSystem)
+
+			Expect(err).To(BeNil())
+			Expect(rr.Code).To(Equal(http.StatusOK))
+		})
+	})
+
+	Context(ConfigEndpoint, func() {
+		It("should return the configuration", func() {
+			ApplyConfiguration() //Ensure server is up
+
+			req, err := http.NewRequest(http.MethodGet, ConfigEndpoint, nil)
+			testHTTPCall(req, ConfigEndpoint, getConfiguration)
+
+			Expect(err).To(BeNil())
+			Expect(rr.Code).To(Equal(http.StatusOK))
+
+		})
 	})
 
 	Context(HTTPApiEndpoint, func() {
@@ -126,7 +152,7 @@ var _ = Describe("The management endpoint", func() {
 			testHTTPCall(req, FileEndpoint, putFile)
 
 			Expect(err).To(BeNil())
-			Expect(service.ReportService.(*service.MockReportService).FileReport).To(BeNil())
+			Expect(service.AccessMockedReportService(service.FileServices).FileReport).To(BeNil())
 			Expect(rr.Code).To(Equal(http.StatusBadRequest))
 		})
 
@@ -142,7 +168,7 @@ var _ = Describe("The management endpoint", func() {
 
 			Expect(err).To(BeNil())
 			Expect(rr.Code).To(Equal(http.StatusOK))
-			Expect(*service.ReportService.(*service.MockReportService).FileReport).To(Equal(*fp))
+			Expect(*service.AccessMockedReportService(service.FileServices).FileReport).To(Equal(*fp))
 
 		})
 
@@ -154,12 +180,23 @@ var _ = Describe("The management endpoint", func() {
 			Expect(err).To(BeNil())
 			Expect(rr.Code).To(Equal(http.StatusOK))
 			Expect(rr.Body.String()).To(Equal("{}"))
-			Expect(service.QueryService.(*service.MockQueryService).SearchString).To(Equal("test.txt"))
+			Expect(service.AccessMockedQueryService(service.FileServices).SearchString).To(Equal("test.txt"))
 		})
 	})
 })
 
 type testHTTPServer struct {
+}
+
+func (*testHTTPServer) Stop() {
+}
+
+func (*testHTTPServer) Name() string {
+	return ""
+}
+
+func (*testHTTPServer) IsRunning() bool {
+	return true
 }
 
 func (*testHTTPServer) StartServer(_ *sync.WaitGroup) {

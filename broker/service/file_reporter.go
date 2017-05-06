@@ -26,29 +26,29 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func broadcastLocalFiles() {
+func broadcastLocalFiles(broadCastRouter *Router) {
 	files := repositories.GoLookRepository.GetFiles(GolookSystem.UUID)
-	broadcastFiles(files)
+	broadcastFiles(files, broadCastRouter)
 }
 
-func broadcastFiles(files map[string]*File) {
+func broadcastFiles(files map[string]*File, broadCastRouter *Router) {
 	peerFileReport := &PeerFileReport{Files: files, System: GolookSystem.UUID}
 	broadCastRouter.BroadCast(fileReport, peerFileReport)
 }
 
-func reportFileChanges(filePath string) {
-	files := localFileReport(filePath)
-	broadcastFiles(files)
+func reportFileChanges(filePath string, broadCastRouter *Router) {
+	files := localFileReport(filePath, false)
+	broadcastFiles(files, broadCastRouter)
 }
 
 /*
 reportFileChangesLocal is a wrapper around localFileReport
 */
 func reportFileChangesLocal(filePath string) {
-	localFileReport(filePath)
+	localFileReport(filePath, false)
 }
 
-func localFileReport(filePath string) map[string]*File {
+func localFileReport(filePath string, _ bool) map[string]*File {
 
 	var (
 		files = map[string]*File{}

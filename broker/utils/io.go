@@ -20,7 +20,9 @@ import (
 	"os"
 )
 
-//see https://play.golang.org/p/fXpK0ZhXXf
+/*
+InterceptStdOut intercepts messages before they are printed to std out. It is based on: https://play.golang.org/p/fXpK0ZhXXf.
+*/
 func InterceptStdOut(f func()) string {
 
 	defer func(reset *os.File) {

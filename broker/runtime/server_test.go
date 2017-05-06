@@ -13,3 +13,39 @@
 //limitations under the License.
 
 package runtime
+
+import (
+	"github.com/gorilla/mux"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"sync"
+	"time"
+)
+
+var _ = Describe("The server", func() {
+
+	Context("Glob", func() {
+		It("can get or create servers.", func() {
+			s := NewServer(":8987", ServerHttp)
+			Expect(s).ToNot(BeNil())
+			Expect(servers).To(ContainElement(s))
+		})
+	})
+
+	Context("http server", func() {
+		It("can be started and the stopped", func() {
+			s := HTTPSever{}
+			s.Address = ":8765"
+			s.router = mux.NewRouter().StrictSlash(true)
+
+			var wg = sync.WaitGroup{}
+			wg.Add(1)
+			go s.StartServer(&wg)
+			time.Sleep(time.Millisecond * 300)
+			Expect(s.IsRunning()).To(BeTrue())
+			s.Stop()
+			Expect(s.IsRunning()).To(BeFalse())
+		})
+	})
+
+})

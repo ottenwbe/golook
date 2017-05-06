@@ -15,7 +15,10 @@
 package service
 
 import (
+	"github.com/ottenwbe/golook/broker/models"
+	"github.com/ottenwbe/golook/broker/repository"
 	"github.com/ottenwbe/golook/broker/utils"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -26,48 +29,111 @@ const (
 
 type (
 	queryService interface {
-		MakeFileQuery(searchString string) (interface{}, error)
+		query(searchString string) (interface{}, error)
 	}
 	localQueryService     struct{}
-	broadcastQueryService struct{}
-	MockQueryService      struct {
+	broadcastQueryService struct {
+		router *Router
+	}
+	MockQueryService struct {
 		SearchString string
 	}
+	FileQueryData map[string][]*models.File
 )
 
-func newQueryService(queryType string) queryService {
+func newQueryService(queryType string, router *Router) queryService {
 	switch queryType {
 	case MockQueries:
 		return &MockQueryService{}
 	case BCastQueries:
-		return &broadcastQueryService{}
+		return &broadcastQueryService{router: router}
 	default:
 		return &localQueryService{}
 
 	}
 }
 
-func (*localQueryService) MakeFileQuery(searchString string) (interface{}, error) {
+func (*localQueryService) query(searchString string) (interface{}, error) {
 	fq := PeerFileQuery{SearchString: searchString}
-	return string(processFileQuery(fq).Data), nil
+	return processFileQuery(fq), nil
 }
 
-func (*broadcastQueryService) MakeFileQuery(searchString string) (interface{}, error) {
+func (qs *broadcastQueryService) query(searchString string) (interface{}, error) {
 	fq := PeerFileQuery{SearchString: searchString}
-	queryResult := broadCastRouter.BroadCast(FILE_QUERY, fq)
+	queryResult := qs.router.BroadCast(fileQuery, fq)
 
-	var response PeerResponse
+	var response FileQueryData
 	err := utils.Unmarshal(queryResult, &response)
 	if err != nil {
 		return nil, err
 	}
 
-	//TODO: response error
-
-	return response.Data, nil
+	return response, nil
 }
 
-func (mock *MockQueryService) MakeFileQuery(searchString string) (interface{}, error) {
+func (mock *MockQueryService) query(searchString string) (interface{}, error) {
 	mock.SearchString = searchString
 	return "{}", nil
+}
+
+const (
+	fileQuery = "file query"
+)
+
+func mergeFileQuery(v1 models.EncapsulatedValues, v2 models.EncapsulatedValues) interface{} {
+
+	rawData1, rawData2 := getRawData(v1, v2)
+	mergedData := mergeData(rawData1, rawData2)
+
+	return mergedData
+}
+
+func mergeData(rawData1 FileQueryData, rawData2 FileQueryData) FileQueryData {
+	result := rawData1
+	for k, v := range rawData2 {
+		result[k] = v
+	}
+	return result
+}
+
+func getRawData(v1 models.EncapsulatedValues, v2 models.EncapsulatedValues) (FileQueryData, FileQueryData) {
+	var (
+		response1, response2 map[string][]*models.File
+	)
+
+	errV1 := v1.Unmarshal(&response1)
+	errV2 := v2.Unmarshal(&response2)
+
+	if errV1 != nil {
+		response1 = map[string][]*models.File{}
+	}
+	if errV2 == nil {
+		response2 = map[string][]*models.File{}
+	}
+
+	return response1, response2
+}
+
+func handleFileQuery(params models.EncapsulatedValues) interface{} {
+
+	var (
+		queryMessage PeerFileQuery
+		response     FileQueryData
+	)
+
+	err := params.Unmarshal(&queryMessage)
+
+	if err == nil {
+		response = processFileQuery(queryMessage)
+	} else {
+		log.WithError(err).Error("Could not handle file query")
+		response = FileQueryData{}
+	}
+
+	return response
+}
+
+func processFileQuery(systemMessage PeerFileQuery) FileQueryData {
+	result := repositories.GoLookRepository.FindSystemAndFiles(systemMessage.SearchString)
+	return FileQueryData(result)
 }

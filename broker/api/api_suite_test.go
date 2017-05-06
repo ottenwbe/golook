@@ -17,7 +17,7 @@ package api
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
+	log "github.com/sirupsen/logrus"
 	"testing"
 )
 
@@ -28,3 +28,10 @@ func TestApi(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Api Test Suite")
 }
+
+/*
+BeforeSuite ensures that the log level is Debug for testing
+*/
+var _ = BeforeSuite(func() {
+	log.SetLevel(log.DebugLevel)
+})

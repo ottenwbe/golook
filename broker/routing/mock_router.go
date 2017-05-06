@@ -28,7 +28,7 @@ func (lr *MockRouter) NewPeer(key Key, url string) {
 	lr.Visited += 1
 }
 
-func (lr *MockRouter) BroadCast(method string, params interface{}) interface{} {
+func (lr *MockRouter) BroadCast(method string, params interface{}) EncapsulatedValues {
 	lr.Visited += 1
 	lr.VisitedMethod = method
 	return nil
@@ -46,7 +46,7 @@ func (lr *MockRouter) Handle(method string, params EncapsulatedValues) interface
 	return nil
 }
 
-func (lr *MockRouter) HandlerFunction(name string, handler func(params EncapsulatedValues) interface{}) {
+func (lr *MockRouter) AddHandler(name string, handler *Handler) {
 	lr.Visited += 1
 	lr.VisitedMethod = name
 }

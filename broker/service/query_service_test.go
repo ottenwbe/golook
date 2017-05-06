@@ -23,26 +23,25 @@ import (
 
 var _ = Describe("The query service", func() {
 	It("creates a local query service by default", func() {
-		q := newQueryService(LocalQueries)
+		q := newQueryService(LocalQueries, &Router{})
 		Expect(q).ToNot(BeNil())
 		Expect(reflect.TypeOf(q)).To(Equal(reflect.TypeOf(&localQueryService{})))
 	})
 
 	It("creates broadcast query service when BCastQueries is specified", func() {
-		q := newQueryService(BCastQueries)
+		q := newQueryService(BCastQueries, &Router{})
 		Expect(q).ToNot(BeNil())
 		Expect(reflect.TypeOf(q)).To(Equal(reflect.TypeOf(&broadcastQueryService{})))
 	})
 
 	It("calls the routing service to initiate the query", func() {
-		tmp := routing.Router(broadCastRouter)
-		routing.RunWithMockedRouter(&tmp, func() {
-			q := broadcastQueryService{}
-			q.MakeFileQuery("test.txt")
 
-			Expect(routing.AccessMockedRouter(broadCastRouter).Visited).To(Equal(1))
-			Expect(routing.AccessMockedRouter(broadCastRouter).VisitedMethod).To(Equal(FILE_QUERY))
-		})
+		q := broadcastQueryService{router: &Router{routing.NewMockedRouter()}}
+		q.query("test.txt")
+
+		Expect(q.router.Router.(*routing.MockRouter).Visited).To(Equal(1))
+		Expect(q.router.Router.(*routing.MockRouter).VisitedMethod).To(Equal(fileQuery))
+
 	})
 
 })

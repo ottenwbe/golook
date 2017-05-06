@@ -11,6 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package api
 
 import (
@@ -23,11 +24,11 @@ import (
 	"github.com/ottenwbe/golook/broker/runtime"
 )
 
-var _ = Describe("The api configuration", func() {
+var _ = Describe("The api's configuration", func() {
 
 	Context("for the endpoints", func() {
 
-		It("should initialize default values in the configuration file", func() {
+		It("should be initialized with default values.", func() {
 
 			viper.Reset()
 
@@ -37,7 +38,7 @@ var _ = Describe("The api configuration", func() {
 			Expect(viper.GetString("api.server.address")).To(Equal(":8383"))
 		})
 
-		It("should initialize the Server as HTTPServer", func() {
+		It("should instantiate the Server as HTTPServer.", func() {
 
 			ApplyConfiguration()
 
@@ -47,7 +48,7 @@ var _ = Describe("The api configuration", func() {
 			Expect(ok).To(BeTrue())
 		})
 
-		It("should register all http end points", func() {
+		It("should register all http end points.", func() {
 			viper.SetDefault("api.info", true)
 
 			ApplyConfiguration()
@@ -59,6 +60,7 @@ var _ = Describe("The api configuration", func() {
 			Expect(extractStringFromSlice(HTTPApiEndpoint, ep)).To(Equal(HTTPApiEndpoint))
 			Expect(extractStringFromSlice(ConfigEndpoint, ep)).To(Equal(ConfigEndpoint))
 			Expect(extractStringFromSlice(LogEndpoint, ep)).To(Equal(LogEndpoint))
+			Expect(extractStringFromSlice(SystemEndpoint, ep)).To(Equal(SystemEndpoint))
 		})
 
 	})
@@ -70,5 +72,5 @@ func extractStringFromSlice(searchString string, slice []string) string {
 			return ep
 		}
 	}
-	return fmt.Sprintf("array does not hold %s", searchString)
+	return fmt.Sprintf("cannot find '%s' in list of endpoints", searchString)
 }

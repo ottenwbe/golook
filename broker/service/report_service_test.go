@@ -29,38 +29,34 @@ var _ = Describe("The broadcast report service", func() {
 	var rs *broadcastReportService
 
 	BeforeEach(func() {
-		rs = newReportService(BCastReport).(*broadcastReportService)
+		rs = newReportService(BCastReport, &Router{routing.NewMockedRouter()}).(*broadcastReportService)
 	})
 
 	AfterEach(func() {
-		rs.Close()
+		rs.close()
 	})
 
 	It("ignores nil file reports", func() {
-		tmp := routing.Router(broadCastRouter)
-		routing.RunWithMockedRouter(&tmp, func() {
 
-			rs.MakeFileReport(nil)
-			Expect(routing.AccessMockedRouter(broadCastRouter).Visited).To(BeZero())
-		})
+		rs.report(nil)
+		Expect(routing.AccessMockedRouter(rs.router.Router.(*routing.MockRouter)).Visited).To(BeZero())
+
 	})
 
 	It("broadcasts file reports and adds them to the local repository", func() {
-		tmp := routing.Router(broadCastRouter)
-		routing.RunWithMockedRouter(&tmp, func() {
 
-			testFileName := "report_service_test.go"
-			rs.MakeFileReport(
-				&models.FileReport{
-					Path: testFileName,
-				},
-			)
+		testFileName := "report_service_test.go"
+		rs.report(
+			&models.FileReport{
+				Path: testFileName,
+			},
+		)
 
-			storedFiles := repositories.GoLookRepository.GetFiles(runtime.GolookSystem.UUID)
+		storedFiles := repositories.GoLookRepository.GetFiles(runtime.GolookSystem.UUID)
 
-			Expect(len(storedFiles) >= 1).To(BeTrue())
-			Expect(routing.AccessMockedRouter(broadCastRouter).Visited >= 1).To(BeTrue())
-		})
+		Expect(len(storedFiles) >= 1).To(BeTrue())
+		Expect(rs.router.Router.(*routing.MockRouter).Visited >= 1).To(BeTrue())
+
 	})
 
 })
