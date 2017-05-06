@@ -25,33 +25,40 @@ import (
 )
 
 var (
+	/*Host is the url of the golook server.*/
 	Host string
 )
 
 const (
-	/*GolookAPIVersion describes the currently supported and implemented http api version*/
-	GolookAPIVersion = "/v1"
-	/*SystemEndpoint*/
-	SystemEndpoint = GolookAPIVersion + "/system"
-	/*FileEndpoint is the base url for querying and monitoring files*/
-	FileEndpoint = GolookAPIVersion + "/file"
-	/*InfoEndpoint is the url for basic information about the application*/
-	InfoEndpoint = "/info"
-	/*HTTPApiEndpoint is the url for information about the api*/
-	HTTPApiEndpoint = "/api"
-	/*ConfigEndpoint is the url for querying the configuration*/
-	ConfigEndpoint = GolookAPIVersion + "/config"
-	/*LogEndpoint is the url for querying the log*/
-	LogEndpoint = "/log"
+	/*golookAPIVersion describes the currently supported and implemented http api version*/
+	golookAPIVersion = "/v1"
+	/*systemEndpoint is the base url for retrieving system information*/
+	systemEndpoint = golookAPIVersion + "/system"
+	/*fileEndpoint is the base url for querying and monitoring files*/
+	fileEndpoint = golookAPIVersion + "/file"
+	/*infoEndpoint is the url for basic information about the application*/
+	infoEndpoint = "/info"
+	/*hTTPApiEndpoint is the url for information about the api*/
+	httpAPIEndpoint = "/api"
+	/*configEndpoint is the url for querying the configuration*/
+	configEndpoint = golookAPIVersion + "/config"
+	/*logEndpoint is the url for querying the log*/
+	logEndpoint = "/log"
 )
 
+/*
+GetFiles calls the endpoint /v_/file/{searchString} to find all files similar to searchString on the golook server
+*/
 func GetFiles(searchString string) (string, error) {
-	return get(fmt.Sprintf("%s/%s", FileEndpoint, searchString))
+	return get(fmt.Sprintf("%s/%s", fileEndpoint, searchString))
 }
 
+/*
+ReportFiles will make a file report to the server. In turn, the server will make the given file/folder findable.
+*/
 func ReportFiles(report models.FileReport) (string, error) {
 
-	log.Debugf("Report for: %s%s", Host, FileEndpoint)
+	log.Debugf("Report for: %s%s", Host, fileEndpoint)
 
 	c := http.Client{}
 
@@ -60,11 +67,10 @@ func ReportFiles(report models.FileReport) (string, error) {
 		return "", err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s%s", Host, FileEndpoint), bytes.NewBuffer(b))
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s%s", Host, fileEndpoint), bytes.NewBuffer(b))
 	if err != nil {
 		return "", err
 	}
-
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.Do(req)
@@ -84,28 +90,43 @@ func ReportFiles(report models.FileReport) (string, error) {
 	return string(b), nil
 }
 
+/*
+GetSystem queries the golook server for system information.
+*/
 func GetSystem() (string, error) {
-	return get(SystemEndpoint)
+	return get(systemEndpoint)
 }
 
+/*
+GetInfo queries the golook server for general information about the server
+*/
 func GetInfo() (string, error) {
-	return get(InfoEndpoint)
+	return get(infoEndpoint)
 }
 
+/*
+GetConfig queries the golook server its configuration
+*/
 func GetConfig() (string, error) {
-	return get(ConfigEndpoint)
+	return get(configEndpoint)
 }
 
-func GetApi() (string, error) {
-	return get(HTTPApiEndpoint)
+/*
+GetAPI queries the golook server for details about the api
+*/
+func GetAPI() (string, error) {
+	return get(httpAPIEndpoint)
 }
 
+/*
+GetLog queries the golook server for details about its log
+*/
 func GetLog() (string, error) {
-	return get(LogEndpoint)
+	return get(logEndpoint)
 }
 
-func get(ep string) (string, error) {
-	resp, err := http.Get(fmt.Sprintf("%s%s", Host, ep))
+func get(endpoint string) (string, error) {
+	resp, err := http.Get(fmt.Sprintf("%s%s", Host, endpoint))
 	if err != nil {
 		return "", err
 	}

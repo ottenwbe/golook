@@ -15,7 +15,7 @@ package routing
 
 import (
 	. "github.com/ottenwbe/golook/broker/runtime"
-	. "github.com/ottenwbe/golook/broker/utils"
+	. "github.com/ottenwbe/golook/utils"
 	log "github.com/sirupsen/logrus"
 )
 

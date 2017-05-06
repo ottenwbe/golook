@@ -67,12 +67,12 @@ type compoundFileServices struct {
 
 type scenarioBroadcastFiles struct {
 	compoundFileServices
-	r *Router
+	r *router
 }
 
 type scenarioBroadcastQueries struct {
 	compoundFileServices
-	r *Router
+	r *router
 }
 type scenarioMock struct {
 	compoundFileServices

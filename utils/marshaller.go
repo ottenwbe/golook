@@ -20,6 +20,9 @@ import (
 	"errors"
 )
 
+/*
+MarshalB returns the JSON encoding of message as byte array. If the message cannot be encoded, an error is returned with an empty byte array. Hence no nil value is returned.
+*/
 func MarshalB(message interface{}) ([]byte, error) {
 	b, err := json.Marshal(message)
 	if err == nil {
@@ -29,11 +32,17 @@ func MarshalB(message interface{}) ([]byte, error) {
 
 }
 
+/*
+MarshalS returns the JSON encoding of message as string. If the message cannot be encoded, an error is returned with an empty byte array. Hence no nil value is returned.
+*/
 func MarshalS(message interface{}) (string, error) {
 	b, err := MarshalB(message)
 	return string(b), err
 }
 
+/*
+Unmarshal stores the values of a Json encoded message 'orig' in a data type 'result'.
+*/
 func Unmarshal(orig interface{}, result interface{}) (err error) {
 
 	switch v := orig.(type) {

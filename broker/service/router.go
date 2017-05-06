@@ -20,26 +20,26 @@ import (
 )
 
 /*
-Router dispatches messages. To this end, it implements an embedded routing.Router.
-Router informs the embedded routing.Router about possible candidates for peers by registering to the system service's callbacks.
+router dispatches messages. To this end, it implements an embedded routing.router.
+router informs the embedded routing.router about possible candidates for peers by registering to the system service's callbacks.
 */
-type Router struct {
+type router struct {
 	routing.Router
 }
 
-func newRouter(name string, routerType routing.RouterType) *Router {
-	r := &Router{routing.NewRouter(name, routerType)}
+func newRouter(name string, routerType routing.RouterType) *router {
+	r := &router{routing.NewRouter(name, routerType)}
 	routing.ActivateRouter(r)
 	newSystemCallbacks.Add(name, r.handleNewSystem)
 	return r
 }
 
-func (r *Router) close() {
+func (r *router) close() {
 	routing.DeactivateRouter(r)
 	newSystemCallbacks.Delete(r.Router.Name())
 }
 
-func (r *Router) handleNewSystem(uuid string, systems map[string]*runtime.System) {
+func (r *router) handleNewSystem(uuid string, systems map[string]*runtime.System) {
 	for _, s := range systems {
 		r.NewPeer(routing.NewKey(s.UUID), s.IP)
 	}

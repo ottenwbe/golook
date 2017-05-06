@@ -31,7 +31,7 @@ type (
 		SystemService stores system information in the local registry and disseminates system information to peers.
 	*/
 	SystemService struct {
-		router *Router
+		router *router
 	}
 	NewSystemCallback  func(uuid string, system map[string]*golook.System)
 	NewSystemCallbacks map[string]NewSystemCallback
@@ -112,7 +112,7 @@ func (s SystemService) broadcastSystem(report PeerSystemReport) models.Encapsula
 	if s.router != nil {
 		return s.router.BroadCast(systemReport, report)
 	}
-	log.WithField("service", "system").Error("Router is not set!")
+	log.WithField("service", "system").Error("router is not set!")
 	return nil
 }
 

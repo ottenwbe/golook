@@ -27,13 +27,13 @@ import (
 
 var _ = Describe("The api endpoint ", func() {
 
-	Context(HTTPApiEndpoint, func() {
+	Context(httpAPIEndpoint, func() {
 		It("can be called when a golook instance is running.", func() {
 			int.RunPeerInDocker(
 				func(client *docker.Client, container *docker.Container) {
 					Host = fmt.Sprintf("http://%s:8383", container.NetworkSettings.IPAddress)
 
-					apiInfo, err := GetApi()
+					apiInfo, err := GetAPI()
 
 					Expect(err).To(BeNil())
 					Expect(apiInfo).To(ContainSubstring("endpoints"))
@@ -41,7 +41,7 @@ var _ = Describe("The api endpoint ", func() {
 		})
 	})
 
-	Context(LogEndpoint, func() {
+	Context(logEndpoint, func() {
 		It("retrieves the log of a running instance.", func() {
 			int.RunPeerInDocker(
 				func(client *docker.Client, container *docker.Container) {
@@ -55,7 +55,7 @@ var _ = Describe("The api endpoint ", func() {
 		})
 	})
 
-	Context(InfoEndpoint, func() {
+	Context(infoEndpoint, func() {
 		It("returns the system report.", func() {
 			int.RunPeerInDocker(
 				func(client *docker.Client, container *docker.Container) {
@@ -69,7 +69,7 @@ var _ = Describe("The api endpoint ", func() {
 		})
 	})
 
-	Context(FileEndpoint, func() {
+	Context(fileEndpoint, func() {
 		It("accepts file reports.", func() {
 			int.RunPeerInDocker(
 				func(client *docker.Client, container *docker.Container) {
@@ -84,7 +84,7 @@ var _ = Describe("The api endpoint ", func() {
 		})
 	})
 
-	Context(SystemEndpoint, func() {
+	Context(systemEndpoint, func() {
 		It("retrieves the stored systems of a running instance.", func() {
 			int.RunPeerInDocker(
 				func(client *docker.Client, container *docker.Container) {
@@ -98,7 +98,7 @@ var _ = Describe("The api endpoint ", func() {
 		})
 	})
 
-	Context(ConfigEndpoint, func() {
+	Context(configEndpoint, func() {
 		It("retrieves the config of a running instance.", func() {
 			int.RunPeerInDocker(
 				func(client *docker.Client, container *docker.Container) {

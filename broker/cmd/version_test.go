@@ -19,7 +19,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/ottenwbe/golook/broker/utils"
+	"github.com/ottenwbe/golook/utils"
 )
 
 var _ = Describe("The version command", func() {

@@ -22,7 +22,7 @@ import (
 	. "github.com/ottenwbe/golook/broker/repository"
 	"github.com/ottenwbe/golook/broker/routing"
 	"github.com/ottenwbe/golook/broker/runtime"
-	"github.com/ottenwbe/golook/broker/utils"
+	"github.com/ottenwbe/golook/utils"
 )
 
 var _ = Describe("The file handler", func() {

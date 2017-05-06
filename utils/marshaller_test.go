@@ -21,7 +21,7 @@ import (
 
 var _ = Describe("Marshalling a message", func() {
 
-	It(" should be the same result after demarshalling when using the bytes method", func() {
+	It("should result in the same message after demarshalling it when using the bytes method", func() {
 		testString := "test"
 
 		msg, err1 := MarshalB(testString)
@@ -33,7 +33,7 @@ var _ = Describe("Marshalling a message", func() {
 		Expect(s).To(Equal(testString))
 	})
 
-	It(" should be the same result after demarshalling when using the string method", func() {
+	It("should result in the same message after demarshalling it when using the string method", func() {
 		testString := "test"
 
 		msg, err1 := MarshalS(testString)
@@ -45,7 +45,7 @@ var _ = Describe("Marshalling a message", func() {
 		Expect(s).To(Equal(testString))
 	})
 
-	It("should return an error when channels or other unsupported types are used", func() {
+	It("should return an error when channels or other unsupported types are used.", func() {
 		c := make(chan bool)
 
 		_, err := MarshalB(c)
@@ -53,15 +53,30 @@ var _ = Describe("Marshalling a message", func() {
 		Expect(err).ToNot(BeNil())
 	})
 
-	//TODO own context
-	It("should return an error when unmarshalling a faulty input", func() {
-		s := ""
-		type test struct {
+})
+
+var _ = Describe("Unmarshalling a message", func() {
+
+	It("should return an error when unmarshalling a not supported message type.", func() {
+		faultyInput := 1
+		type testData struct {
 			i int
 		}
-		var t test
+		var testD testData
 
-		err := Unmarshal([]byte(s), &t)
+		err := Unmarshal(faultyInput, &testD)
+
+		Expect(err.Error()).To(Equal("Could not unmarshal value"))
+	})
+
+	It("should return an error when unmarshalling a faulty input.", func() {
+		faultyInput := ""
+		type testData struct {
+			i int
+		}
+		var testD testData
+
+		err := Unmarshal([]byte(faultyInput), &testD)
 
 		Expect(err).ToNot(BeNil())
 	})

@@ -16,7 +16,7 @@ package routing
 
 import (
 	. "github.com/ottenwbe/golook/broker/models"
-	. "github.com/ottenwbe/golook/broker/utils"
+	. "github.com/ottenwbe/golook/utils"
 )
 
 type MockRouter struct {

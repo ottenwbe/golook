@@ -20,7 +20,7 @@ Scheduler implements a facade for a scheduler framework.
 
 import (
 	"github.com/bamzi/jobrunner"
-	"github.com/ottenwbe/golook/broker/utils"
+	"github.com/ottenwbe/golook/utils"
 	"gopkg.in/robfig/cron.v2"
 )
 

@@ -41,7 +41,7 @@ type (
 	//broadcastReportService broadcasts files to all peers
 	broadcastReportService struct {
 		monitoredReportService
-		router           *Router
+		router           *router
 		systemCallbackId string
 	}
 	//localReportService broadcasts files to all peers
@@ -53,7 +53,7 @@ type (
 	}
 )
 
-func newReportService(reportType string, router *Router) (result reportService) {
+func newReportService(reportType string, router *router) (result reportService) {
 	switch reportType {
 	case MockReport:
 		result = &MockReportService{}
@@ -66,7 +66,7 @@ func newReportService(reportType string, router *Router) (result reportService) 
 	return result
 }
 
-func newBroadcastReportService(router *Router) reportService {
+func newBroadcastReportService(router *router) reportService {
 	rs := &broadcastReportService{
 		router: router,
 	}

@@ -17,7 +17,7 @@ package service
 import (
 	"github.com/ottenwbe/golook/broker/models"
 	"github.com/ottenwbe/golook/broker/repository"
-	"github.com/ottenwbe/golook/broker/utils"
+	"github.com/ottenwbe/golook/utils"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -33,7 +33,7 @@ type (
 	}
 	localQueryService     struct{}
 	broadcastQueryService struct {
-		router *Router
+		router *router
 	}
 	MockQueryService struct {
 		SearchString string
@@ -41,7 +41,7 @@ type (
 	FileQueryData map[string][]*models.File
 )
 
-func newQueryService(queryType string, router *Router) queryService {
+func newQueryService(queryType string, router *router) queryService {
 	switch queryType {
 	case MockQueries:
 		return &MockQueryService{}

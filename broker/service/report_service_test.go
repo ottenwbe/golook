@@ -29,7 +29,7 @@ var _ = Describe("The broadcast report service", func() {
 	var rs *broadcastReportService
 
 	BeforeEach(func() {
-		rs = newReportService(BCastReport, &Router{routing.NewMockedRouter()}).(*broadcastReportService)
+		rs = newReportService(BCastReport, &router{routing.NewMockedRouter()}).(*broadcastReportService)
 	})
 
 	AfterEach(func() {

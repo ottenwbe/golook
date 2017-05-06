@@ -15,18 +15,17 @@
 package api
 
 import (
-	"net/http"
-	"net/http/httptest"
-
-	"github.com/ottenwbe/golook/broker/models"
-	. "github.com/ottenwbe/golook/broker/runtime"
-
 	"bytes"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/ottenwbe/golook/broker/models"
+	. "github.com/ottenwbe/golook/broker/runtime"
 	"github.com/ottenwbe/golook/broker/service"
+	"github.com/ottenwbe/golook/utils"
+	"net/http"
+	"net/http/httptest"
 	"sync"
 )
 
@@ -57,8 +56,6 @@ var _ = Describe("The management endpoint", func() {
 
 	Context(SystemEndpoint, func() {
 		It("should return the system's stored on this machine", func() {
-			ApplyConfiguration() //Ensure server is up
-
 			req, err := http.NewRequest(http.MethodGet, SystemEndpoint, nil)
 			testHTTPCall(req, SystemEndpoint, getSystem)
 
@@ -69,7 +66,6 @@ var _ = Describe("The management endpoint", func() {
 
 	Context(ConfigEndpoint, func() {
 		It("should return the configuration", func() {
-			ApplyConfiguration() //Ensure server is up
 
 			req, err := http.NewRequest(http.MethodGet, ConfigEndpoint, nil)
 			testHTTPCall(req, ConfigEndpoint, getConfiguration)
@@ -77,6 +73,33 @@ var _ = Describe("The management endpoint", func() {
 			Expect(err).To(BeNil())
 			Expect(rr.Code).To(Equal(http.StatusOK))
 
+		})
+
+		It("should return a status code 500, when the configuration comprises a value that cannot be"+
+			"marshalled to json, i.e., the return value", func() {
+			var testService service.ConfigurationService = &testInvalidConfigService{}
+			utils.Mock(&configurationService, &testService, func() {
+				req, err := http.NewRequest(http.MethodGet, ConfigEndpoint, nil)
+				testHTTPCall(req, ConfigEndpoint, getConfiguration)
+
+				Expect(err).To(BeNil())
+				Expect(rr.Code).To(Equal(http.StatusInternalServerError))
+			})
+		})
+
+		It("should return a status code 500, when the configuration service is not set.", func() {
+
+			tmp := configurationService
+			configurationService = nil
+			defer func() {
+				configurationService = tmp
+			}()
+
+			req, err := http.NewRequest(http.MethodGet, ConfigEndpoint, nil)
+			testHTTPCall(req, ConfigEndpoint, getConfiguration)
+
+			Expect(err).To(BeNil())
+			Expect(rr.Code).To(Equal(http.StatusInternalServerError))
 		})
 	})
 
@@ -114,7 +137,7 @@ var _ = Describe("The management endpoint", func() {
 	})
 
 	Context(LogEndpoint, func() {
-		It("should return no errors, when ....", func() {
+		It("should return a status 200 when the log can be fetched.", func() {
 			req, err := http.NewRequest(http.MethodGet, LogEndpoint, nil)
 			testHTTPCall(req, LogEndpoint, getLog)
 
@@ -124,7 +147,6 @@ var _ = Describe("The management endpoint", func() {
 	})
 
 	Context(InfoEndpoint, func() {
-
 		It("should return the current app info", func() {
 			req, err := http.NewRequest(http.MethodPut, InfoEndpoint, nil)
 			testHTTPCall(req, InfoEndpoint, getInfo)
@@ -204,4 +226,13 @@ func (*testHTTPServer) StartServer(_ *sync.WaitGroup) {
 
 func (*testHTTPServer) Info() map[string]interface{} {
 	return map[string]interface{}{"{": make(chan bool)}
+}
+
+type testInvalidConfigService struct {
+}
+
+func (*testInvalidConfigService) GetConfiguration() map[string]map[string]interface{} {
+	return map[string]map[string]interface{}{
+		"a": {"b": make(chan bool, 0)},
+	}
 }

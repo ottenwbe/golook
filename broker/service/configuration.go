@@ -22,7 +22,23 @@ import (
 	"os"
 )
 
-func GetConfiguration() map[string]map[string]interface{} {
+/*
+ConfigurationService implements the means to read the configuration
+*/
+type ConfigurationService interface {
+	GetConfiguration() map[string]map[string]interface{}
+}
+
+type viperConfiguration struct{}
+
+/*
+NewConfigurationService returns by default a configuration service based on the viper configuration solution.
+*/
+func NewConfigurationService() ConfigurationService {
+	return &viperConfiguration{}
+}
+
+func (*viperConfiguration) GetConfiguration() map[string]map[string]interface{} {
 
 	var (
 		configurations = map[string]map[string]interface{}{}

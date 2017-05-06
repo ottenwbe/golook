@@ -32,7 +32,7 @@ var _ = Describe("The system service", func() {
 
 	BeforeEach(func() {
 		mockRouter = routing.NewMockedRouter().(*routing.MockRouter)
-		s = &SystemService{router: &Router{mockRouter}}
+		s = &SystemService{router: &router{mockRouter}}
 		repo.GoLookRepository.DelSystem(sysUUID)
 	})
 

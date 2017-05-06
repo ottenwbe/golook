@@ -15,12 +15,15 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	golook "github.com/ottenwbe/golook/broker/runtime"
 	"github.com/ottenwbe/golook/broker/service"
-	"github.com/ottenwbe/golook/broker/utils"
+	"github.com/ottenwbe/golook/utils"
 	"net/http"
 )
+
+var configurationService = service.NewConfigurationService()
 
 //getFiles implements the http endpoint: GET /file
 func getFiles(writer http.ResponseWriter, request *http.Request) {
@@ -104,7 +107,12 @@ func getSystem(writer http.ResponseWriter, _ *http.Request) {
 //getConfiguration implements the Endpoint: GET /config
 func getConfiguration(writer http.ResponseWriter, _ *http.Request) {
 
-	configurations := service.GetConfiguration()
+	if configurationService == nil {
+		returnAndLogError(writer, "ConfigurationService is nil.", errors.New("ConfigurationService is nil."), http.StatusInternalServerError)
+		return
+	}
+
+	configurations := configurationService.GetConfiguration()
 
 	jsonResponse, err := utils.MarshalS(configurations)
 	if err != nil {

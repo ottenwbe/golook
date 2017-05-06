@@ -15,17 +15,27 @@
 package utils
 
 import (
-	"fmt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("The io utils", func() {
+var _ = Describe("The mock template", func() {
 
-	It("can intercept messages printed by functions to os.Stdout and return them as string instead.", func() {
-		testResult := InterceptStdOut(func() {
-			fmt.Print("test")
+	It("runs embedded functions in a block. Within the block only a mocked value for an interface is accessible to the function.", func() {
+		var test int64 = 5
+		var i int64 = 8
+		Mock(&i, &test, func() {
+			Expect(i).To(Equal(int64(5)))
 		})
-		Expect(testResult).To(Equal("test"))
+		Expect(i).To(Equal(int64(8)))
+	})
+
+	It("should recover when the embedded function is panicing.", func() {
+		var test int64 = 5
+		var i int64 = 8
+		Mock(&i, &test, func() {
+			panic("controlled panic of a test")
+		})
+		Expect(i).To(Equal(int64(8)))
 	})
 })

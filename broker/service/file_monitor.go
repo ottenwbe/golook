@@ -53,6 +53,9 @@ func (fm *FileMonitor) Close() {
 	fm.once = sync.Once{}
 }
 
+/*
+cMonitor implements a handler which reacts to file system events on behalf of the file monitor fm
+*/
 func cMonitor(fm *FileMonitor) {
 	var stop bool = false
 	for !stop {

@@ -37,8 +37,8 @@ var _ = Describe("The service layer's", func() {
 	var (
 		systemService *SystemService
 		fileServices  fileServices
-		routerSystem  *Router
-		routerFiles   *Router
+		routerSystem  *router
+		routerFiles   *router
 	)
 
 	BeforeEach(func() {

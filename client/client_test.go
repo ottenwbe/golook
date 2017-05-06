@@ -15,22 +15,59 @@
 package client
 
 import (
+	"errors"
+	"fmt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/ottenwbe/golook/broker/models"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 )
 
-var _ = Describe("The api endpoint ", func() {
+var _ = Describe("The client for the api endpoint ", func() {
 
-	Context(HTTPApiEndpoint, func() {
+	const expectedDefaultResult = `{"test":"1.2","data":dat,"id":0}`
+
+	var (
+		// start the test servers
+		httpServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ioutil.ReadAll(r.Body)
+			defer r.Body.Close()
+
+			fmt.Fprint(w, expectedDefaultResult)
+		}))
+
+		httpErrorServer = httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, r *http.Request) {
+			ioutil.ReadAll(r.Body)
+			defer r.Body.Close()
+
+			http.Error(writer, errors.New("test error").Error(), http.StatusNotImplemented)
+		}))
+	)
+
+	Context(httpAPIEndpoint, func() {
+		It("returns the result received from the server.", func() {
+			Host = httpServer.URL
+			response, err := GetAPI()
+			Expect(err).To(BeNil())
+			Expect(response).To(Equal(expectedDefaultResult))
+		})
+
+		It("returns an error, when the server returns a http error.", func() {
+			Host = httpErrorServer.URL
+			_, err := GetAPI()
+			Expect(err).ToNot(BeNil())
+		})
+
 		It("returns an error, when the host's url is not set.", func() {
 			Host = "http://127.0.0"
-			_, error := GetApi()
+			_, error := GetAPI()
 			Expect(error).ToNot(BeNil())
 		})
 	})
 
-	Context(FileEndpoint, func() {
+	Context(fileEndpoint, func() {
 		It("returns an error, when the host's url is not set correctly.", func() {
 			Host = "http://127.0.0"
 			_, error := ReportFiles(models.FileReport{Path: "test", Delete: false})
