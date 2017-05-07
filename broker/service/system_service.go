@@ -18,7 +18,7 @@ import (
 	"github.com/ottenwbe/golook/broker/models"
 	repo "github.com/ottenwbe/golook/broker/repository"
 	"github.com/ottenwbe/golook/broker/routing"
-	golook "github.com/ottenwbe/golook/broker/runtime"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
 	log "github.com/sirupsen/logrus"
 )
 

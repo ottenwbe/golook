@@ -17,10 +17,10 @@ package communication
 import (
 	"net/http"
 
-	jsonrpcServer "github.com/osamingo/jsonrpc"
+	jsonRPCServer "github.com/osamingo/jsonrpc"
 	"github.com/spf13/viper"
 
-	golook "github.com/ottenwbe/golook/broker/runtime"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
 )
 
 func ApplyCommunicationConfiguration() {
@@ -30,8 +30,8 @@ func ApplyCommunicationConfiguration() {
 
 	serverType = viper.GetString("communication.server.type")
 	HttpRpcServer = golook.NewServer(viper.GetString("communication.jsonrpc.server.address"), golook.ServerHttp)
-	HttpRpcServer.(*golook.HTTPSever).RegisterFunction("/rpc", jsonrpcServer.HandlerFunc, http.MethodGet, http.MethodPost)
-	HttpRpcServer.(*golook.HTTPSever).RegisterFunction("/rpc/debug", jsonrpcServer.DebugHandlerFunc, http.MethodGet, http.MethodPost)
+	HttpRpcServer.(*golook.HTTPSever).RegisterFunction("/rpc", jsonRPCServer.HandlerFunc, http.MethodGet, http.MethodPost)
+	HttpRpcServer.(*golook.HTTPSever).RegisterFunction("/rpc/debug", jsonRPCServer.DebugHandlerFunc, http.MethodGet, http.MethodPost)
 }
 
 func InitCommunicationConfiguration() {

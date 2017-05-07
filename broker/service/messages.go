@@ -15,19 +15,19 @@
 package service
 
 import (
-	. "github.com/ottenwbe/golook/broker/models"
-	"github.com/ottenwbe/golook/broker/runtime"
+	"github.com/ottenwbe/golook/broker/models"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
 )
 
 type PeerFileReport struct {
-	Files  map[string]*File `json:"files"`
-	System string           `json:"system"`
+	Files  map[string]*models.File `json:"files"`
+	System string                  `json:"system"`
 }
 
 type PeerSystemReport struct {
-	Uuid       string                     `json:"uuid"`
-	System     map[string]*runtime.System `json:"systems"`
-	IsDeletion bool                       `json:"deletion,omitempty"`
+	Uuid       string                    `json:"uuid"`
+	System     map[string]*golook.System `json:"systems"`
+	IsDeletion bool                      `json:"deletion,omitempty"`
 }
 
 type PeerFileQuery struct {

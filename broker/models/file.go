@@ -15,19 +15,27 @@
 package models
 
 import (
-	"encoding/json"
-	"io"
 	"time"
 )
 
-//FileState represents the current state of the file, i.e., if it has been recently created or removed
+/*
+FileState represents the current state of the file, i.e., if it has been recently created or removed
+*/
 type FileState int
 
+/*
+Individual file states with the following semantic:
+- Created = the file exists and can be found in the file system (fs)
+- Removed = the file does not exist in the fs
+*/
 const (
 	Created FileState = iota
 	Removed FileState = iota
 )
 
+/*
+File is the logical representation of a file or folder
+*/
 type File struct {
 	Name      string    `json:"name"`
 	ShortName string    `json:"short"`
@@ -39,18 +47,9 @@ type File struct {
 	Meta      FileMeta  `json:"meta"`
 }
 
+/*
+FileMeta describes meta information about a file
+*/
 type FileMeta struct {
 	State FileState `json:"state"`
-}
-
-func UnmarshalFiles(fileReader io.Reader) (map[string]File, error) {
-	files := make(map[string]File, 0)
-	err := json.NewDecoder(fileReader).Decode(&files)
-	return files, err
-}
-
-func UnmarshalFile(fileReader io.Reader) (File, error) {
-	var file File
-	err := json.NewDecoder(fileReader).Decode(&file)
-	return file, err
 }

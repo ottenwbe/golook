@@ -12,27 +12,23 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-package runtime
+package cmd
 
 import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	"fmt"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
+	"github.com/spf13/cobra"
 )
 
-var _ = Describe(" AppInfo ", func() {
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: fmt.Sprintf("Print the version number of %s.", golook.Golook_Name),
+	Long:  fmt.Sprintf("All software has versions. This is %s's version.", golook.Golook_Name),
+	Run: func(_ *cobra.Command, _ []string) {
+		fmt.Println(golook.Version)
+	},
+}
 
-	var info *AppInfo
-
-	BeforeEach(func() {
-		info = NewAppInfo()
-	})
-
-	It("should comprise the current app version by default", func() {
-		Expect(info.Version).To(Equal(Version))
-	})
-
-	It("should comprise the current system by default", func() {
-		Expect(info.System).ToNot(BeNil())
-		Expect(*info.System).To(Equal(*NewSystem()))
-	})
-})
+func init() {
+	rootCmd.AddCommand(versionCmd)
+}

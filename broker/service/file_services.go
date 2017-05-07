@@ -27,22 +27,19 @@ const (
 	BroadcastQueries FileServiceType = "queryBroadcast"
 )
 
-var (
-	FileServices fileServices
-)
-
-func OpenFileServices(fileServiceType FileServiceType) {
-	FileServices = newFileServices(fileServiceType)
-	FileServices.open()
+func OpenFileServices(fileServiceType FileServiceType) FileServices {
+	fileServices := newFileServices(fileServiceType)
+	fileServices.open()
+	return fileServices
 }
 
-func CloseFileServices() {
-	if FileServices != nil {
-		FileServices.close()
+func CloseFileServices(fileServices FileServices) {
+	if fileServices != nil {
+		fileServices.close()
 	}
 }
 
-func newFileServices(fileServiceType FileServiceType) fileServices {
+func newFileServices(fileServiceType FileServiceType) FileServices {
 	switch fileServiceType {
 	case MockFileServices:
 		return &scenarioMock{}
@@ -53,7 +50,7 @@ func newFileServices(fileServiceType FileServiceType) fileServices {
 	}
 }
 
-type fileServices interface {
+type FileServices interface {
 	open()
 	close()
 	Query(searchString string) (interface{}, error)
@@ -147,13 +144,13 @@ func (s *scenarioMock) close() {
 
 //TODO: defensive prog.
 
-func AccessMockedQueryService(services fileServices) *MockQueryService {
+func AccessMockedQueryService(services FileServices) *MockQueryService {
 	mockScenario := services.(*scenarioMock)
 	mockService := mockScenario.QueryService.(*MockQueryService)
 	return mockService
 }
 
-func AccessMockedReportService(services fileServices) *MockReportService {
+func AccessMockedReportService(services FileServices) *MockReportService {
 	mockScenario := services.(*scenarioMock)
 	mockService := mockScenario.ReportService.(*MockReportService)
 	return mockService

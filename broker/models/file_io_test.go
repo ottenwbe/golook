@@ -11,6 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package models
 
 import (
@@ -24,10 +25,10 @@ import (
 
 var _ = Describe("The file's", func() {
 
-	const FILE_NAME = "file_io_test.go"
+	const fileName = "file_io_test.go"
 
 	It("metadata of file file_io_test.go can be read", func() {
-		fp, errFilePath := filepath.Abs(FILE_NAME)
+		fp, errFilePath := filepath.Abs(fileName)
 		if errFilePath != nil {
 			log.WithError(errFilePath).Fatal("File I/O test failed")
 		}
@@ -41,7 +42,7 @@ var _ = Describe("The file's", func() {
 	})
 
 	It("non existing file is not read and marked as removed", func() {
-		fp := fmt.Sprintf("%s_does_not_exist", FILE_NAME)
+		fp := fmt.Sprintf("%s_does_not_exist", fileName)
 
 		file, errFile := NewFile(fp)
 

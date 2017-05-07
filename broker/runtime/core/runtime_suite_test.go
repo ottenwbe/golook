@@ -12,37 +12,15 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-package runtime
+package core
 
 import (
-	"encoding/json"
-	"github.com/sirupsen/logrus"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"testing"
 )
 
-const (
-	Golook_Name = "golook"
-	Version     = "v0.1.0-dev"
-)
-
-type AppInfo struct {
-	App     string  `json:"app"`
-	Version string  `json:"version"`
-	System  *System `json:"system"`
-}
-
-func NewAppInfo() *AppInfo {
-	return &AppInfo{
-		App:     Golook_Name,
-		Version: Version,
-		System:  NewSystem(),
-	}
-}
-
-func EncodeAppInfo(info *AppInfo) string {
-	b, err := json.Marshal(info)
-	if err != nil {
-		logrus.WithError(err).Error("Could not encode app info.")
-		return "{}"
-	}
-	return string(b)
+func TestRuntime(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Runtime Test Suite")
 }

@@ -17,18 +17,17 @@
 package service
 
 import (
-	"path/filepath"
-
 	"fmt"
 	"github.com/fsouza/go-dockerclient"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/ottenwbe/golook/broker/models"
 	"github.com/ottenwbe/golook/broker/routing"
-	"github.com/ottenwbe/golook/broker/runtime"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
 	"github.com/ottenwbe/golook/client"
 	int "github.com/ottenwbe/golook/test/integration"
 	log "github.com/sirupsen/logrus"
+	"path/filepath"
 	"time"
 )
 
@@ -36,7 +35,7 @@ var _ = Describe("The service layer's", func() {
 
 	var (
 		systemService *SystemService
-		fileServices  fileServices
+		fileServices  FileServices
 		routerSystem  *router
 		routerFiles   *router
 	)
@@ -90,7 +89,7 @@ var _ = Describe("The service layer's", func() {
 			log.Info(system)
 
 			Expect(err).To(BeNil())
-			Expect(files).To(ContainSubstring(runtime.GolookSystem.UUID))
+			Expect(files).To(ContainSubstring(golook.GolookSystem.UUID))
 		})
 	})
 
@@ -114,7 +113,7 @@ var _ = Describe("The service layer's", func() {
 
 				var files = result.(FileQueryData)
 
-				Expect(files).To(HaveKey(runtime.GolookSystem.UUID))
+				Expect(files).To(HaveKey(golook.GolookSystem.UUID))
 			})
 		})
 	})
@@ -149,9 +148,9 @@ var _ = Describe("The service layer's", func() {
 				log.Info("Sending broadcast")
 				result := systemService.broadcastSystem(
 					PeerSystemReport{
-						Uuid: runtime.GolookSystem.UUID,
-						System: map[string]*runtime.System{
-							runtime.GolookSystem.UUID: runtime.GolookSystem,
+						Uuid: golook.GolookSystem.UUID,
+						System: map[string]*golook.System{
+							golook.GolookSystem.UUID: golook.GolookSystem,
 						},
 						IsDeletion: false,
 					},

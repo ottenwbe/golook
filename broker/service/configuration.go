@@ -15,8 +15,7 @@
 package service
 
 import (
-	"github.com/ottenwbe/golook/broker/runtime"
-	"github.com/sirupsen/logrus"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"os"
@@ -54,7 +53,7 @@ func (*viperConfiguration) GetConfiguration() map[string]map[string]interface{} 
 }
 
 func ApplyServiceConfiguration() {
-	runtime.Schedule(viper.GetString("service.informer.specification"), *newSystemService())
+	golook.Schedule(viper.GetString("service.informer.specification"), *newSystemService())
 	OpenFileServices(FileServiceType(viper.GetString("service.type")))
 }
 
@@ -64,7 +63,7 @@ func InitServiceConfiguration() {
 
 	wd, err := os.Getwd()
 	if err != nil {
-		logrus.WithError(err).Fatalf("Cannot determine working directory")
+		log.WithError(err).Fatalf("Cannot determine working directory")
 	}
 	viper.SetConfigName("golook")        // name of cmd file (without extension)
 	viper.AddConfigPath("/etc/golook/")  // path to look for the cmd file in

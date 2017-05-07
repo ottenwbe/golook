@@ -14,8 +14,8 @@
 package routing
 
 import (
-	. "github.com/ottenwbe/golook/broker/runtime"
-	. "github.com/ottenwbe/golook/utils"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
+	"github.com/ottenwbe/golook/utils"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -46,7 +46,7 @@ type (
 )
 
 func NewRequestMessage(key Key, reqId int, method string, params interface{}) (*RequestMessage, error) {
-	p, err := MarshalS(params)
+	p, err := utils.MarshalS(params)
 	if err != nil {
 		return nil, err
 	}
@@ -54,25 +54,25 @@ func NewRequestMessage(key Key, reqId int, method string, params interface{}) (*
 		Method: method,
 		Params: Params(p),
 		Dst:    Destination{Key: key},
-		Src:    Source{Id: reqId, System: GolookSystem.UUID},
+		Src:    Source{Id: reqId, System: golook.GolookSystem.UUID},
 	}, nil
 }
 
 func NewResponseMessage(src Source, params interface{}) (*ResponseMessage, error) {
-	p, err := MarshalS(params)
+	p, err := utils.MarshalS(params)
 	if err != nil {
 		return nil, err
 	}
 	return &ResponseMessage{
 		Src:      src,
-		Receiver: Source{Id: 0, System: GolookSystem.UUID},
+		Receiver: Source{Id: 0, System: golook.GolookSystem.UUID},
 		Params:   Params(p),
 	}, nil
 }
 
 func (p Params) Unmarshal(v interface{}) error {
 	log.Debugf("Unmarshalling: %s", string(p))
-	err := Unmarshal(string(p), v)
+	err := utils.Unmarshal(string(p), v)
 	return err
 }
 
@@ -85,5 +85,5 @@ var s string
 m.GetEncapsulated(&s)
 */
 func (m *RequestMessage) GetEncapsulated(v interface{}) error {
-	return Unmarshal(string(m.Params), v)
+	return utils.Unmarshal(string(m.Params), v)
 }

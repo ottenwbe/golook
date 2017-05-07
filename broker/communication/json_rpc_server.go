@@ -17,10 +17,9 @@ package communication
 import (
 	"context"
 	"encoding/json"
-
 	"errors"
 	"github.com/osamingo/jsonrpc"
-	"github.com/ottenwbe/golook/broker/runtime"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -36,7 +35,7 @@ type (
 )
 
 var (
-	HttpRpcServer runtime.Server
+	HttpRpcServer golook.Server
 )
 
 var _ (jsonrpc.Handler) = (*JsonRPCServerStub)(nil)

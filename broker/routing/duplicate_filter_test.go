@@ -17,7 +17,7 @@ package routing
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/ottenwbe/golook/broker/runtime"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
 	"github.com/satori/go.uuid"
 )
 
@@ -26,8 +26,8 @@ var _ = Describe("The duplicate filter", func() {
 
 		d := newDuplicateMap()
 
-		source1 := Source{1, runtime.GolookSystem.UUID}
-		source2 := Source{1, runtime.GolookSystem.UUID}
+		source1 := Source{1, golook.GolookSystem.UUID}
+		source2 := Source{1, golook.GolookSystem.UUID}
 
 		Expect(d.CheckForDuplicates(source1)).To(BeFalse())
 		Expect(d.CheckForDuplicates(source2)).To(BeTrue())

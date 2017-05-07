@@ -17,19 +17,22 @@ package api
 import (
 	"errors"
 	"fmt"
-	golook "github.com/ottenwbe/golook/broker/runtime"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
 	"github.com/ottenwbe/golook/broker/service"
 	"github.com/ottenwbe/golook/utils"
 	"net/http"
 )
 
-var configurationService = service.NewConfigurationService()
+var (
+	configurationService = service.NewConfigurationService()
+	fileServices         = service.OpenFileServices(service.BroadcastFiles)
+)
 
 //getFiles implements the http endpoint: GET /file
 func getFiles(writer http.ResponseWriter, request *http.Request) {
 	file := extractFileFromPath(request)
 
-	result, err := service.FileServices.Query(file)
+	result, err := fileServices.Query(file)
 	if err != nil {
 		returnAndLogError(writer, "Cannot process query.", err, http.StatusInternalServerError)
 	}
@@ -46,7 +49,7 @@ func putFile(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	files, err := service.FileServices.Report(fileReport)
+	files, err := fileServices.Report(fileReport)
 	if err != nil {
 		returnAndLogError(writer, "No valid request for: /file", err, http.StatusBadRequest)
 		return
@@ -125,5 +128,6 @@ func getConfiguration(writer http.ResponseWriter, _ *http.Request) {
 
 //getInfo implements the Endpoint: GET /info
 func getInfo(writer http.ResponseWriter, _ *http.Request) {
-	fmt.Fprint(writer, golook.EncodeAppInfo(golook.NewAppInfo()))
+	jsonResponse := utils.MarshalSD(golook.NewAppInfo())
+	fmt.Fprint(writer, jsonResponse)
 }

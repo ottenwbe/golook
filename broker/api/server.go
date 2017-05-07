@@ -15,7 +15,7 @@
 package api
 
 import (
-	golook "github.com/ottenwbe/golook/broker/runtime"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
 )
 
 /*

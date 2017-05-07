@@ -15,24 +15,21 @@
 package service
 
 import (
+	"github.com/ottenwbe/golook/broker/models"
+	"github.com/ottenwbe/golook/broker/repository"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
-
-	. "github.com/ottenwbe/golook/broker/models"
-	"github.com/ottenwbe/golook/broker/repository"
-	. "github.com/ottenwbe/golook/broker/runtime"
-	//"github.com/ottenwbe/golook/broker/utils"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func broadcastLocalFiles(broadCastRouter *router) {
-	files := repositories.GoLookRepository.GetFiles(GolookSystem.UUID)
+	files := repositories.GoLookRepository.GetFiles(golook.GolookSystem.UUID)
 	broadcastFiles(files, broadCastRouter)
 }
 
-func broadcastFiles(files map[string]*File, broadCastRouter *router) {
-	peerFileReport := &PeerFileReport{Files: files, System: GolookSystem.UUID}
+func broadcastFiles(files map[string]*models.File, broadCastRouter *router) {
+	peerFileReport := &PeerFileReport{Files: files, System: golook.GolookSystem.UUID}
 	broadCastRouter.BroadCast(fileReport, peerFileReport)
 }
 
@@ -48,14 +45,14 @@ func reportFileChangesLocal(filePath string) {
 	localFileReport(filePath, false)
 }
 
-func localFileReport(filePath string, _ bool) map[string]*File {
+func localFileReport(filePath string, _ bool) map[string]*models.File {
 
 	var (
-		files = map[string]*File{}
+		files = map[string]*models.File{}
 		err   error
 	)
 
-	file, err := NewFile(filePath)
+	file, err := models.NewFile(filePath)
 	if err != nil {
 		log.WithError(err).Error("Ignoring file report.")
 		return files
@@ -71,17 +68,17 @@ func localFileReport(filePath string, _ bool) map[string]*File {
 
 	files[file.Name] = file
 
-	repositories.GoLookRepository.UpdateFiles(GolookSystem.UUID, files)
+	repositories.GoLookRepository.UpdateFiles(golook.GolookSystem.UUID, files)
 
 	return files
 }
 
 //filesInFolder generates a map with all files in the folder
-func filesInFolder(folderPath string) (map[string]*File, error) {
+func filesInFolder(folderPath string) (map[string]*models.File, error) {
 
 	var (
 		files  []os.FileInfo
-		report = map[string]*File{}
+		report = map[string]*models.File{}
 		err    error
 	)
 
@@ -97,8 +94,8 @@ func filesInFolder(folderPath string) (map[string]*File, error) {
 	return report, err
 }
 
-func appendFile(fileToAppend os.FileInfo, report map[string]*File) map[string]*File {
-	if file, err := NewFile(fileToAppend.Name()); err == nil && !fileToAppend.IsDir() {
+func appendFile(fileToAppend os.FileInfo, report map[string]*models.File) map[string]*models.File {
+	if file, err := models.NewFile(fileToAppend.Name()); err == nil && !fileToAppend.IsDir() {
 		report[file.Name] = file
 	}
 	return report

@@ -12,19 +12,16 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-package cmd
+package models
 
 import (
-	. "github.com/ottenwbe/golook/broker/runtime"
-
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"github.com/ottenwbe/golook/utils"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
 )
 
-var _ = Describe("The version command", func() {
-	It("should return the current version", func() {
-		Expect(utils.InterceptStdOut(func() { versionCmd.Run(nil, []string{}) })).To(Equal(Version + "\n"))
-	})
-
-})
+/*
+SystemFiles is a wrapper around files and systems in a common data structure
+*/
+type SystemFiles struct {
+	System *golook.System   `json:"system"`
+	Files  map[string]*File `json:"files"`
+}

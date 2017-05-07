@@ -22,27 +22,35 @@ import (
 var _ = Describe("Marshalling a message", func() {
 
 	It("should result in the same message after demarshalling it when using the bytes method", func() {
-		testString := "test"
+		const expectedResult = "test"
 
-		msg, err1 := MarshalB(testString)
+		msg, err1 := MarshalB(expectedResult)
 		var s string
 		err2 := Unmarshal(msg, &s)
 
 		Expect(err1).To(BeNil())
 		Expect(err2).To(BeNil())
-		Expect(s).To(Equal(testString))
+		Expect(s).To(Equal(expectedResult))
 	})
 
 	It("should result in the same message after demarshalling it when using the string method", func() {
-		testString := "test"
+		const expectedResult = "test"
 
-		msg, err1 := MarshalS(testString)
+		msg, err1 := MarshalS(expectedResult)
 		var s string
 		err2 := Unmarshal(msg, &s)
 
 		Expect(err1).To(BeNil())
 		Expect(err2).To(BeNil())
-		Expect(s).To(Equal(testString))
+		Expect(s).To(Equal(expectedResult))
+	})
+
+	It("should return an empty json representation'{}', when using the MarshalSD variant.", func() {
+		c := make(chan bool)
+
+		result := MarshalSD(c)
+
+		Expect(result).To(Equal("{}"))
 	})
 
 	It("should return an error when channels or other unsupported types are used.", func() {

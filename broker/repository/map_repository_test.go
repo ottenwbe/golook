@@ -18,7 +18,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/ottenwbe/golook/broker/models"
-	"github.com/ottenwbe/golook/broker/runtime"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
 	"github.com/sirupsen/logrus"
 )
 
@@ -37,7 +37,7 @@ var _ = Describe("The repository implemented with maps", func() {
 	})
 
 	It("stores valid systems", func() {
-		sys := runtime.NewSystem()
+		sys := golook.NewSystem()
 
 		Expect(repo.StoreSystem(sys.Name, sys)).To(BeTrue())
 		_, ok := (repo.systemFiles)[sys.Name]
@@ -45,7 +45,7 @@ var _ = Describe("The repository implemented with maps", func() {
 	})
 
 	It("can retrieve a system by name", func() {
-		sys := runtime.NewSystem()
+		sys := golook.NewSystem()
 		repo.StoreSystem(sys.Name, sys)
 
 		sys, ok := repo.GetSystem(sys.Name)
@@ -54,7 +54,7 @@ var _ = Describe("The repository implemented with maps", func() {
 	})
 
 	It("allows to delete a stored System", func() {
-		sys := runtime.NewSystem()
+		sys := golook.NewSystem()
 		sysName := sys.Name
 		stored := repo.StoreSystem(sysName, sys)
 
@@ -73,7 +73,7 @@ var _ = Describe("The repository implemented with maps", func() {
 
 	It("accepts files for valid systems", func() {
 		f := newTestFile()
-		sys := runtime.NewSystem()
+		sys := golook.NewSystem()
 		sysName := sys.Name
 		repo.StoreSystem(sysName, sys)
 
@@ -82,7 +82,7 @@ var _ = Describe("The repository implemented with maps", func() {
 
 	It("should find files that have been stored", func() {
 		f := newTestFile()
-		sys := runtime.NewSystem()
+		sys := golook.NewSystem()
 		sysName := sys.Name
 
 		repo.StoreSystem(sysName, sys)

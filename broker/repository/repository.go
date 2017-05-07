@@ -15,13 +15,13 @@ package repositories
 
 import (
 	. "github.com/ottenwbe/golook/broker/models"
-	"github.com/ottenwbe/golook/broker/runtime"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
 )
 
 type Repository interface {
-	StoreSystem(systemName string, system *runtime.System) bool
-	GetSystem(systemName string) (*runtime.System, bool)
-	GetSystems() map[string]*runtime.System
+	StoreSystem(systemName string, system *golook.System) bool
+	GetSystem(systemName string) (*golook.System, bool)
+	GetSystems() map[string]*golook.System
 	DelSystem(systemName string)
 	UpdateFiles(systemName string, files map[string]*File) bool
 	FindSystemAndFiles(findString string) map[string][]*File

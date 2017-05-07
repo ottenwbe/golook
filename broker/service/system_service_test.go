@@ -19,7 +19,7 @@ import (
 	. "github.com/onsi/gomega"
 	repo "github.com/ottenwbe/golook/broker/repository"
 	"github.com/ottenwbe/golook/broker/routing"
-	golook "github.com/ottenwbe/golook/broker/runtime"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
 )
 
 var _ = Describe("The system service", func() {

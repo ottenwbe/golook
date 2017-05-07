@@ -11,6 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package service
 
 import (
@@ -21,16 +22,16 @@ import (
 
 var _ = Describe("The file services", func() {
 	It("can create a file service where all files are broadcast.", func() {
-		OpenFileServices(BroadcastFiles)
-		defer CloseFileServices()
-		Expect(FileServices).ToNot(BeNil())
-		Expect(reflect.TypeOf(FileServices).String()).ToNot(Equal(reflect.TypeOf(scenarioBroadcastFiles{}).String()))
+		fileServices := OpenFileServices(BroadcastFiles)
+		defer CloseFileServices(fileServices)
+		Expect(fileServices).ToNot(BeNil())
+		Expect(reflect.TypeOf(fileServices).String()).ToNot(Equal(reflect.TypeOf(scenarioBroadcastFiles{}).String()))
 	})
 
 	It("can create a file service where all queries are boradcast.", func() {
-		OpenFileServices(BroadcastQueries)
-		defer CloseFileServices()
-		Expect(FileServices).ToNot(BeNil())
-		Expect(reflect.TypeOf(FileServices).String()).ToNot(Equal(reflect.TypeOf(scenarioBroadcastQueries{}).String()))
+		fileServices := OpenFileServices(BroadcastQueries)
+		defer CloseFileServices(fileServices)
+		Expect(fileServices).ToNot(BeNil())
+		Expect(reflect.TypeOf(fileServices).String()).ToNot(Equal(reflect.TypeOf(scenarioBroadcastQueries{}).String()))
 	})
 })

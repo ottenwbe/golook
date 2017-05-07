@@ -15,21 +15,15 @@
 package cmd
 
 import (
-	. "github.com/ottenwbe/golook/broker/runtime"
-
-	"fmt"
-	"github.com/spf13/cobra"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
+	"github.com/ottenwbe/golook/utils"
 )
 
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: fmt.Sprintf("Print the version number of %s.", Golook_Name),
-	Long:  fmt.Sprintf("All software has versions. This is %s's version.", Golook_Name),
-	Run: func(_ *cobra.Command, _ []string) {
-		fmt.Println(Version)
-	},
-}
+var _ = Describe("The version command", func() {
+	It("should return the current version", func() {
+		Expect(utils.InterceptStdOut(func() { versionCmd.Run(nil, []string{}) })).To(Equal(golook.Version + "\n"))
+	})
 
-func init() {
-	RootCmd.AddCommand(versionCmd)
-}
+})

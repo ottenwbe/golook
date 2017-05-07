@@ -21,7 +21,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/ottenwbe/golook/broker/models"
-	. "github.com/ottenwbe/golook/broker/runtime"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
 	"github.com/ottenwbe/golook/broker/service"
 	"github.com/ottenwbe/golook/utils"
 	"net/http"
@@ -45,13 +45,13 @@ var _ = Describe("The management endpoint", func() {
 	)
 
 	BeforeEach(func() {
-		service.CloseFileServices()
-		service.OpenFileServices(service.MockFileServices)
+		service.CloseFileServices(fileServices)
+		fileServices = service.OpenFileServices(service.MockFileServices)
 	})
 
 	AfterEach(func() {
-		service.CloseFileServices()
-		service.OpenFileServices(service.BroadcastFiles)
+		service.CloseFileServices(fileServices)
+		fileServices = service.OpenFileServices(service.BroadcastFiles)
 	})
 
 	Context(SystemEndpoint, func() {
@@ -148,12 +148,19 @@ var _ = Describe("The management endpoint", func() {
 
 	Context(InfoEndpoint, func() {
 		It("should return the current app info", func() {
+
 			req, err := http.NewRequest(http.MethodPut, InfoEndpoint, nil)
 			testHTTPCall(req, InfoEndpoint, getInfo)
 
+			result := &golook.AppInfo{}
+			err = utils.Unmarshal(rr.Body.String(), &result)
+			if err != nil {
+				Fail("Cannot marshal reslut")
+			}
+
 			Expect(err).To(BeNil())
 			Expect(rr.Code).To(Equal(http.StatusOK))
-			Expect(rr.Body.String()).To(Equal(EncodeAppInfo(NewAppInfo())))
+			Expect(*result).To(Equal(*golook.NewAppInfo()))
 		})
 	})
 
@@ -174,7 +181,7 @@ var _ = Describe("The management endpoint", func() {
 			testHTTPCall(req, FileEndpoint, putFile)
 
 			Expect(err).To(BeNil())
-			Expect(service.AccessMockedReportService(service.FileServices).FileReport).To(BeNil())
+			Expect(service.AccessMockedReportService(fileServices).FileReport).To(BeNil())
 			Expect(rr.Code).To(Equal(http.StatusBadRequest))
 		})
 
@@ -190,7 +197,7 @@ var _ = Describe("The management endpoint", func() {
 
 			Expect(err).To(BeNil())
 			Expect(rr.Code).To(Equal(http.StatusOK))
-			Expect(*service.AccessMockedReportService(service.FileServices).FileReport).To(Equal(*fp))
+			Expect(*service.AccessMockedReportService(fileServices).FileReport).To(Equal(*fp))
 
 		})
 
@@ -202,7 +209,7 @@ var _ = Describe("The management endpoint", func() {
 			Expect(err).To(BeNil())
 			Expect(rr.Code).To(Equal(http.StatusOK))
 			Expect(rr.Body.String()).To(Equal("{}"))
-			Expect(service.AccessMockedQueryService(service.FileServices).SearchString).To(Equal("test.txt"))
+			Expect(service.AccessMockedQueryService(fileServices).SearchString).To(Equal("test.txt"))
 		})
 	})
 })

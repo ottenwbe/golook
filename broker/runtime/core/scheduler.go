@@ -12,7 +12,7 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-package runtime
+package core
 
 /*
 Scheduler implements a facade for a scheduler framework.

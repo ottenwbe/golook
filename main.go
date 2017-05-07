@@ -14,7 +14,7 @@
 package main
 
 import (
-	"github.com/ottenwbe/golook/broker/cmd"
+	"github.com/ottenwbe/golook/broker/runtime/cmd"
 )
 
 func main() {

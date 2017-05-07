@@ -16,7 +16,7 @@ package service
 
 import (
 	"github.com/ottenwbe/golook/broker/routing"
-	"github.com/ottenwbe/golook/broker/runtime"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
 )
 
 /*
@@ -39,7 +39,7 @@ func (r *router) close() {
 	newSystemCallbacks.Delete(r.Router.Name())
 }
 
-func (r *router) handleNewSystem(uuid string, systems map[string]*runtime.System) {
+func (r *router) handleNewSystem(uuid string, systems map[string]*golook.System) {
 	for _, s := range systems {
 		r.NewPeer(routing.NewKey(s.UUID), s.IP)
 	}

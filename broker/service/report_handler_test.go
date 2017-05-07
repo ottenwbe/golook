@@ -17,11 +17,10 @@ package service
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
 	"github.com/ottenwbe/golook/broker/models"
 	. "github.com/ottenwbe/golook/broker/repository"
 	"github.com/ottenwbe/golook/broker/routing"
-	"github.com/ottenwbe/golook/broker/runtime"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
 	"github.com/ottenwbe/golook/utils"
 )
 
@@ -38,13 +37,13 @@ var _ = Describe("The file handler", func() {
 	})
 
 	It("stores file reports in the golook repository (when the system is known to the repo)", func() {
-		storedSys := runtime.GolookSystem
-		GoLookRepository.StoreSystem(runtime.GolookSystem.UUID, storedSys)
+		storedSys := golook.GolookSystem
+		GoLookRepository.StoreSystem(golook.GolookSystem.UUID, storedSys)
 		f, _ := models.NewFile("report_handler_test.go")
-		m, _ := utils.MarshalS(PeerFileReport{Files: map[string]*models.File{f.Name: f}, System: runtime.GolookSystem.UUID})
+		m, _ := utils.MarshalS(PeerFileReport{Files: map[string]*models.File{f.Name: f}, System: golook.GolookSystem.UUID})
 		fReport := routing.Params(m)
 		handleFileReport(fReport)
-		_, ok := AccessMapRepository().GetSystem(runtime.GolookSystem.UUID)
+		_, ok := AccessMapRepository().GetSystem(golook.GolookSystem.UUID)
 		Expect(ok).To(BeTrue())
 	})
 
@@ -52,7 +51,7 @@ var _ = Describe("The file handler", func() {
 		//GoLookRepository.StoreSystem(runtime.GolookSystem.UUID, runtime.GolookSystem)
 		fReport := routing.Params("")
 		handleFileReport(fReport)
-		_, ok := AccessMapRepository().GetSystem(runtime.GolookSystem.UUID)
+		_, ok := AccessMapRepository().GetSystem(golook.GolookSystem.UUID)
 		Expect(ok).To(BeFalse())
 	})
 })

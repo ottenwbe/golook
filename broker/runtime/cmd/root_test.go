@@ -16,7 +16,7 @@ package cmd
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/ottenwbe/golook/broker/runtime"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
 	"github.com/spf13/cobra"
 	"time"
 )
@@ -34,21 +34,21 @@ var _ = Describe("The root command", func() {
 	)
 
 	It("should panic when a a call to run cannot be executed, i.e., due to parameters of a test", func() {
-		tmp := RootCmd
-		RootCmd = mockCmd
+		tmp := rootCmd
+		rootCmd = mockCmd
 		Expect(func() { Run() }).To(Panic())
-		RootCmd = tmp
+		rootCmd = tmp
 	})
 
 	It("should start the servers when executed.", func() {
 
-		go RootCmd.Run(nil, nil)
+		go rootCmd.Run(nil, nil)
 		//Wait for root command in go
 		time.Sleep(time.Millisecond * 600)
 
-		Expect(len(runtime.ServerState())).To(BeNumerically(">=", 2))
-		Expect(runtime.ServerState()).ToNot(ContainElement(false))
+		Expect(len(golook.ServerState())).To(BeNumerically(">=", 2))
+		Expect(golook.ServerState()).ToNot(ContainElement(false))
 
-		runtime.StopServer()
+		golook.StopServer()
 	})
 })

@@ -1,8 +1,7 @@
 package routing
 
 import (
-	. "github.com/ottenwbe/golook/broker/runtime"
-
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
 	"github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 )
@@ -18,7 +17,7 @@ func NilKey() Key {
 }
 
 func SysKey() Key {
-	u, err := uuid.FromString(GolookSystem.UUID)
+	u, err := uuid.FromString(golook.GolookSystem.UUID)
 	if err != nil {
 		log.Error("SysKey() cannot read UUID")
 		return NilKey()

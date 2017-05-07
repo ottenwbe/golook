@@ -23,9 +23,10 @@ import (
 var _ = Describe("The io utils", func() {
 
 	It("can intercept messages written by functions to os.Stdout and return them as string instead.", func() {
+		const expectedResult = "test"
 		testResult := InterceptStdOut(func() {
-			fmt.Print("test")
+			fmt.Print(expectedResult)
 		})
-		Expect(testResult).To(Equal("test"))
+		Expect(testResult).To(Equal(expectedResult))
 	})
 })

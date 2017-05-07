@@ -16,12 +16,10 @@ package api
 
 import (
 	"fmt"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
 	"github.com/spf13/viper"
-
-	"github.com/ottenwbe/golook/broker/runtime"
 )
 
 var _ = Describe("The api's configuration", func() {
@@ -42,7 +40,7 @@ var _ = Describe("The api's configuration", func() {
 
 			ApplyConfiguration()
 
-			httpServer, ok := HTTPServer.(*runtime.HTTPSever)
+			httpServer, ok := HTTPServer.(*golook.HTTPSever)
 
 			Expect(httpServer).ToNot(BeNil())
 			Expect(ok).To(BeTrue())
@@ -53,7 +51,7 @@ var _ = Describe("The api's configuration", func() {
 
 			ApplyConfiguration()
 
-			ep := HTTPServer.(*runtime.HTTPSever).RegisteredEndpoints()
+			ep := HTTPServer.(*golook.HTTPSever).RegisteredEndpoints()
 			Expect(extractStringFromSlice(InfoEndpoint, ep)).To(Equal(InfoEndpoint))
 			Expect(extractStringFromSlice(FileEndpoint, ep)).To(Equal(FileEndpoint))
 			Expect(extractStringFromSlice(QueryEndpoint, ep)).To(Equal(QueryEndpoint))

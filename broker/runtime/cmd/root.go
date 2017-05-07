@@ -15,34 +15,36 @@
 package cmd
 
 import (
-	. "github.com/ottenwbe/golook/broker/runtime"
-
 	"github.com/ottenwbe/golook/broker/api"
 	"github.com/ottenwbe/golook/broker/communication"
 	"github.com/ottenwbe/golook/broker/repository"
 	"github.com/ottenwbe/golook/broker/routing"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
 	"github.com/ottenwbe/golook/broker/service"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
+/*
+Run is executed to start the program
+*/
 func Run() {
-	if err := RootCmd.Execute(); err != nil {
+	if err := rootCmd.Execute(); err != nil {
 		log.WithError(err).Panic("Executing root command failed")
 	}
 }
 
-var RootCmd = &cobra.Command{
-	Use:   Golook_Name,
+var rootCmd = &cobra.Command{
+	Use:   golook.Golook_Name,
 	Short: "Golook Broker",
 	Long:  "Golook Broker which implements a Servent (Client/Server) for a distributed file search",
 	Run: func(_ *cobra.Command, _ []string) {
 
 		applyConfiguration()
 
-		log.Infof("Starting up Golook System: %s", GolookSystem.UUID)
+		log.Infof("Starting up Golook System: %s", golook.GolookSystem.UUID)
 
-		RunServer()
+		golook.RunServer()
 
 		log.Info("Shutting down server...")
 	},

@@ -16,7 +16,7 @@ package repositories
 
 import (
 	. "github.com/ottenwbe/golook/broker/models"
-	"github.com/ottenwbe/golook/broker/runtime"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
 	"github.com/sirupsen/logrus"
 	"strings"
 	"sync"
@@ -36,7 +36,7 @@ func newMapRepository() *MapRepository {
 	}
 }
 
-func (repo *MapRepository) StoreSystem(name string, system *runtime.System) bool {
+func (repo *MapRepository) StoreSystem(name string, system *golook.System) bool {
 	repo.mutex.Lock()
 	defer repo.mutex.Unlock()
 
@@ -76,15 +76,15 @@ func (repo *MapRepository) getOrCreateSystem(name string) *SystemFiles {
 	return sys
 }
 
-func (repo *MapRepository) GetSystems() map[string]*runtime.System {
-	sys := map[string]*runtime.System{}
+func (repo *MapRepository) GetSystems() map[string]*golook.System {
+	sys := map[string]*golook.System{}
 	for id, s := range repo.systemFiles {
 		sys[id] = s.System
 	}
 	return sys
 }
 
-func (repo *MapRepository) GetSystem(systemName string) (sys *runtime.System, ok bool) {
+func (repo *MapRepository) GetSystem(systemName string) (sys *golook.System, ok bool) {
 	repo.mutex.RLock()
 	defer repo.mutex.RUnlock()
 

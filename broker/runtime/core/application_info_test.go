@@ -12,15 +12,27 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-package runtime
+package core
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"testing"
 )
 
-func TestRuntime(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Runtime Test Suite")
-}
+var _ = Describe(" AppInfo ", func() {
+
+	var info *AppInfo
+
+	BeforeEach(func() {
+		info = NewAppInfo()
+	})
+
+	It("should comprise the current app version by default", func() {
+		Expect(info.Version).To(Equal(Version))
+	})
+
+	It("should comprise the current system by default", func() {
+		Expect(info.System).ToNot(BeNil())
+		Expect(*info.System).To(Equal(*NewSystem()))
+	})
+})

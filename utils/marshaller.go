@@ -41,6 +41,17 @@ func MarshalS(message interface{}) (string, error) {
 }
 
 /*
+MarshalSD is comparable to MarshalS. However, it returns always a valid string and no error. When an error occurs, an empty string is returned.
+*/
+func MarshalSD(message interface{}) string {
+	result, err := MarshalS(message)
+	if err != nil {
+		result = "{}"
+	}
+	return result
+}
+
+/*
 Unmarshal stores the values of a Json encoded message 'orig' in a data type 'result'.
 */
 func Unmarshal(orig interface{}, result interface{}) (err error) {

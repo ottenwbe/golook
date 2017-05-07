@@ -16,8 +16,8 @@ package service
 
 import (
 	"errors"
-	. "github.com/ottenwbe/golook/broker/models"
-	"github.com/ottenwbe/golook/broker/runtime"
+	"github.com/ottenwbe/golook/broker/models"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
 	"github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 )
@@ -31,7 +31,7 @@ const (
 type (
 	//reportService
 	reportService interface {
-		report(fileReport *FileReport) (map[string]*File, error)
+		report(fileReport *models.FileReport) (map[string]*models.File, error)
 		close()
 	}
 	//monitoredReportService is the base for all report services which monitor file changes
@@ -49,7 +49,7 @@ type (
 		monitoredReportService
 	}
 	MockReportService struct {
-		FileReport *FileReport
+		FileReport *models.FileReport
 	}
 )
 
@@ -81,7 +81,7 @@ func newBroadcastReportService(router *router) reportService {
 	rs.systemCallbackId = uuid.NewV4().String()
 	newSystemCallbacks.Add(
 		rs.systemCallbackId,
-		func(_ string, _ map[string]*runtime.System) {
+		func(_ string, _ map[string]*golook.System) {
 			broadcastLocalFiles(rs.router)
 		},
 	)
@@ -96,11 +96,11 @@ func (rs *broadcastReportService) close() {
 	newSystemCallbacks.Delete(rs.systemCallbackId)
 }
 
-func (rs *broadcastReportService) report(fileReport *FileReport) (map[string]*File, error) {
+func (rs *broadcastReportService) report(fileReport *models.FileReport) (map[string]*models.File, error) {
 
 	if fileReport == nil {
 		log.Error("Ignoring empty file report.")
-		return map[string]*File{}, errors.New("Ignoring empty file report")
+		return map[string]*models.File{}, errors.New("Ignoring empty file report")
 	}
 
 	files := localFileReport(fileReport.Path, fileReport.Delete)
@@ -129,11 +129,11 @@ func (rs *localReportService) close() {
 	rs.fileMonitor.Close()
 }
 
-func (rs *localReportService) report(fileReport *FileReport) (map[string]*File, error) {
+func (rs *localReportService) report(fileReport *models.FileReport) (map[string]*models.File, error) {
 
 	if fileReport == nil {
 		log.Error("Ignoring empty file report.")
-		return map[string]*File{}, errors.New("Ignoring empty file report")
+		return map[string]*models.File{}, errors.New("Ignoring empty file report")
 	}
 
 	// initial report
@@ -149,9 +149,9 @@ func (rs *localReportService) report(fileReport *FileReport) (map[string]*File, 
 	return files, nil
 }
 
-func (mock *MockReportService) report(fileReport *FileReport) (map[string]*File, error) {
+func (mock *MockReportService) report(fileReport *models.FileReport) (map[string]*models.File, error) {
 	mock.FileReport = fileReport
-	return map[string]*File{}, nil
+	return map[string]*models.File{}, nil
 }
 
 func (mock *MockReportService) close() {

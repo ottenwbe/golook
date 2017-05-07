@@ -21,7 +21,7 @@ import (
 	"github.com/ottenwbe/golook/broker/models"
 	"github.com/ottenwbe/golook/broker/repository"
 	"github.com/ottenwbe/golook/broker/routing"
-	"github.com/ottenwbe/golook/broker/runtime"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
 )
 
 var _ = Describe("The broadcast report service", func() {
@@ -52,7 +52,7 @@ var _ = Describe("The broadcast report service", func() {
 			},
 		)
 
-		storedFiles := repositories.GoLookRepository.GetFiles(runtime.GolookSystem.UUID)
+		storedFiles := repositories.GoLookRepository.GetFiles(golook.GolookSystem.UUID)
 
 		Expect(len(storedFiles) >= 1).To(BeTrue())
 		Expect(rs.router.Router.(*routing.MockRouter).Visited >= 1).To(BeTrue())
