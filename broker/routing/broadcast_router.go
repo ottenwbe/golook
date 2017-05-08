@@ -17,8 +17,6 @@ package routing
 import (
 	com "github.com/ottenwbe/golook/broker/communication"
 	"github.com/ottenwbe/golook/broker/models"
-
-	log "github.com/sirupsen/logrus"
 )
 
 /*
@@ -30,7 +28,7 @@ type BroadCastRouter struct {
 	routeTable    RouteTable
 	routeHandlers HandlerTable
 	reqId         int
-	duplicateMap  *DuplicateMap
+	duplicateMap  *duplicateMap
 }
 
 func newBroadcastRouter(name string) Router {
@@ -43,6 +41,9 @@ func newBroadcastRouter(name string) Router {
 	}
 }
 
+/*
+BroadCast a message
+*/
 func (router *BroadCastRouter) BroadCast(method string, message interface{}) models.EncapsulatedValues {
 
 	m, err := NewRequestMessage(NilKey(), router.nextRequestId(), method, message)
@@ -50,6 +51,11 @@ func (router *BroadCastRouter) BroadCast(method string, message interface{}) mod
 		routerLogger(router, method).WithError(err).Error("Cannot create Request Message.")
 		return nil
 	}
+
+	routerLogger(router, method).
+		WithField("request_id", router.reqId).
+		WithField("msg_id", m.Src.Id).
+		Info("New request message will be sent!")
 
 	// disseminate message to all peers
 	response := router.disseminate(m)
@@ -63,7 +69,7 @@ func (router *BroadCastRouter) BroadCast(method string, message interface{}) mod
 
 func (router *BroadCastRouter) nextRequestId() int {
 	result := router.reqId
-	router.reqId += 1
+	router.reqId++
 	return result
 }
 
@@ -127,6 +133,9 @@ func (router *BroadCastRouter) merge(oldMsg *ResponseMessage, newMsg *ResponseMe
 	return oldMsg
 }
 
+/*
+Handle a broadcasted message
+*/
 func (router *BroadCastRouter) Handle(routerName string, msg models.EncapsulatedValues) interface{} {
 
 	var (
@@ -148,7 +157,7 @@ func (router *BroadCastRouter) Handle(routerName string, msg models.Encapsulated
 		return nil
 	}
 
-	log.WithField("router", router.Name()).Infof("No duplicate for: %s", routerName)
+	routerLoggerS(router).Infof("No duplicate for: %s", routerName)
 
 	// callback to upper layer
 	responseParams := router.deliver(request.Method, request.Params)
@@ -164,14 +173,20 @@ func (router *BroadCastRouter) Handle(routerName string, msg models.Encapsulated
 	return *response
 }
 
+/*
+Route is implemented as 'Broadcast'
+*/
 func (router *BroadCastRouter) Route(_ Key, method string, message interface{}) (result interface{}) {
 	return router.BroadCast(method, message)
 }
 
-func (router *BroadCastRouter) NewPeer(key Key, url string) {
+/*
+NewPeer adds a new peer with the given key and address. This enables the router to forward messages to this peer.
+*/
+func (router *BroadCastRouter) NewPeer(key Key, address string) {
 	if _, found := router.routeTable.get(key); !found {
-		routerLoggerS(router).WithField("peer", url).Info("New neighbor.")
-		peer := com.NewRPCClient(url)
+		routerLoggerS(router).WithField("peer", address).Info("New neighbor.")
+		peer := com.NewRPCClient(address)
 		router.routeTable.add(key, peer)
 	}
 }
@@ -207,7 +222,7 @@ func newResponseCopy(responseParams interface{}, orig *ResponseMessage) *Respons
 		return nil
 	}
 
-	result, err := NewResponseMessage(orig.Src, responseParams)
+	result, err := NewResponseMessage(orig.RequestSrc, responseParams)
 	if err != nil {
 		return nil
 	}

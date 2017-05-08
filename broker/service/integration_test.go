@@ -22,10 +22,12 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/ottenwbe/golook/broker/models"
+	"github.com/ottenwbe/golook/broker/repository"
 	"github.com/ottenwbe/golook/broker/routing"
 	golook "github.com/ottenwbe/golook/broker/runtime/core"
 	"github.com/ottenwbe/golook/client"
 	int "github.com/ottenwbe/golook/test/integration"
+	"github.com/ottenwbe/golook/utils"
 	log "github.com/sirupsen/logrus"
 	"path/filepath"
 	"time"
@@ -41,59 +43,54 @@ var _ = Describe("The service layer's", func() {
 	)
 
 	BeforeEach(func() {
-		fileServices = newFileServices(BroadcastFiles)
-		fileServices.open()
+		fileServices = OpenFileServices(BroadcastFiles)
 		routerFiles = fileServices.(*scenarioBroadcastFiles).r
+
+		repositories.GoLookRepository = repositories.NewRepository()
 
 		systemService = newSystemService()
 		routerSystem = systemService.router
 	})
 
 	AfterEach(func() {
+		repositories.GoLookRepository = repositories.NewRepository()
 		systemService.close()
-		fileServices.close()
+		CloseFileServices(fileServices)
 	})
 
 	Context("broadcast query service", func() {
 		It("informs ALL peers about files in folders", func() {
-			d1 := &int.DockerizedGolook{}
-			d2 := &int.DockerizedGolook{}
-			d1.Init()
-			defer d1.Stop()
-			d2.Init()
-			defer d2.Stop()
-			d1.Start()
-			d2.Start()
+			int.RunPeersInDocker(2, func(dockerizedGolook []*int.DockerizedGolook) {
 
-			routerFiles.NewPeer(routing.NewKey(d1.Container.NetworkSettings.IPAddress), d1.Container.NetworkSettings.IPAddress)
-			routerSystem.NewPeer(routing.NewKey(d1.Container.NetworkSettings.IPAddress), d1.Container.NetworkSettings.IPAddress)
-			routerFiles.NewPeer(routing.NewKey(d2.Container.NetworkSettings.IPAddress), d2.Container.NetworkSettings.IPAddress)
-			routerSystem.NewPeer(routing.NewKey(d2.Container.NetworkSettings.IPAddress), d2.Container.NetworkSettings.IPAddress)
+				d1 := dockerizedGolook[0]
+				d2 := dockerizedGolook[1]
 
-			systemService.Run()
-			_, err := fileServices.Report(&models.FileReport{Path: "integration_test.go"})
-			if err != nil {
-				log.Fatal("Cannot make file report in test.")
-			}
+				routerFiles.NewPeer(routing.NewKey(d1.Container.NetworkSettings.IPAddress), d1.Container.NetworkSettings.IPAddress)
+				routerSystem.NewPeer(routing.NewKey(d1.Container.NetworkSettings.IPAddress), d1.Container.NetworkSettings.IPAddress)
+				routerFiles.NewPeer(routing.NewKey(d2.Container.NetworkSettings.IPAddress), d2.Container.NetworkSettings.IPAddress)
+				routerSystem.NewPeer(routing.NewKey(d2.Container.NetworkSettings.IPAddress), d2.Container.NetworkSettings.IPAddress)
 
-			time.Sleep(time.Second)
+				systemService.Run()
+				_, err := fileServices.Report(&models.FileReport{Path: "integration_test.go"})
+				if err != nil {
+					log.Fatal("Cannot make file report in test.")
+				}
 
-			// query one of the neighbor hosts
-			client.Host = fmt.Sprintf("http://%s:8383", d1.Container.NetworkSettings.IPAddress)
-			files, err := client.GetFiles("integration_test")
-			log.Info(files)
+				time.Sleep(time.Second)
 
-			// query one of the neighbor hosts
-			client.Host = fmt.Sprintf("http://%s:8383", d1.Container.NetworkSettings.IPAddress)
-			system, err := client.GetSystem()
-			log.Info(system)
+				// query both of the peers for the distributed file
+				client.Host = fmt.Sprintf("http://%s:8383", d1.Container.NetworkSettings.IPAddress)
+				files, err := client.GetFiles("integration_test")
+				Expect(err).To(BeNil())
+				Expect(files).To(ContainSubstring(golook.GolookSystem.UUID))
 
-			Expect(err).To(BeNil())
-			Expect(files).To(ContainSubstring(golook.GolookSystem.UUID))
+				client.Host = fmt.Sprintf("http://%s:8383", d1.Container.NetworkSettings.IPAddress)
+				files, err = client.GetFiles("integration_test")
+				Expect(err).To(BeNil())
+				Expect(files).To(ContainSubstring(golook.GolookSystem.UUID))
+			})
 		})
-	})
 
-	Context("broadcast query service", func() {
 		It("informs ONE peers about files in folders", func() {
 			int.RunPeerInDocker(func(client *docker.Client, container *docker.Container) {
 
@@ -140,12 +137,43 @@ var _ = Describe("The service layer's", func() {
 	})
 
 	Context("system service", func() {
+
+		It("ensures that all peers know about all peers.", func() {
+			int.RunPeersInDocker(2, func(dockerizedPeers []*int.DockerizedGolook) {
+
+				for i := range dockerizedPeers {
+					container := dockerizedPeers[i].Container
+					routerFiles.NewPeer(routing.NewKey(container.NetworkSettings.IPAddress), container.NetworkSettings.IPAddress)
+					routerSystem.NewPeer(routing.NewKey(container.NetworkSettings.IPAddress), container.NetworkSettings.IPAddress)
+				}
+
+				//second time: simulates the initial call of Run...
+				systemService.Run()
+				//second time: simulates the next scheduled call of Run...
+				systemService.Run()
+
+				time.Sleep(time.Second)
+
+				log.WithField("test", "integration_systems").Error(utils.MarshalSD(GetSystems()))
+
+				l, _ := client.GetLog()
+				log.Info(l)
+
+				// query one peer at random if ALL systems are registered with the neighbor
+				container := dockerizedPeers[0].Container
+				client.Host = fmt.Sprintf("http://%s:8383", container.NetworkSettings.IPAddress)
+				system, _ := client.GetSystem()
+				log.WithField("test", "integration_systems").Info(system)
+
+				Expect(system).To(ContainSubstring(golook.GolookSystem.UUID))
+			})
+		})
+
 		It("can inform peers about the system.", func() {
-			int.RunPeerInDocker(func(client *docker.Client, container *docker.Container) {
+			int.RunPeerInDocker(func(c *docker.Client, container *docker.Container) {
 				routerFiles.NewPeer(routing.NewKey(container.NetworkSettings.IPAddress), container.NetworkSettings.IPAddress)
 				routerSystem.NewPeer(routing.NewKey(container.NetworkSettings.IPAddress), container.NetworkSettings.IPAddress)
 
-				log.Info("Sending broadcast")
 				result := systemService.broadcastSystem(
 					PeerSystemReport{
 						Uuid: golook.GolookSystem.UUID,
@@ -156,7 +184,13 @@ var _ = Describe("The service layer's", func() {
 					},
 				)
 
+				// query the peer if the system is registered with the neighbor
+				client.Host = fmt.Sprintf("http://%s:8383", container.NetworkSettings.IPAddress)
+				system, _ := client.GetSystem()
+				log.WithField("test", "integration").Debug(system)
+
 				Expect(result).ToNot(BeNil())
+				Expect(system).To(ContainSubstring(golook.GolookSystem.UUID))
 			})
 		})
 	})

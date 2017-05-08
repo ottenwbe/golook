@@ -26,6 +26,7 @@ import (
 var (
 	configurationService = service.NewConfigurationService()
 	fileServices         = service.OpenFileServices(service.BroadcastFiles)
+	logService           = service.GetLogService()
 )
 
 //getFiles implements the http endpoint: GET /file
@@ -86,7 +87,7 @@ func getAPI(writer http.ResponseWriter, _ *http.Request) {
 
 //getLog implements the Endpoint: GET /log
 func getLog(writer http.ResponseWriter, _ *http.Request) {
-	err := service.RewriteLog(writer)
+	err := logService.RewriteLog(writer)
 	if err != nil {
 		returnAndLogError(writer, "Cannot open log file", err, http.StatusInternalServerError)
 		return

@@ -77,7 +77,13 @@ var _ = Describe("The rpc client", func() {
 		httpServer.Close()
 	})
 
-	It("should send a message to the server and in turn receive the response without an error", func() {
+	It("should be created by a factory function which assembles a valid URL.", func() {
+		client := newJsonRPCClient("1.2.3.4", 5678)
+		Expect(client).ToNot(BeNil())
+		Expect(client.Url()).To(Equal("http://1.2.3.4:5678"))
+	})
+
+	It("should send a message to the server and in turn receive the response without an error.", func() {
 		var expectedString string
 
 		// make a test call to the server (see httpServer)

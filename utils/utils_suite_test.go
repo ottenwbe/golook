@@ -21,6 +21,9 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+/*
+TestUtils tells 'ginkgo' to run the tests of the utils package
+*/
 func TestUtils(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Utils Test Suite")

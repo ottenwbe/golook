@@ -23,13 +23,32 @@ import (
 	"os"
 )
 
+type LogService interface {
+	RewriteLog(writer io.Writer) error
+	//Init the configuration
+	Init()
+	//Apply the configuration
+	Apply()
+}
+
+type viperLogService struct {
+	logFileName string
+}
+
 const defaultLogFileName = "golook.log"
 
-var logFileName string
+var logger = &viperLogService{}
 
-func RewriteLog(writer io.Writer) error {
+/*
+GetLogService returns the root log service.
+*/
+func GetLogService() LogService {
+	return logger
+}
 
-	f, err := os.Open(logFileName)
+func (logs *viperLogService) RewriteLog(writer io.Writer) error {
+
+	f, err := os.Open(logs.logFileName)
 	if os.IsNotExist(err) {
 		// when no log file exists, write nothing to the io.Writer and return
 		return nil
@@ -57,8 +76,7 @@ func RewriteLog(writer io.Writer) error {
 	return nil
 }
 
-func ApplyLoggingConfig() {
-
+func (logs *viperLogService) Apply() {
 	lvl, err := log.ParseLevel(viper.GetString("log.level"))
 	if err != nil {
 		lvl = log.InfoLevel
@@ -66,21 +84,20 @@ func ApplyLoggingConfig() {
 	}
 	log.SetLevel(lvl)
 
-	logFileName = viper.GetString("log.file")
-	if logFileName == "" {
-		logFileName = defaultLogFileName
+	logs.logFileName = viper.GetString("log.file")
+	if logs.logFileName == "" {
+		logs.logFileName = defaultLogFileName
 		log.Infof("Failed to log's filename from configuration; falling back to default: '%s'", defaultLogFileName)
 	}
 
-	file, err := os.OpenFile(logFileName, os.O_CREATE|os.O_WRONLY, 0666)
+	file, err := os.OpenFile(logs.logFileName, os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		log.Info("Failed to log to file, using default: 'stderr'")
 	}
 	log.SetOutput(file)
 }
 
-func InitLogging() {
-
+func (logs *viperLogService) Init() {
 	viper.SetDefault("log.level", "info")
 	viper.SetDefault("log.file", defaultLogFileName)
 }

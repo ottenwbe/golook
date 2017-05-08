@@ -15,8 +15,8 @@
 package core
 
 const (
-	Golook_Name = "golook"
-	Version     = "v0.1.0-dev"
+	GolookName = "golook"
+	Version    = "v0.1.0-dev"
 )
 
 type AppInfo struct {
@@ -27,7 +27,7 @@ type AppInfo struct {
 
 func NewAppInfo() *AppInfo {
 	return &AppInfo{
-		App:     Golook_Name,
+		App:     GolookName,
 		Version: Version,
 		System:  NewSystem(),
 	}

@@ -22,8 +22,8 @@ import (
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: fmt.Sprintf("Print the version number of %s.", golook.Golook_Name),
-	Long:  fmt.Sprintf("All software has versions. This is %s's version.", golook.Golook_Name),
+	Short: fmt.Sprintf("Print the version number of %s.", golook.GolookName),
+	Long:  fmt.Sprintf("All software has versions. This is %s's version.", golook.GolookName),
 	Run: func(_ *cobra.Command, _ []string) {
 		fmt.Println(golook.Version)
 	},

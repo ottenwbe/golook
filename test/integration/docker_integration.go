@@ -25,6 +25,46 @@ import (
 	"time"
 )
 
+/*
+RunPeerInDocker starts one docker container with a running golook broker and then executes the function 'f'
+*/
+func RunPeerInDocker(f func(client *docker.Client, container *docker.Container)) {
+	var (
+		d = &DockerizedGolook{}
+	)
+
+	d.Init()
+	//ensure Container stops again
+	defer d.Stop()
+
+	d.Start()
+
+	f(d.Client, d.Container)
+}
+
+/*
+RunPeersInDocker starts 'numPeers' docker containers with a running golook broker and then executes the function 'f'
+*/
+func RunPeersInDocker(numPeers int, f func(client []*DockerizedGolook)) {
+	var (
+		dockerizedGolooks = make([]*DockerizedGolook, numPeers)
+	)
+
+	for i := 0; i < numPeers; i++ {
+		dockerizedGolooks[i] = &DockerizedGolook{}
+		dockerizedGolooks[i].Init()
+		//ensure Container stops again
+		dockerizedGolooks[i].Start()
+	}
+	defer func() {
+		for i := range dockerizedGolooks {
+			dockerizedGolooks[i].Stop()
+		}
+	}()
+
+	f(dockerizedGolooks)
+}
+
 type DockerizedGolook struct {
 	Client    *docker.Client
 	Container *docker.Container
@@ -59,23 +99,11 @@ func (d *DockerizedGolook) Stop() {
 			ID:    d.Container.ID,
 			Force: true,
 		}); err != nil {
-			log.Fatalf("cannot remove Container: %s", err)
+			log.Fatalf("Cannot remove Container: %s", err)
 		}
+	} else {
+		log.Fatal("Nil Container")
 	}
-}
-
-func RunPeerInDocker(f func(client *docker.Client, container *docker.Container)) {
-	var (
-		d = &DockerizedGolook{}
-	)
-
-	d.Init()
-	//ensure Container stops again
-	defer d.Stop()
-
-	d.Start()
-
-	f(d.Client, d.Container)
 }
 
 func createOptions(containerName string) docker.CreateContainerOptions {

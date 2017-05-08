@@ -30,13 +30,13 @@ type router struct {
 func newRouter(name string, routerType routing.RouterType) *router {
 	r := &router{routing.NewRouter(name, routerType)}
 	routing.ActivateRouter(r)
-	newSystemCallbacks.Add(name, r.handleNewSystem)
+	changedSystemCallbacks.Add(name, r.handleNewSystem)
 	return r
 }
 
 func (r *router) close() {
 	routing.DeactivateRouter(r)
-	newSystemCallbacks.Delete(r.Router.Name())
+	changedSystemCallbacks.Delete(r.Router.Name())
 }
 
 func (r *router) handleNewSystem(uuid string, systems map[string]*golook.System) {

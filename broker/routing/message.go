@@ -11,6 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
 package routing
 
 import (
@@ -23,6 +24,7 @@ type (
 	Source struct {
 		Id     int    `json:"id"`
 		System string `json:"system"`
+		//TODO key instead of system
 	}
 
 	Destination struct {
@@ -39,9 +41,9 @@ type (
 	}
 
 	ResponseMessage struct {
-		Src      Source `json:"source"`
-		Receiver Source `json:"receiver"`
-		Params   Params `json:"params"`
+		RequestSrc  Source `json:"receiver_source"`
+		ResponseSrc Source `json:"response_source"`
+		Params      Params `json:"params"`
 	}
 )
 
@@ -64,9 +66,9 @@ func NewResponseMessage(src Source, params interface{}) (*ResponseMessage, error
 		return nil, err
 	}
 	return &ResponseMessage{
-		Src:      src,
-		Receiver: Source{Id: 0, System: golook.GolookSystem.UUID},
-		Params:   Params(p),
+		RequestSrc:  src,
+		ResponseSrc: Source{Id: 0, System: golook.GolookSystem.UUID},
+		Params:      Params(p),
 	}, nil
 }
 

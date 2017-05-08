@@ -16,37 +16,37 @@ package routing
 
 import "sync"
 
-type DuplicateFilter map[int]bool
-type DuplicateMap struct {
-	filters      map[string]DuplicateFilter
+type duplicateFilter map[int]bool
+type duplicateMap struct {
+	filters      map[string]duplicateFilter
 	duplicateMtx sync.Mutex
 }
 
-func newDuplicateMap() *DuplicateMap {
-	return &DuplicateMap{
-		filters: make(map[string]DuplicateFilter, 0),
+func newDuplicateMap() *duplicateMap {
+	return &duplicateMap{
+		filters: make(map[string]duplicateFilter, 0),
 	}
 }
 
-func (m *DuplicateMap) watchForDuplicatesFrom(system string) {
+func (m *duplicateMap) watchForDuplicatesFrom(system string) {
 	if _, ok := m.filters[system]; !ok {
-		m.filters[system] = make(DuplicateFilter, 0)
+		m.filters[system] = make(duplicateFilter, 0)
 	}
 }
 
-func (m *DuplicateMap) isDuplicate(source Source) bool {
+func (m *duplicateMap) isDuplicate(source Source) bool {
 	ok := m.filters[source.System][source.Id]
 	return ok
 }
 
-func (m *DuplicateMap) add(source Source) {
+func (m *duplicateMap) add(source Source) {
 	m.filters[source.System][source.Id] = true
 }
 
 /*
 CheckForDuplicates returns false if called multiple times the same (id and system-uuid) of a source. Otherwise it will return true.
 */
-func (m *DuplicateMap) CheckForDuplicates(source Source) bool {
+func (m *duplicateMap) CheckForDuplicates(source Source) bool {
 	m.duplicateMtx.Lock()
 	defer m.duplicateMtx.Unlock()
 

@@ -20,6 +20,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+/*
+Router describes
+*/
 type Router interface {
 	com.MessageHandler
 	Route(key Key, method string, params interface{}) interface{}
@@ -47,7 +50,6 @@ type RouteTable interface {
 	peers() map[Key]com.RpcClient
 	get(key Key) (com.RpcClient, bool)
 	add(key Key, client com.RpcClient)
-	this() com.RpcServer
 }
 
 func routerLoggerS(rt Router) *log.Entry {
@@ -58,29 +60,25 @@ func routerLogger(rt Router, method string) *log.Entry {
 	return log.WithFields(log.Fields{"router": rt.Name(), "method": method})
 }
 
-type DefaultRouteTable struct {
+type defaultRouteTable struct {
 	peerClients map[Key]com.RpcClient
 }
 
 func newDefaultRouteTable() RouteTable {
-	return &DefaultRouteTable{
+	return &defaultRouteTable{
 		peerClients: make(map[Key]com.RpcClient, 0),
 	}
 }
 
-func (rt *DefaultRouteTable) this() com.RpcServer {
-	return nil
-}
-
-func (rt *DefaultRouteTable) get(key Key) (com.RpcClient, bool) {
+func (rt *defaultRouteTable) get(key Key) (com.RpcClient, bool) {
 	client, ok := rt.peerClients[key]
 	return client, ok
 }
 
-func (rt *DefaultRouteTable) add(key Key, client com.RpcClient) {
+func (rt *defaultRouteTable) add(key Key, client com.RpcClient) {
 	rt.peerClients[key] = client
 }
 
-func (rt *DefaultRouteTable) peers() map[Key]com.RpcClient {
+func (rt *defaultRouteTable) peers() map[Key]com.RpcClient {
 	return rt.peerClients
 }

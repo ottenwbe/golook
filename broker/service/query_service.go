@@ -96,19 +96,19 @@ func mergeData(rawData1 FileQueryData, rawData2 FileQueryData) FileQueryData {
 	return result
 }
 
-func getRawData(v1 models.EncapsulatedValues, v2 models.EncapsulatedValues) (FileQueryData, FileQueryData) {
+func getRawData(rawData1 models.EncapsulatedValues, rawData2 models.EncapsulatedValues) (FileQueryData, FileQueryData) {
 	var (
-		response1, response2 map[string][]*models.File
+		response1, response2 FileQueryData
 	)
 
-	errV1 := v1.Unmarshal(&response1)
-	errV2 := v2.Unmarshal(&response2)
+	errV1 := rawData1.Unmarshal(&response1)
+	errV2 := rawData2.Unmarshal(&response2)
 
 	if errV1 != nil {
-		response1 = map[string][]*models.File{}
+		response1 = FileQueryData{}
 	}
-	if errV2 == nil {
-		response2 = map[string][]*models.File{}
+	if errV2 != nil {
+		response2 = FileQueryData{}
 	}
 
 	return response1, response2

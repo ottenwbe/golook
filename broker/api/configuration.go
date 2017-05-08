@@ -21,9 +21,8 @@ import (
 )
 
 /*
-Configuration of the API
+Constants for the configuration of the API layer
 */
-
 const (
 	/*GolookAPIVersion describes the currently supported and implemented http api version*/
 	GolookAPIVersion = "/v1"

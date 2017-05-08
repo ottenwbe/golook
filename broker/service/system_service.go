@@ -19,6 +19,7 @@ import (
 	repo "github.com/ottenwbe/golook/broker/repository"
 	"github.com/ottenwbe/golook/broker/routing"
 	golook "github.com/ottenwbe/golook/broker/runtime/core"
+	"github.com/ottenwbe/golook/utils"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -33,12 +34,13 @@ type (
 	SystemService struct {
 		router *router
 	}
-	NewSystemCallback  func(uuid string, system map[string]*golook.System)
-	NewSystemCallbacks map[string]NewSystemCallback
+	SystemCallback  func(uuid string, system map[string]*golook.System)
+	SystemCallbacks map[string]SystemCallback
 )
 
 var (
-	newSystemCallbacks = NewSystemCallbacks{}
+	newSystemCallbacks     = SystemCallbacks{}
+	changedSystemCallbacks = SystemCallbacks{}
 )
 
 func newSystemService() *SystemService {
@@ -91,10 +93,15 @@ func (s SystemService) Run() {
 		IsDeletion: false,
 	}
 	response := s.broadcastSystem(report)
+	log.WithField("method", "Run").Info(utils.MarshalSD(response))
 	if response != nil {
 		var systems PeerSystemReport
-		response.Unmarshal(systems)
-		handleNewSystem(systems)
+		err := response.Unmarshal(&systems)
+		if err != nil {
+			log.WithError(err).Error("Cannot unmarshal system!")
+		} else {
+			handleNewSystem(systems)
+		}
 	} else {
 		log.Error("Nil response!")
 	}
@@ -152,9 +159,11 @@ func processSystemReport(systemReport PeerSystemReport) PeerSystemReport {
 
 func handleNewSystem(systemMessage PeerSystemReport) error {
 
-	_, found := repo.GoLookRepository.GetSystem(systemMessage.Uuid)
+	var found bool = false
 
 	for _, s := range systemMessage.System {
+		_, foundTmp := repo.GoLookRepository.GetSystem(systemMessage.Uuid)
+		found = found || foundTmp
 		repo.GoLookRepository.StoreSystem(s.UUID, s)
 	}
 
@@ -164,9 +173,11 @@ func handleNewSystem(systemMessage PeerSystemReport) error {
 		systemMessage.Uuid,
 		len(systemMessage.System))
 
+	changedSystemCallbacks.call(systemMessage.Uuid, systemMessage.System)
 	if !found {
 		newSystemCallbacks.call(systemMessage.Uuid, systemMessage.System)
 	}
+
 	return nil
 }
 
@@ -174,15 +185,15 @@ func GetSystems() map[string]*golook.System {
 	return repo.GoLookRepository.GetSystems()
 }
 
-func (c *NewSystemCallbacks) Add(id string, callback NewSystemCallback) {
+func (c *SystemCallbacks) Add(id string, callback SystemCallback) {
 	(*c)[id] = callback
 }
 
-func (c *NewSystemCallbacks) Delete(id string) {
+func (c *SystemCallbacks) Delete(id string) {
 	delete(*c, id)
 }
 
-func (c *NewSystemCallbacks) call(uuid string, system map[string]*golook.System) {
+func (c *SystemCallbacks) call(uuid string, system map[string]*golook.System) {
 	for _, callback := range *c {
 		callback(uuid, system)
 	}

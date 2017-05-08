@@ -17,6 +17,7 @@ package service
 import (
 	"errors"
 	"github.com/ottenwbe/golook/broker/models"
+	repo "github.com/ottenwbe/golook/broker/repository"
 	golook "github.com/ottenwbe/golook/broker/runtime/core"
 	"github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
@@ -155,4 +156,32 @@ func (mock *MockReportService) report(fileReport *models.FileReport) (map[string
 }
 
 func (mock *MockReportService) close() {
+}
+
+const (
+	fileReport = "file_report"
+)
+
+func handleFileReport(params models.EncapsulatedValues) interface{} {
+	var (
+		fileMessage PeerFileReport
+		response    FileQueryData
+	)
+
+	log.Debug("New file report.")
+
+	if err := params.Unmarshal(&fileMessage); err == nil {
+		response = processFileReport(&fileMessage)
+	} else {
+		log.WithError(err).Error("Cannot handle file report.")
+		response = FileQueryData{}
+	}
+
+	return response
+}
+
+func processFileReport(fileMessage *PeerFileReport) (response FileQueryData) {
+	log.Debug("Update file for: %s", fileMessage.System)
+	repo.GoLookRepository.UpdateFiles(fileMessage.System, fileMessage.Files)
+	return FileQueryData{}
 }

@@ -20,8 +20,11 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/ottenwbe/golook/broker/models"
 	"github.com/ottenwbe/golook/broker/repository"
+	. "github.com/ottenwbe/golook/broker/repository"
 	"github.com/ottenwbe/golook/broker/routing"
 	golook "github.com/ottenwbe/golook/broker/runtime/core"
+	"github.com/ottenwbe/golook/utils"
+	"path/filepath"
 )
 
 var _ = Describe("The broadcast report service", func() {
@@ -59,4 +62,54 @@ var _ = Describe("The broadcast report service", func() {
 
 	})
 
+	It("broadcasts files in folders reports and adds them to the local repository", func() {
+
+		testFolderName, err := filepath.Abs(".")
+		if err != nil {
+			Fail("Cannot prepare test data, testfolder '.' not found.")
+		}
+		rs.report(
+			&models.FileReport{
+				Path: testFolderName,
+			},
+		)
+
+		storedFiles := repositories.GoLookRepository.GetFiles(golook.GolookSystem.UUID)
+
+		Expect(len(storedFiles)).To(BeNumerically(">=", 1))
+		Expect(rs.router.Router.(*routing.MockRouter).Visited >= 1).To(BeTrue())
+
+	})
+})
+
+var _ = Describe("The report handler", func() {
+
+	BeforeEach(func() {
+		//reset repo ... for each test
+		GoLookRepository = NewRepository()
+	})
+
+	AfterEach(func() {
+		//reset repo ... would actually be sufficient after the last test
+		GoLookRepository = NewRepository()
+	})
+
+	It("stores file reports in the golook repository (when the system is known to the repo)", func() {
+		storedSys := golook.GolookSystem
+		GoLookRepository.StoreSystem(golook.GolookSystem.UUID, storedSys)
+		f, _ := models.NewFile("report_handler_test.go")
+		m, _ := utils.MarshalS(PeerFileReport{Files: map[string]*models.File{f.Name: f}, System: golook.GolookSystem.UUID})
+		fReport := routing.Params(m)
+		handleFileReport(fReport)
+		_, ok := AccessMapRepository().GetSystem(golook.GolookSystem.UUID)
+		Expect(ok).To(BeTrue())
+	})
+
+	It("rejects invalid reports)", func() {
+		//GoLookRepository.StoreSystem(runtime.GolookSystem.UUID, runtime.GolookSystem)
+		fReport := routing.Params("")
+		handleFileReport(fReport)
+		_, ok := AccessMapRepository().GetSystem(golook.GolookSystem.UUID)
+		Expect(ok).To(BeFalse())
+	})
 })

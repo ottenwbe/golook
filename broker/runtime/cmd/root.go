@@ -35,7 +35,7 @@ func Run() {
 }
 
 var rootCmd = &cobra.Command{
-	Use:   golook.Golook_Name,
+	Use:   golook.GolookName,
 	Short: "Golook Broker",
 	Long:  "Golook Broker which implements a Servent (Client/Server) for a distributed file search",
 	Run: func(_ *cobra.Command, _ []string) {
@@ -51,7 +51,7 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	service.InitLogging()
+	service.GetLogService().Init()
 
 	api.InitConfiguration()
 	repositories.InitConfiguration()
@@ -62,7 +62,7 @@ func init() {
 
 func applyConfiguration() {
 
-	service.ApplyLoggingConfig()
+	service.GetLogService().Apply()
 
 	api.ApplyConfiguration()
 	repositories.ApplyConfiguration()

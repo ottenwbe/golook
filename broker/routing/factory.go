@@ -61,6 +61,9 @@ func ActivateRouter(r Router) {
 	com.MessageDispatcher.RegisterHandler(r.Name(), r, RequestMessage{}, ResponseMessage{})
 }
 
+/*
+DeactivateRouter performs all cleanup operations for the router
+*/
 func DeactivateRouter(r Router) {
 	com.MessageDispatcher.RemoveHandler(r.Name())
 }

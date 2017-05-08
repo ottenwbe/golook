@@ -19,7 +19,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe(" AppInfo ", func() {
+var _ = Describe("The AppInfo ", func() {
 
 	var info *AppInfo
 
@@ -27,11 +27,11 @@ var _ = Describe(" AppInfo ", func() {
 		info = NewAppInfo()
 	})
 
-	It("should comprise the current app version by default", func() {
+	It("should comprise the current app version by default.", func() {
 		Expect(info.Version).To(Equal(Version))
 	})
 
-	It("should comprise the current system by default", func() {
+	It("should comprise the current system by default.", func() {
 		Expect(info.System).ToNot(BeNil())
 		Expect(*info.System).To(Equal(*NewSystem()))
 	})

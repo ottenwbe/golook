@@ -17,7 +17,9 @@ package service
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/ottenwbe/golook/broker/models"
 	"github.com/ottenwbe/golook/broker/routing"
+	"github.com/sirupsen/logrus"
 	"reflect"
 )
 
@@ -44,4 +46,50 @@ var _ = Describe("The query service", func() {
 
 	})
 
+	It("merges files responses", func() {
+
+		f, err := models.NewFile("query_service_test")
+		if err != nil {
+			logrus.Fatal("Cannot create file.")
+		}
+
+		var expectedResult = FileQueryData{
+			"a": {
+				f,
+			},
+			"b": {
+				f,
+			},
+		}
+
+		var testResult = mergeFileQuery(
+			testMerge{
+				data: &FileQueryData{
+					"a": {
+						f,
+					},
+				},
+			},
+			testMerge{
+				data: &FileQueryData{
+					"b": {
+						f,
+					},
+				},
+			},
+		)
+
+		Expect(testResult.(FileQueryData)).To(Equal(expectedResult))
+
+	})
 })
+
+type testMerge struct {
+	data *FileQueryData
+}
+
+func (m testMerge) Unmarshal(v interface{}) error {
+	tmp := reflect.ValueOf(v).Elem()
+	tmp.Set(reflect.ValueOf(m.data).Elem())
+	return nil
+}

@@ -22,7 +22,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/ottenwbe/golook/broker/api"
-	"github.com/ottenwbe/golook/broker/runtime"
+	golook "github.com/ottenwbe/golook/broker/runtime/core"
 	"io/ioutil"
 	"net/http"
 )
@@ -33,8 +33,8 @@ var _ = Describe("The golook server's", func() {
 		It("allows clients to query the application's /info endpoint from a server running in a docker Container", func() {
 			RunPeerInDocker(func(client *docker.Client, container *docker.Container) {
 
-				appInfo := &runtime.AppInfo{}
-				compareInfo := runtime.NewAppInfo()
+				appInfo := &golook.AppInfo{}
+				compareInfo := golook.NewAppInfo()
 				//containerInfo := GetContainerInfo(Client, Container)
 
 				// make test request

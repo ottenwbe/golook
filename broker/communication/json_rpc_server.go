@@ -24,6 +24,9 @@ import (
 )
 
 type (
+	/*
+		JsonRPCServerStub implements the server stub for a particular handler function. The handler function is called when a valid message is received from a client.
+	*/
 	JsonRPCServerStub struct {
 		handler string
 		active  bool
@@ -47,12 +50,12 @@ func (rpc *JsonRPCServerStub) ServeJSONRPC(_ context.Context, params *json.RawMe
 		return nil, jsonrpc.ErrMethodNotFound()
 	}
 
-	log.Info("Received RPC message: %s", string(*params))
+	log.WithField("com", "jsonRPCServerStub").Debug("Received RPC message: %s", string(*params))
 
 	p := &JsonRPCParams{params: *params}
 
 	if response, err := MessageDispatcher.handleMessage(rpc.handler, p); err != nil {
-		log.WithError(err).Error("Error when dispatching Json RPC call")
+		log.WithField("com", "jsonRPCServerStub").WithError(err).Error("Error when dispatching Json RPC call.")
 		return response, jsonrpc.ErrMethodNotFound()
 	} else {
 		return response, nil

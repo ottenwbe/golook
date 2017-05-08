@@ -19,16 +19,18 @@ import (
 
 	. "github.com/ottenwbe/golook/broker/models"
 
+	"github.com/ottenwbe/golook/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/ybbus/jsonrpc"
 )
 
 type (
-	/*JsonRpcClientStub implements the RPCClient interface*/
+	/*JsonRpcClientStub implements the RPCClients interface*/
 	JsonRpcClientStub struct {
 		serverUrl string
 		c         *jsonrpc.RPCClient
 	}
+	/*JsonRPCReturnType implements the EncapsulatedValues interface*/
 	JsonRPCReturnType struct {
 		response *jsonrpc.RPCResponse
 	}
@@ -48,12 +50,12 @@ func newJsonRPCClient(url string, port int) RpcClient {
 }
 
 /*
-call executes a RPC call with the given method name and the given parameters.
+Call executes a RPC call with the given method name and the given parameters.
 It returns a generic return value. Clients can retrieve the result by calling the Unmarshal method on the result.
 */
 func (lc *JsonRpcClientStub) Call(method string, parameters interface{}) (EncapsulatedValues, error) {
 
-	log.WithField("method", method).WithField("com", "jsonrpc").Debugf("Making a call for %s with %s", method, parameters)
+	log.WithField("method", method).WithField("com", "jsonrpc").Debugf("Making a call for %s with %s", method, utils.MarshalSD(parameters))
 
 	response, err := lc.c.Call(method, parameters)
 	if err != nil {
@@ -66,10 +68,16 @@ func (lc *JsonRpcClientStub) Call(method string, parameters interface{}) (Encaps
 	return r, nil
 }
 
+/*
+URL returns the url of the RPC server to which this client connects
+*/
 func (lc *JsonRpcClientStub) Url() string {
 	return lc.serverUrl
 }
 
+/*
+Unmarshal allows callers of the RPC client to unmarshal the result retrieved by the client
+*/
 func (rt *JsonRPCReturnType) Unmarshal(v interface{}) error {
 	return rt.response.GetObject(v)
 }

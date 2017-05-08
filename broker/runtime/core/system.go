@@ -16,15 +16,17 @@ package core
 
 import (
 	"encoding/json"
+	"github.com/satori/go.uuid"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"net"
 	"os"
 	"runtime"
-
-	"github.com/satori/go.uuid"
-	log "github.com/sirupsen/logrus"
 )
 
+/*
+System represents the runtime system (OS, ...) of the broker.
+*/
 type System struct {
 	Name string `json:"name"`
 	OS   string `json:"os"`
@@ -42,25 +44,6 @@ func NewSystem() *System {
 		OS:   getOS(),
 		IP:   getIP(),
 		UUID: getUuid(),
-	}
-}
-
-func EncodeSystem(sys *System) string {
-	b, err := json.Marshal(sys)
-	return toString(b, err)
-}
-
-func EncodeSystems(sys []*System) string {
-	b, err := json.Marshal(sys)
-	return toString(b, err)
-}
-
-func toString(b []byte, err error) string {
-	if err != nil {
-		log.WithError(err).Error("Error when marshalling system")
-		return "{}"
-	} else {
-		return string(b)
 	}
 }
 
@@ -90,7 +73,7 @@ func getOS() string {
 	return runtime.GOOS
 }
 
-//https://play.golang.org/p/BDt3qEQ_2H
+//see: https://play.golang.org/p/BDt3qEQ_2H
 func getIP() string {
 	ifaces, err := net.Interfaces()
 	if err != nil {
