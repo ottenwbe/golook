@@ -31,12 +31,17 @@ func newRouter(name string, routerType routing.RouterType) *router {
 	r := &router{routing.NewRouter(name, routerType)}
 	routing.ActivateRouter(r)
 	changedSystemCallbacks.Add(name, r.handleNewSystem)
+	delSystemCallbacks.Add(name, r.handleDelSystem)
 	return r
 }
 
 func (r *router) close() {
 	routing.DeactivateRouter(r)
 	changedSystemCallbacks.Delete(r.Router.Name())
+}
+
+func (r *router) handleDelSystem(uuid string, system *golook.System) {
+	r.DelPeer(routing.NewKey(system.UUID))
 }
 
 func (r *router) handleNewSystem(uuid string, systems map[string]*golook.System) {

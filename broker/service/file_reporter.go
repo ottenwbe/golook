@@ -29,7 +29,7 @@ func broadcastLocalFiles(broadCastRouter *router) {
 }
 
 func broadcastFiles(files map[string]*models.File, broadCastRouter *router) {
-	peerFileReport := &PeerFileReport{Files: files, System: golook.GolookSystem.UUID}
+	peerFileReport := &peerFileReport{Files: files, System: golook.GolookSystem.UUID}
 	broadCastRouter.BroadCast(fileReport, peerFileReport)
 }
 

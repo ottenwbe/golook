@@ -29,6 +29,7 @@ type Router interface {
 	BroadCast(method string, params interface{}) models.EncapsulatedValues
 	AddHandler(name string, handler *Handler)
 	NewPeer(key Key, url string)
+	DelPeer(key Key)
 	Name() string
 }
 
@@ -50,6 +51,7 @@ type RouteTable interface {
 	peers() map[Key]com.RpcClient
 	get(key Key) (com.RpcClient, bool)
 	add(key Key, client com.RpcClient)
+	del(key Key)
 }
 
 func routerLoggerS(rt Router) *log.Entry {
@@ -77,6 +79,10 @@ func (rt *defaultRouteTable) get(key Key) (com.RpcClient, bool) {
 
 func (rt *defaultRouteTable) add(key Key, client com.RpcClient) {
 	rt.peerClients[key] = client
+}
+
+func (rt *defaultRouteTable) del(key Key) {
+	delete(rt.peerClients, key)
 }
 
 func (rt *defaultRouteTable) peers() map[Key]com.RpcClient {

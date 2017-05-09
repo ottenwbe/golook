@@ -11,19 +11,33 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package repositories
+
+package service
 
 import (
-	. "github.com/ottenwbe/golook/broker/models"
-	golook "github.com/ottenwbe/golook/broker/runtime/core"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
+	"io"
+	"io/ioutil"
 )
 
-type Repository interface {
-	StoreSystem(systemName string, system *golook.System) bool
-	GetSystem(systemName string) (*golook.System, bool)
-	GetSystems() map[string]*golook.System
-	DelSystem(systemName string) *golook.System
-	UpdateFiles(systemName string, files map[string]*File) bool
-	FindSystemAndFiles(findString string) map[string][]*File
-	GetFiles(systemName string) map[string]*File
-}
+var _ = Describe("The log services", func() {
+	It("can read a log file from disk and write it to an io.Writer.", func() {
+		LogService := GetLogService()
+		log.Info("Test log entry")
+
+		r, w := io.Pipe()
+		go func() {
+			LogService.RewriteLog(w)
+			w.Close()
+		}()
+
+		b, err := ioutil.ReadAll(r)
+		if err != nil {
+			log.Fatal("Cannot read from log file in test.")
+		}
+
+		Expect(string(b)).ToNot(Equal("Test log entry"))
+	})
+})

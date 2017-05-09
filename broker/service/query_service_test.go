@@ -25,13 +25,13 @@ import (
 
 var _ = Describe("The query service", func() {
 	It("creates a local query service by default", func() {
-		q := newQueryService(LocalQueries, &router{})
+		q := newQueryService(localQueries, &router{routing.NewMockedRouter()})
 		Expect(q).ToNot(BeNil())
 		Expect(reflect.TypeOf(q)).To(Equal(reflect.TypeOf(&localQueryService{})))
 	})
 
-	It("creates broadcast query service when BCastQueries is specified", func() {
-		q := newQueryService(BCastQueries, &router{})
+	It("creates broadcast query service when bCastQueries is specified", func() {
+		q := newQueryService(bCastQueries, &router{routing.NewMockedRouter()})
 		Expect(q).ToNot(BeNil())
 		Expect(reflect.TypeOf(q)).To(Equal(reflect.TypeOf(&broadcastQueryService{})))
 	})
@@ -53,7 +53,7 @@ var _ = Describe("The query service", func() {
 			logrus.Fatal("Cannot create file.")
 		}
 
-		var expectedResult = FileQueryData{
+		var expectedResult = fileQueryData{
 			"a": {
 				f,
 			},
@@ -64,14 +64,14 @@ var _ = Describe("The query service", func() {
 
 		var testResult = mergeFileQuery(
 			testMerge{
-				data: &FileQueryData{
+				data: &fileQueryData{
 					"a": {
 						f,
 					},
 				},
 			},
 			testMerge{
-				data: &FileQueryData{
+				data: &fileQueryData{
 					"b": {
 						f,
 					},
@@ -79,13 +79,13 @@ var _ = Describe("The query service", func() {
 			},
 		)
 
-		Expect(testResult.(FileQueryData)).To(Equal(expectedResult))
+		Expect(testResult.(fileQueryData)).To(Equal(expectedResult))
 
 	})
 })
 
 type testMerge struct {
-	data *FileQueryData
+	data *fileQueryData
 }
 
 func (m testMerge) Unmarshal(v interface{}) error {

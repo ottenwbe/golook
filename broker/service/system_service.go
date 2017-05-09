@@ -34,11 +34,29 @@ type (
 	SystemService struct {
 		router *router
 	}
-	SystemCallback  func(uuid string, system map[string]*golook.System)
+	/*
+		SystemCallback is the base type for functions that are called by the system service.
+	*/
+	SystemCallback func(uuid string, system map[string]*golook.System)
+
+	/*
+		SingleSystemCallback is the base type for functions that are called by the system service.
+	*/
+	SingleSystemCallback func(uuid string, system *golook.System)
+
+	/*
+		SystemCallbacks is the base type for an index/map of functions that implement a 'SystemCallback'
+	*/
 	SystemCallbacks map[string]SystemCallback
+
+	/*
+		SingleSystemCallbacks is the base type for an index/map of functions that implement a 'SingleSystemCallback'
+	*/
+	SingleSystemCallbacks map[string]SingleSystemCallback
 )
 
 var (
+	delSystemCallbacks     = SingleSystemCallbacks{}
 	newSystemCallbacks     = SystemCallbacks{}
 	changedSystemCallbacks = SystemCallbacks{}
 )
@@ -53,12 +71,118 @@ func newSystemService() *SystemService {
 	return s
 }
 
+func (s SystemService) close() {
+	s.router.close()
+}
+
+/*
+Run can be triggered to store and report the system's information.
+*/
+func (s SystemService) Run() {
+	s.storeSystem(golook.GolookSystem)
+	s.reportSystem()
+
+}
+
+func (SystemService) storeSystem(system *golook.System) {
+	if system == nil {
+		systemServiceLogger().Error("Ignoring nil system. This might result in your system not being reported.")
+	} else {
+		repo.GoLookRepository.StoreSystem(system.UUID, system)
+	}
+}
+
+func (s SystemService) reportSystem() {
+	var report = peerSystemReport{
+		Uuid:       golook.GolookSystem.UUID,
+		System:     GetSystems(),
+		IsDeletion: false,
+	}
+	response := s.broadcastSystem(report)
+	systemServiceLogger().Debug(utils.MarshalSD(response))
+	if response != nil {
+		var systems peerSystemReport
+		err := response.Unmarshal(&systems)
+		if err != nil {
+			systemServiceLogger().WithError(err).Error("Cannot unmarshal system!")
+		} else {
+			handleAddSystem(systems)
+		}
+	} else {
+		systemServiceLogger().Error("Nil response!")
+	}
+}
+
+func (s SystemService) broadcastSystem(report peerSystemReport) models.EncapsulatedValues {
+	if s.router != nil {
+		return s.router.BroadCast(systemReport, report)
+	}
+	systemServiceLogger().Error("Router is not set.")
+	return nil
+}
+
+func (s SystemService) handleSystemReport(params models.EncapsulatedValues) interface{} {
+	var (
+		systemReport peerSystemReport
+	)
+
+	if params == nil {
+		systemServiceLogger().Error("Cannot handle 'nil' system report.")
+		return peerSystemReport{}
+	}
+
+	if err := params.Unmarshal(&systemReport); err != nil {
+		systemServiceLogger().WithError(err).Error("Cannot handle malformed system report.")
+		return peerSystemReport{}
+	}
+
+	return processSystemReport(systemReport)
+}
+
+func processSystemReport(systemReport peerSystemReport) peerSystemReport {
+	if systemReport.IsDeletion {
+		handleDelSystem(systemReport)
+	} else {
+		handleAddSystem(systemReport)
+	}
+
+	result := peerSystemReport{golook.GolookSystem.UUID, repo.GoLookRepository.GetSystems(), false}
+	return result
+}
+
+func handleDelSystem(systemReport peerSystemReport) {
+	s := repo.GoLookRepository.DelSystem(systemReport.Uuid)
+	delSystemCallbacks.call(s.UUID, s)
+}
+
+func handleAddSystem(systemReport peerSystemReport) {
+
+	var firstTimeReport bool = false
+
+	for _, s := range systemReport.System {
+		_, foundSystem := repo.GoLookRepository.GetSystem(systemReport.Uuid)
+		firstTimeReport = firstTimeReport || foundSystem
+		repo.GoLookRepository.StoreSystem(s.UUID, s)
+	}
+
+	systemServiceLogger().
+		Debugf("Handle #%d systems from %s and %d callbacks.",
+			len(systemReport.System),
+			systemReport.Uuid,
+			len(changedSystemCallbacks))
+
+	changedSystemCallbacks.call(systemReport.Uuid, systemReport.System)
+	if !firstTimeReport {
+		newSystemCallbacks.call(systemReport.Uuid, systemReport.System)
+	}
+}
+
 func (s SystemService) merge(raw1 models.EncapsulatedValues, raw2 models.EncapsulatedValues) interface{} {
 
-	var systems1 PeerSystemReport
+	var systems1 peerSystemReport
 	err1 := raw1.Unmarshal(&systems1)
 
-	var systems2 PeerSystemReport
+	var systems2 peerSystemReport
 	err2 := raw2.Unmarshal(&systems2)
 
 	if err1 != nil {
@@ -77,118 +201,43 @@ func (s SystemService) merge(raw1 models.EncapsulatedValues, raw2 models.Encapsu
 	return systems1
 }
 
-func (s SystemService) close() {
-	s.router.close()
-}
-
 /*
-Run can be triggered to store and report the system's information.
+GetSystems return the current view on systems known the broker
 */
-func (s SystemService) Run() {
-	s.storeSystem(golook.GolookSystem)
-
-	var report = PeerSystemReport{
-		Uuid:       golook.GolookSystem.UUID,
-		System:     repo.GoLookRepository.GetSystems(),
-		IsDeletion: false,
-	}
-	response := s.broadcastSystem(report)
-	log.WithField("method", "Run").Info(utils.MarshalSD(response))
-	if response != nil {
-		var systems PeerSystemReport
-		err := response.Unmarshal(&systems)
-		if err != nil {
-			log.WithError(err).Error("Cannot unmarshal system!")
-		} else {
-			handleNewSystem(systems)
-		}
-	} else {
-		log.Error("Nil response!")
-	}
-}
-
-func (SystemService) storeSystem(system *golook.System) {
-	if system != nil {
-		repo.GoLookRepository.StoreSystem(system.UUID, system)
-	} else {
-		log.Error("Ignoring nil system when storing it.")
-	}
-}
-
-func (s SystemService) broadcastSystem(report PeerSystemReport) models.EncapsulatedValues {
-	if s.router != nil {
-		return s.router.BroadCast(systemReport, report)
-	}
-	log.WithField("service", "system").Error("router is not set!")
-	return nil
-}
-
-func (s SystemService) handleSystemReport(params models.EncapsulatedValues) interface{} {
-	var (
-		systemReport PeerSystemReport
-	)
-
-	if params == nil {
-		log.Error("Cannot handle 'nil' system report")
-		return PeerSystemReport{}
-	}
-
-	if err := params.Unmarshal(&systemReport); err != nil {
-		log.WithError(err).Error("Cannot handle malformed system report")
-		return PeerSystemReport{}
-	}
-
-	return processSystemReport(systemReport)
-}
-
-func processSystemReport(systemReport PeerSystemReport) PeerSystemReport {
-	var err error
-	if systemReport.IsDeletion {
-		repo.GoLookRepository.DelSystem(systemReport.Uuid)
-	} else {
-		err = handleNewSystem(systemReport)
-	}
-
-	if err != nil {
-		log.WithError(err).Info("Error processing system report.")
-	}
-
-	result := PeerSystemReport{golook.GolookSystem.UUID, repo.GoLookRepository.GetSystems(), false}
-	return result
-}
-
-func handleNewSystem(systemMessage PeerSystemReport) error {
-
-	var found bool = false
-
-	for _, s := range systemMessage.System {
-		_, foundTmp := repo.GoLookRepository.GetSystem(systemMessage.Uuid)
-		found = found || foundTmp
-		repo.GoLookRepository.StoreSystem(s.UUID, s)
-	}
-
-	log.WithField("found", found).Infof("Got #%d systems at %s from %s and %d callbacks",
-		len(systemMessage.System),
-		golook.GolookSystem.UUID,
-		systemMessage.Uuid,
-		len(systemMessage.System))
-
-	changedSystemCallbacks.call(systemMessage.Uuid, systemMessage.System)
-	if !found {
-		newSystemCallbacks.call(systemMessage.Uuid, systemMessage.System)
-	}
-
-	return nil
-}
-
 func GetSystems() map[string]*golook.System {
 	return repo.GoLookRepository.GetSystems()
 }
 
+/*
+Add a callback with a given id
+*/
 func (c *SystemCallbacks) Add(id string, callback SystemCallback) {
 	(*c)[id] = callback
 }
 
+/*
+Delete a callback with a given id
+*/
+func (c *SingleSystemCallbacks) Delete(id string) {
+	delete(*c, id)
+}
+
+func (c *SingleSystemCallbacks) call(uuid string, system *golook.System) {
+	for _, callback := range *c {
+		callback(uuid, system)
+	}
+}
+
+/*
+Add a callback with a given id
+*/
+func (c *SingleSystemCallbacks) Add(id string, callback SingleSystemCallback) {
+	(*c)[id] = callback
+}
+
+/*
+Delete a callback with a given id
+*/
 func (c *SystemCallbacks) Delete(id string) {
 	delete(*c, id)
 }
@@ -197,4 +246,8 @@ func (c *SystemCallbacks) call(uuid string, system map[string]*golook.System) {
 	for _, callback := range *c {
 		callback(uuid, system)
 	}
+}
+
+func systemServiceLogger() *log.Entry {
+	return log.WithField("service", "system")
 }

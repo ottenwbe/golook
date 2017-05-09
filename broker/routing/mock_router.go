@@ -24,6 +24,10 @@ type MockRouter struct {
 	VisitedMethod string
 }
 
+func (lr *MockRouter) DelPeer(key Key) {
+	lr.Visited += 1
+}
+
 func (lr *MockRouter) NewPeer(key Key, url string) {
 	lr.Visited += 1
 }

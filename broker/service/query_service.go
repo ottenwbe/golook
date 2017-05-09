@@ -17,14 +17,15 @@ package service
 import (
 	"github.com/ottenwbe/golook/broker/models"
 	"github.com/ottenwbe/golook/broker/repository"
+	"github.com/ottenwbe/golook/broker/routing"
 	"github.com/ottenwbe/golook/utils"
 	log "github.com/sirupsen/logrus"
 )
 
 const (
-	MockQueries  = "mock"
-	LocalQueries = "local"
-	BCastQueries = "broadcast"
+	mockQueries  = "mock"
+	localQueries = "local"
+	bCastQueries = "broadcast"
 )
 
 type (
@@ -35,34 +36,54 @@ type (
 	broadcastQueryService struct {
 		router *router
 	}
+	/*
+		MockQueryService implements a mock interface for queries
+	*/
 	MockQueryService struct {
 		SearchString string
 	}
-	FileQueryData map[string][]*models.File
+	fileQueryData map[string][]*models.File
 )
 
 func newQueryService(queryType string, router *router) queryService {
 	switch queryType {
-	case MockQueries:
+	case mockQueries:
 		return &MockQueryService{}
-	case BCastQueries:
+	case bCastQueries:
+		if router != nil {
+			router.AddHandler(
+				fileQuery,
+				routing.NewHandler(
+					handleFileQuery,
+					mergeFileQuery,
+				),
+			)
+		}
 		return &broadcastQueryService{router: router}
 	default:
+		if router != nil {
+			router.AddHandler(
+				fileQuery,
+				routing.NewHandler(
+					handleFileQuery,
+					mergeFileQuery,
+				),
+			)
+		}
 		return &localQueryService{}
-
 	}
 }
 
 func (*localQueryService) query(searchString string) (interface{}, error) {
-	fq := PeerFileQuery{SearchString: searchString}
+	fq := peerFileQuery{SearchString: searchString}
 	return processFileQuery(fq), nil
 }
 
 func (qs *broadcastQueryService) query(searchString string) (interface{}, error) {
-	fq := PeerFileQuery{SearchString: searchString}
+	fq := peerFileQuery{SearchString: searchString}
 	queryResult := qs.router.BroadCast(fileQuery, fq)
 
-	var response FileQueryData
+	var response fileQueryData
 	err := utils.Unmarshal(queryResult, &response)
 	if err != nil {
 		return nil, err
@@ -88,7 +109,7 @@ func mergeFileQuery(v1 models.EncapsulatedValues, v2 models.EncapsulatedValues) 
 	return mergedData
 }
 
-func mergeData(rawData1 FileQueryData, rawData2 FileQueryData) FileQueryData {
+func mergeData(rawData1 fileQueryData, rawData2 fileQueryData) fileQueryData {
 	result := rawData1
 	for k, v := range rawData2 {
 		result[k] = v
@@ -96,19 +117,19 @@ func mergeData(rawData1 FileQueryData, rawData2 FileQueryData) FileQueryData {
 	return result
 }
 
-func getRawData(rawData1 models.EncapsulatedValues, rawData2 models.EncapsulatedValues) (FileQueryData, FileQueryData) {
+func getRawData(rawData1 models.EncapsulatedValues, rawData2 models.EncapsulatedValues) (fileQueryData, fileQueryData) {
 	var (
-		response1, response2 FileQueryData
+		response1, response2 fileQueryData
 	)
 
 	errV1 := rawData1.Unmarshal(&response1)
 	errV2 := rawData2.Unmarshal(&response2)
 
 	if errV1 != nil {
-		response1 = FileQueryData{}
+		response1 = fileQueryData{}
 	}
 	if errV2 != nil {
-		response2 = FileQueryData{}
+		response2 = fileQueryData{}
 	}
 
 	return response1, response2
@@ -117,8 +138,8 @@ func getRawData(rawData1 models.EncapsulatedValues, rawData2 models.Encapsulated
 func handleFileQuery(params models.EncapsulatedValues) interface{} {
 
 	var (
-		queryMessage PeerFileQuery
-		response     FileQueryData
+		queryMessage peerFileQuery
+		response     fileQueryData
 	)
 
 	err := params.Unmarshal(&queryMessage)
@@ -127,13 +148,13 @@ func handleFileQuery(params models.EncapsulatedValues) interface{} {
 		response = processFileQuery(queryMessage)
 	} else {
 		log.WithError(err).Error("Could not handle file query")
-		response = FileQueryData{}
+		response = fileQueryData{}
 	}
 
 	return response
 }
 
-func processFileQuery(systemMessage PeerFileQuery) FileQueryData {
+func processFileQuery(systemMessage peerFileQuery) fileQueryData {
 	result := repositories.GoLookRepository.FindSystemAndFiles(systemMessage.SearchString)
-	return FileQueryData(result)
+	return fileQueryData(result)
 }

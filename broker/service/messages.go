@@ -19,17 +19,17 @@ import (
 	golook "github.com/ottenwbe/golook/broker/runtime/core"
 )
 
-type PeerFileReport struct {
+type peerFileReport struct {
 	Files  map[string]*models.File `json:"files"`
 	System string                  `json:"system"`
 }
 
-type PeerSystemReport struct {
+type peerSystemReport struct {
 	Uuid       string                    `json:"uuid"`
 	System     map[string]*golook.System `json:"systems"`
 	IsDeletion bool                      `json:"deletion,omitempty"`
 }
 
-type PeerFileQuery struct {
+type peerFileQuery struct {
 	SearchString string `json:"search"`
 }

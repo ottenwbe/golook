@@ -24,6 +24,9 @@ import (
 
 type systemFilesMap map[string]*SystemFiles
 
+/*
+MapRepository is the implementation of a repository that stores files and systems in memory in a map.
+*/
 type MapRepository struct {
 	systemFiles systemFilesMap
 	mutex       sync.RWMutex
@@ -95,13 +98,21 @@ func (repo *MapRepository) GetSystem(systemName string) (sys *golook.System, ok 
 	return sys, found
 }
 
-func (repo *MapRepository) DelSystem(systemName string) {
+func (repo *MapRepository) DelSystem(systemName string) (result *golook.System) {
 	repo.mutex.Lock()
 	defer repo.mutex.Unlock()
 
+	if r, ok := repo.systemFiles[systemName]; ok {
+		result = r.System
+	}
+
 	delete(repo.systemFiles, systemName)
+	return result
 }
 
+/*
+GetFiles returns all files stored for a system with systemName. Returns an empty map if the system cannot bee found.
+*/
 func (repo *MapRepository) GetFiles(systemName string) map[string]*File {
 	repo.mutex.RLock()
 	defer repo.mutex.RUnlock()

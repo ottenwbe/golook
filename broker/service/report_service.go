@@ -18,15 +18,20 @@ import (
 	"errors"
 	"github.com/ottenwbe/golook/broker/models"
 	repo "github.com/ottenwbe/golook/broker/repository"
+	"github.com/ottenwbe/golook/broker/routing"
 	golook "github.com/ottenwbe/golook/broker/runtime/core"
 	"github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 )
 
 const (
-	MockReport  = "mock"
-	LocalReport = "local"
-	BCastReport = "broadcast"
+	mockReport  = "mock"
+	localReport = "local"
+	bCastReport = "broadcast"
+)
+
+const (
+	fileReport = "file_report"
 )
 
 type (
@@ -49,6 +54,9 @@ type (
 	localReportService struct {
 		monitoredReportService
 	}
+	/*
+		MockReportService implements a mock version of the report service, e.g., for testing.
+	*/
 	MockReportService struct {
 		FileReport *models.FileReport
 	}
@@ -56,10 +64,10 @@ type (
 
 func newReportService(reportType string, router *router) (result reportService) {
 	switch reportType {
-	case MockReport:
+	case mockReport:
 		result = &MockReportService{}
-	case LocalReport:
-		result = newLocalReportService()
+	case localReport:
+		result = newLocalReportService(router)
 	default:
 		result = newBroadcastReportService(router)
 	}
@@ -87,6 +95,13 @@ func newBroadcastReportService(router *router) reportService {
 		},
 	)
 
+	router.AddHandler(fileReport,
+		routing.NewHandler(
+			handleFileReport,
+			nil,
+		),
+	)
+
 	return rs
 }
 
@@ -100,7 +115,7 @@ func (rs *broadcastReportService) close() {
 func (rs *broadcastReportService) report(fileReport *models.FileReport) (map[string]*models.File, error) {
 
 	if fileReport == nil {
-		log.Error("Ignoring empty file report.")
+		logFileReport().Error("Ignoring empty file report.")
 		return map[string]*models.File{}, errors.New("Ignoring empty file report")
 	}
 
@@ -116,12 +131,19 @@ func (rs *broadcastReportService) report(fileReport *models.FileReport) (map[str
 	return files, nil
 }
 
-func newLocalReportService() reportService {
+func newLocalReportService(router *router) reportService {
 	rs := &localReportService{}
 
 	rs.fileMonitor = &FileMonitor{}
 	rs.fileMonitor.reporter = reportFileChangesLocal
 	rs.fileMonitor.Open()
+
+	router.AddHandler(fileReport,
+		routing.NewHandler(
+			handleFileReport,
+			nil,
+		),
+	)
 
 	return rs
 }
@@ -133,7 +155,7 @@ func (rs *localReportService) close() {
 func (rs *localReportService) report(fileReport *models.FileReport) (map[string]*models.File, error) {
 
 	if fileReport == nil {
-		log.Error("Ignoring empty file report.")
+		logFileReport().Error("Ignoring empty file report.")
 		return map[string]*models.File{}, errors.New("Ignoring empty file report")
 	}
 
@@ -158,30 +180,30 @@ func (mock *MockReportService) report(fileReport *models.FileReport) (map[string
 func (mock *MockReportService) close() {
 }
 
-const (
-	fileReport = "file_report"
-)
-
 func handleFileReport(params models.EncapsulatedValues) interface{} {
 	var (
-		fileMessage PeerFileReport
-		response    FileQueryData
+		fileMessage peerFileReport
+		response    fileQueryData
 	)
 
-	log.Debug("New file report.")
+	logFileReport().WithField("params", params).Debug("New file report.")
 
 	if err := params.Unmarshal(&fileMessage); err == nil {
 		response = processFileReport(&fileMessage)
 	} else {
-		log.WithError(err).Error("Cannot handle file report.")
-		response = FileQueryData{}
+		logFileReport().WithError(err).Error("Cannot handle file report.")
+		response = fileQueryData{}
 	}
 
 	return response
 }
 
-func processFileReport(fileMessage *PeerFileReport) (response FileQueryData) {
-	log.Debug("Update file for: %s", fileMessage.System)
+func processFileReport(fileMessage *peerFileReport) (response fileQueryData) {
+	logFileReport().Debug("Update file for: %s", fileMessage.System)
 	repo.GoLookRepository.UpdateFiles(fileMessage.System, fileMessage.Files)
-	return FileQueryData{}
+	return fileQueryData{}
+}
+
+func logFileReport() *log.Entry {
+	return log.WithField("service", "report")
 }

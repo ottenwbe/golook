@@ -38,11 +38,17 @@ type (
 )
 
 var (
-	HttpRpcServer golook.Server
+	/*
+	   HttpRPCServer is the http server for accepting json rpc messages
+	*/
+	HttpRPCServer golook.Server
 )
 
 var _ (jsonrpc.Handler) = (*JsonRPCServerStub)(nil)
 
+/*
+ServeJSONRPC handles json rpc messages which arrive for registered handlers
+*/
 func (rpc *JsonRPCServerStub) ServeJSONRPC(_ context.Context, params *json.RawMessage) (interface{}, *jsonrpc.Error) {
 
 	// if the interface is not active, return an error
@@ -54,12 +60,13 @@ func (rpc *JsonRPCServerStub) ServeJSONRPC(_ context.Context, params *json.RawMe
 
 	p := &JsonRPCParams{params: *params}
 
-	if response, err := MessageDispatcher.handleMessage(rpc.handler, p); err != nil {
+	response, err := MessageDispatcher.handleMessage(rpc.handler, p)
+	if err != nil {
 		log.WithField("com", "jsonRPCServerStub").WithError(err).Error("Error when dispatching Json RPC call.")
 		return response, jsonrpc.ErrMethodNotFound()
-	} else {
-		return response, nil
 	}
+	return response, nil
+
 }
 
 func (rpc *JsonRPCServerStub) Associate(handlerName string, request interface{}, response interface{}) {

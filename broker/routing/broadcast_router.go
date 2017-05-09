@@ -181,6 +181,13 @@ func (router *BroadCastRouter) Route(_ Key, method string, message interface{}) 
 }
 
 /*
+DelPeer deletes a peer
+*/
+func (router *BroadCastRouter) DelPeer(key Key) {
+	router.routeTable.del(key)
+}
+
+/*
 NewPeer adds a new peer with the given key and address. This enables the router to forward messages to this peer.
 */
 func (router *BroadCastRouter) NewPeer(key Key, address string) {

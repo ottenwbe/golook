@@ -32,7 +32,7 @@ var _ = Describe("The broadcast report service", func() {
 	var rs *broadcastReportService
 
 	BeforeEach(func() {
-		rs = newReportService(BCastReport, &router{routing.NewMockedRouter()}).(*broadcastReportService)
+		rs = newReportService(bCastReport, &router{routing.NewMockedRouter()}).(*broadcastReportService)
 	})
 
 	AfterEach(func() {
@@ -40,10 +40,9 @@ var _ = Describe("The broadcast report service", func() {
 	})
 
 	It("ignores nil file reports", func() {
-
+		beforeCount := routing.AccessMockedRouter(rs.router.Router.(*routing.MockRouter)).Visited
 		rs.report(nil)
-		Expect(routing.AccessMockedRouter(rs.router.Router.(*routing.MockRouter)).Visited).To(BeZero())
-
+		Expect(routing.AccessMockedRouter(rs.router.Router.(*routing.MockRouter)).Visited).To(Equal(beforeCount))
 	})
 
 	It("broadcasts file reports and adds them to the local repository", func() {
@@ -98,7 +97,7 @@ var _ = Describe("The report handler", func() {
 		storedSys := golook.GolookSystem
 		GoLookRepository.StoreSystem(golook.GolookSystem.UUID, storedSys)
 		f, _ := models.NewFile("report_handler_test.go")
-		m, _ := utils.MarshalS(PeerFileReport{Files: map[string]*models.File{f.Name: f}, System: golook.GolookSystem.UUID})
+		m, _ := utils.MarshalS(peerFileReport{Files: map[string]*models.File{f.Name: f}, System: golook.GolookSystem.UUID})
 		fReport := routing.Params(m)
 		handleFileReport(fReport)
 		_, ok := AccessMapRepository().GetSystem(golook.GolookSystem.UUID)

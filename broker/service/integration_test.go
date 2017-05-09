@@ -106,9 +106,9 @@ var _ = Describe("The service layer's", func() {
 				result, _ := fileServices.Query("integration_test")
 
 				log.WithField("test", "integration").Debug("Files retrieved:"+
-					"num=%d", len(result.(FileQueryData)))
+					"num=%d", len(result.(fileQueryData)))
 
-				var files = result.(FileQueryData)
+				var files = result.(fileQueryData)
 
 				Expect(files).To(HaveKey(golook.GolookSystem.UUID))
 			})
@@ -138,7 +138,7 @@ var _ = Describe("The service layer's", func() {
 
 	Context("system service", func() {
 
-		It("ensures that all peers know about all peers.", func() {
+		It("ensures that all peers know about all other peers.", func() {
 			int.RunPeersInDocker(2, func(dockerizedPeers []*int.DockerizedGolook) {
 
 				for i := range dockerizedPeers {
@@ -175,7 +175,7 @@ var _ = Describe("The service layer's", func() {
 				routerSystem.NewPeer(routing.NewKey(container.NetworkSettings.IPAddress), container.NetworkSettings.IPAddress)
 
 				result := systemService.broadcastSystem(
-					PeerSystemReport{
+					peerSystemReport{
 						Uuid: golook.GolookSystem.UUID,
 						System: map[string]*golook.System{
 							golook.GolookSystem.UUID: golook.GolookSystem,

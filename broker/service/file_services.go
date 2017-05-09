@@ -77,22 +77,8 @@ type scenarioMock struct {
 
 func (s *scenarioBroadcastQueries) open() {
 	s.r = newRouter("broadcast_queries", routing.BroadcastRouter)
-	s.ReportService = newReportService(LocalReport, s.r)
-	s.QueryService = newQueryService(BCastQueries, s.r)
-
-	s.r.AddHandler(
-		fileQuery,
-		routing.NewHandler(
-			handleFileQuery,
-			mergeFileQuery,
-		),
-	)
-	s.r.AddHandler(fileReport,
-		routing.NewHandler(
-			handleFileReport,
-			nil,
-		),
-	)
+	s.ReportService = newReportService(localReport, s.r)
+	s.QueryService = newQueryService(bCastQueries, s.r)
 }
 
 func (s *scenarioBroadcastQueries) close() {
@@ -110,22 +96,8 @@ func (s *compoundFileServices) Report(fileReport *models.FileReport) (map[string
 
 func (s *scenarioBroadcastFiles) open() {
 	s.r = newRouter("broadcast_files", routing.BroadcastRouter)
-	s.ReportService = newReportService(BCastReport, s.r)
-	s.QueryService = newQueryService(LocalQueries, s.r)
-
-	s.r.AddHandler(
-		fileQuery,
-		routing.NewHandler(
-			handleFileQuery,
-			mergeFileQuery,
-		),
-	)
-	s.r.AddHandler(fileReport,
-		routing.NewHandler(
-			handleFileReport,
-			nil,
-		),
-	)
+	s.ReportService = newReportService(bCastReport, s.r)
+	s.QueryService = newQueryService(localQueries, s.r)
 }
 
 func (s *scenarioBroadcastFiles) close() {
@@ -134,8 +106,8 @@ func (s *scenarioBroadcastFiles) close() {
 }
 
 func (s *scenarioMock) open() {
-	s.ReportService = newReportService(MockReport, nil)
-	s.QueryService = newQueryService(MockQueries, nil)
+	s.ReportService = newReportService(mockReport, nil)
+	s.QueryService = newQueryService(mockQueries, nil)
 }
 
 func (s *scenarioMock) close() {
