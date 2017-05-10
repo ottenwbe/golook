@@ -97,8 +97,8 @@ func (router *BroadCastRouter) disseminate(m *RequestMessage) *ResponseMessage {
 	return result
 }
 
-func (router *BroadCastRouter) send(client com.RpcClient, request *RequestMessage, responseChannel chan *ResponseMessage) {
-	routerLogger(router, request.Method).Debugf("Routing message to client: %s", client.Url())
+func (router *BroadCastRouter) send(client com.RPCClient, request *RequestMessage, responseChannel chan *ResponseMessage) {
+	routerLogger(router, request.Method).Debugf("Routing message to client: %s", client.URL())
 
 	// Make the call
 	tmpResponse, err := client.Call(router.Name(), *request)
@@ -107,7 +107,7 @@ func (router *BroadCastRouter) send(client com.RpcClient, request *RequestMessag
 		tmpResponse.Unmarshal(actualResponse)
 		responseChannel <- actualResponse
 	} else {
-		routerLogger(router, request.Method).WithError(err).Errorf("Error while routing message to client: %s", client.Url())
+		routerLogger(router, request.Method).WithError(err).Errorf("Error while routing message to client: %s", client.URL())
 		responseChannel <- nil
 	}
 }

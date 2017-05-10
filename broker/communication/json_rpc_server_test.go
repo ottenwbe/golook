@@ -23,25 +23,6 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-type TestServerParams struct {
-	A int    `json:"a"`
-	B string `json:"b"`
-}
-
-type testHandler struct {
-	msg TestServerParams
-}
-
-func (t *testHandler) Handle(method string, params models.EncapsulatedValues) interface{} {
-	params.Unmarshal(&t.msg)
-	return TestServerParams{}
-
-}
-
-type aType struct {
-	A int `json:"a"`
-}
-
 var _ = Describe("The rpc params", func() {
 
 	It("can be unmarshalled", func() {
@@ -63,7 +44,7 @@ var _ = Describe("The rpc params", func() {
 		Expect(testResult).To(Equal(expectedResult[0]))
 	})
 
-	It("returns an error when a slice shoud be unmarshalled", func() {
+	It("returns an error when a slice should be unmarshalled", func() {
 		expectedResult := []aType{{123}, {234}}
 
 		b, err := json.Marshal(expectedResult)
@@ -84,7 +65,7 @@ var _ = Describe("The rpc params", func() {
 
 var _ = Describe("The rpc server", func() {
 
-	It("can dispatch a test message to a corresponding handler, when said handler exists", func() {
+	It("can dispatch a message to a corresponding handler, when said handler exists", func() {
 		testMessage := []TestServerParams{{A: 1, B: "2"}}
 		rpcServer := &JsonRPCServerStub{"test", true}
 		correspondingHandler := &testHandler{}
@@ -99,4 +80,57 @@ var _ = Describe("The rpc server", func() {
 		Expect(errJ).To(BeNil())
 		Expect(correspondingHandler.msg).To(Equal(testMessage[0]))
 	})
+
+	It("retuns an error when the method is finalized.", func() {
+		testMessage := []TestServerParams{{A: 1, B: "2"}}
+		rpcServer := &JsonRPCServerStub{"test", true}
+		correspondingHandler := &testHandler{}
+
+		MessageDispatcher.RegisterHandler("test", correspondingHandler, TestServerParams{}, TestServerParams{})
+
+		params, err := json.Marshal(testMessage)
+		Expect(err).To(BeNil())
+
+		rpcServer.Finalize()
+
+		m := json.RawMessage(params)
+		_, errJ := rpcServer.ServeJSONRPC(nil, &m)
+		Expect(errJ).ToNot(BeNil())
+	})
+
+	It("associates handler functions that are called.", func() {
+		testMessage := []TestServerParams{{A: 1, B: "2"}}
+		rpcServer := &JsonRPCServerStub{"test", true}
+		correspondingHandler := &testHandler{}
+
+		MessageDispatcher.RegisterHandler("test", correspondingHandler, TestServerParams{}, TestServerParams{})
+
+		params, err := json.Marshal(testMessage)
+		Expect(err).To(BeNil())
+
+		rpcServer.Finalize()
+
+		m := json.RawMessage(params)
+		_, errJ := rpcServer.ServeJSONRPC(nil, &m)
+		Expect(errJ).ToNot(BeNil())
+	})
 })
+
+type TestServerParams struct {
+	A int    `json:"a"`
+	B string `json:"b"`
+}
+
+type testHandler struct {
+	msg TestServerParams
+}
+
+func (t *testHandler) Handle(method string, params models.EncapsulatedValues) interface{} {
+	params.Unmarshal(&t.msg)
+	return TestServerParams{}
+
+}
+
+type aType struct {
+	A int `json:"a"`
+}

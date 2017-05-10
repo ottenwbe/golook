@@ -56,19 +56,18 @@ func (rpc *JsonRPCServerStub) ServeJSONRPC(_ context.Context, params *json.RawMe
 		return nil, jsonrpc.ErrMethodNotFound()
 	}
 
-	log.WithField("com", "jsonRPCServerStub").Debug("Received RPC message: %s", string(*params))
+	jsonRPCLogger().Debug("Received RPC message: %s", string(*params))
 
 	p := &JsonRPCParams{params: *params}
 
 	response, err := MessageDispatcher.handleMessage(rpc.handler, p)
 	if err != nil {
-		log.WithField("com", "jsonRPCServerStub").WithError(err).Error("Error when dispatching Json RPC call.")
+		jsonRPCLogger().WithError(err).Error("Error when dispatching Json RPC call.")
 		return response, jsonrpc.ErrMethodNotFound()
 	}
 	return response, nil
 
 }
-
 func (rpc *JsonRPCServerStub) Associate(handlerName string, request interface{}, response interface{}) {
 	rpc.handler = handlerName
 	rpc.active = true
@@ -97,4 +96,8 @@ func (p *JsonRPCParams) Unmarshal(v interface{}) error {
 	}
 
 	return nil
+}
+
+func jsonRPCLogger() *log.Entry {
+	return log.WithField("com", "jsonRPCServerStub")
 }

@@ -14,7 +14,10 @@
 
 package communication
 
-type RpcServer interface {
+/*
+RPCServer implements the interface which needs to be implemented by all server in the communication layer.
+*/
+type RPCServer interface {
 	Associate(handlerName string, request interface{}, response interface{})
 	Finalize()
 }

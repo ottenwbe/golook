@@ -16,23 +16,33 @@ package communication
 
 import "github.com/ottenwbe/golook/broker/models"
 
+/*
+MockClient implements a mock for the interface RPCClient.
+MockClient also records the calls to the individual functions of the interface.
+*/
 type MockClient struct {
 	VisitedCall int
 	VisitedUrl  int
 	Name        string
 }
 
-func newMockClient() RpcClient {
+func newMockClient() RPCClient {
 	return &MockClient{}
 }
 
-func (client *MockClient) Url() string {
-	client.VisitedUrl += 1
+/*
+URL always returns "test" and ensures that the counter 'VisitedUrl' is increased.
+*/
+func (client *MockClient) URL() string {
+	client.VisitedUrl++
 	return "test"
 }
 
-func (client *MockClient) Call(router string, message interface{}) (models.EncapsulatedValues, error) {
-	client.Name = router
-	client.VisitedCall += 1
+/*
+Call always returns "nil, nil", but ensures that the counter 'VisitedCall' is increased and the called handler's 'name' is recorded in 'Name'.
+*/
+func (client *MockClient) Call(handler string, message interface{}) (models.EncapsulatedValues, error) {
+	client.Name = handler
+	client.VisitedCall++
 	return nil, nil
 }

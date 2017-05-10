@@ -48,9 +48,9 @@ func NewHandler(requestHandler func(params models.EncapsulatedValues) interface{
 type HandlerTable map[string]*Handler
 
 type RouteTable interface {
-	peers() map[Key]com.RpcClient
-	get(key Key) (com.RpcClient, bool)
-	add(key Key, client com.RpcClient)
+	peers() map[Key]com.RPCClient
+	get(key Key) (com.RPCClient, bool)
+	add(key Key, client com.RPCClient)
 	del(key Key)
 }
 
@@ -63,21 +63,21 @@ func routerLogger(rt Router, method string) *log.Entry {
 }
 
 type defaultRouteTable struct {
-	peerClients map[Key]com.RpcClient
+	peerClients map[Key]com.RPCClient
 }
 
 func newDefaultRouteTable() RouteTable {
 	return &defaultRouteTable{
-		peerClients: make(map[Key]com.RpcClient, 0),
+		peerClients: make(map[Key]com.RPCClient, 0),
 	}
 }
 
-func (rt *defaultRouteTable) get(key Key) (com.RpcClient, bool) {
+func (rt *defaultRouteTable) get(key Key) (com.RPCClient, bool) {
 	client, ok := rt.peerClients[key]
 	return client, ok
 }
 
-func (rt *defaultRouteTable) add(key Key, client com.RpcClient) {
+func (rt *defaultRouteTable) add(key Key, client com.RPCClient) {
 	rt.peerClients[key] = client
 }
 
@@ -85,6 +85,6 @@ func (rt *defaultRouteTable) del(key Key) {
 	delete(rt.peerClients, key)
 }
 
-func (rt *defaultRouteTable) peers() map[Key]com.RpcClient {
+func (rt *defaultRouteTable) peers() map[Key]com.RPCClient {
 	return rt.peerClients
 }

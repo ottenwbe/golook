@@ -22,17 +22,21 @@ const (
 var (
 	// value is injected through configuration (see configuration.go)
 	serverType string
-	// value is injected through configuration (see configuration.go)
+	/*ClientType informs NewRPCClient what type of client should be built.
+	Note: the actual value is injected through configuration (see configuration.go)*/
 	ClientType string
 
-	port int = 8382
+	port = 8382
 )
 
-func newRPCServer(associatedHandler string) RpcServer {
+func newRPCServer(associatedHandler string) RPCServer {
 	return &JsonRPCServerStub{handler: associatedHandler}
 }
 
-func NewRPCClient(url string) RpcClient {
+/*
+NewRPCClient returns a new RPCClient. The actual type of the RPCClient needs to be configured beforehand, e.g., in a config file.
+*/
+func NewRPCClient(url string) RPCClient {
 	switch ClientType {
 	case MockRPC:
 		return newMockClient()

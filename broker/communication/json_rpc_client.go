@@ -36,7 +36,7 @@ type (
 	}
 )
 
-func newJsonRPCClient(url string, port int) RpcClient {
+func newJsonRPCClient(url string, port int) RPCClient {
 
 	serverUrl := fmt.Sprintf("http://%s", url)
 	if port >= 0 {
@@ -71,7 +71,7 @@ func (lc *JsonRpcClientStub) Call(method string, parameters interface{}) (Encaps
 /*
 URL returns the url of the RPC server to which this client connects
 */
-func (lc *JsonRpcClientStub) Url() string {
+func (lc *JsonRpcClientStub) URL() string {
 	return lc.serverUrl
 }
 

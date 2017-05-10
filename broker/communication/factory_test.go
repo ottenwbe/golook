@@ -20,26 +20,22 @@ import (
 	"reflect"
 )
 
-var _ = Describe("The mock client", func() {
+var _ = Describe("The communication factory", func() {
 
-	It("provides a builder function.", func() {
-		m := newMockClient()
-		Expect(m).ToNot(BeNil())
-		Expect(reflect.TypeOf(m).String()).To(Equal(reflect.TypeOf(&MockClient{}).String()))
+	AfterEach(func() {
+		ClientType = jsonRPC
 	})
 
-	It("should record the name of the latest call() and the number of calls.", func() {
-		m := &MockClient{}
-		m.Call("test", nil)
-		Expect(m.Name).To(Equal("test"))
-		Expect(m.VisitedCall).To(Equal(1))
+	It("can build json rpc clients; when 'jsonRPC' is configured.", func() {
+		ClientType = jsonRPC
+		client := NewRPCClient("1.2.3.4")
+		Expect(reflect.TypeOf(client).String()).To(Equal(reflect.TypeOf(&JsonRpcClientStub{}).String()))
 	})
 
-	It("should record the number of calls to URL().", func() {
-		m := &MockClient{}
-		m.URL()
-		m.URL()
-		Expect(m.VisitedUrl).To(Equal(2))
+	It("can build mock rpc clients, when 'MockRPC' is configured.", func() {
+		ClientType = MockRPC
+		client := NewRPCClient("1.2.3.4")
+		Expect(reflect.TypeOf(client).String()).To(Equal(reflect.TypeOf(&MockClient{}).String()))
 	})
 
 })

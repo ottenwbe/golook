@@ -50,11 +50,26 @@ var _ = Describe("The router callback registrar", func() {
 		Expect(res.(string)).To(Equal(TEST_NAME))
 	})
 
-	It("rejects messages, i.e., returns nil, if the router is not registered", func() {
+	It("rejects messages, i.e., returns nil, if a handler is not registered", func() {
 		const TEST_NAME = "should_not_exist_test"
 		MessageDispatcher.RegisterHandler(TEST_NAME, nil, testMsg{}, testResponse{})
 
 		res, err := MessageDispatcher.handleMessage(TEST_NAME, &testMsgConv{"msg"})
+
+		Expect(err).ToNot(BeNil())
+		Expect(res).To(BeNil())
+	})
+
+	It("rejects messages, i.e., returns nil, if a handler is removed befor a message is sent.", func() {
+		const (
+			msgContent = "msg"
+			testName   = "test"
+		)
+		t := &testRouteLayerClient{}
+		MessageDispatcher.RegisterHandler(testName, t, testMsg{}, testResponse{})
+
+		MessageDispatcher.RemoveHandler(testName)
+		res, err := MessageDispatcher.handleMessage(testName, &testMsgConv{msgContent})
 
 		Expect(err).ToNot(BeNil())
 		Expect(res).To(BeNil())

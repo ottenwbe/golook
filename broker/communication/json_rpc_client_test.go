@@ -43,7 +43,7 @@ var _ = Describe("The rpc client", func() {
 	var (
 		requestChan     chan string
 		httpServer      *httptest.Server
-		testClient      RpcClient
+		testClient      RPCClient
 		expectedContent []byte
 	)
 
@@ -80,7 +80,7 @@ var _ = Describe("The rpc client", func() {
 	It("should be created by a factory function which assembles a valid URL.", func() {
 		client := newJsonRPCClient("1.2.3.4", 5678)
 		Expect(client).ToNot(BeNil())
-		Expect(client.Url()).To(Equal("http://1.2.3.4:5678"))
+		Expect(client.URL()).To(Equal("http://1.2.3.4:5678"))
 	})
 
 	It("should send a message to the server and in turn receive the response without an error.", func() {
