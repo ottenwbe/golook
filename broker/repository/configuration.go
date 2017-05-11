@@ -18,10 +18,16 @@ import (
 	"github.com/spf13/viper"
 )
 
+/*
+ApplyConfiguration applies the configuration for all sub-components of the repository.
+*/
 func ApplyConfiguration() {
 	repositoryType = RepositoryType(viper.GetInt("repository.typeId"))
 }
 
+/*
+InitConfiguration initializes the configuration for all sub-components of the repository.
+*/
 func InitConfiguration() {
-	viper.SetDefault("repository.typeId", MAP_REPOSITORY)
+	viper.SetDefault("repository.typeId", mapRepository)
 }

@@ -21,7 +21,7 @@ import (
 
 var _ = Describe("The repository factory", func() {
 	It("should return nil when no repository is configured", func() {
-		repositoryType = NO_REPOSITORY
+		repositoryType = noRepository
 		Expect(NewRepository()).To(BeNil())
 
 	})
@@ -30,8 +30,8 @@ var _ = Describe("The repository factory", func() {
 		Expect(NewRepository()).To(BeNil())
 
 	})
-	It("should return a map repository when repositoryType is set to MAP_REPOSITORY", func() {
-		repositoryType = MAP_REPOSITORY
+	It("should return a map repository when repositoryType is set to mapRepository", func() {
+		repositoryType = mapRepository
 		repo := NewRepository()
 		Expect(repo).ToNot(BeNil())
 		Expect(reflect.TypeOf(repo)).To(Equal(reflect.TypeOf(&MapRepository{})))

@@ -33,6 +33,17 @@ func MarshalB(message interface{}) ([]byte, error) {
 }
 
 /*
+MarshalBD is comparable to MarshalB. However, it returns always a valid byte array and no error. When an error occurs, an empty string is returned.
+*/
+func MarshalBD(message interface{}) []byte {
+	result, err := MarshalB(message)
+	if err != nil {
+		result = []byte("{}")
+	}
+	return result
+}
+
+/*
 MarshalS returns the JSON encoding of message as string. If the message cannot be encoded, an error is returned with an empty byte array. Hence no nil value is returned.
 */
 func MarshalS(message interface{}) (string, error) {

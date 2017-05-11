@@ -15,14 +15,22 @@
 package repositories
 
 import (
-	. "github.com/ottenwbe/golook/broker/models"
+	"github.com/ottenwbe/golook/broker/models"
 	golook "github.com/ottenwbe/golook/broker/runtime/core"
+	"github.com/ottenwbe/golook/utils"
 	"github.com/sirupsen/logrus"
+	"io/ioutil"
+	"os"
 	"strings"
 	"sync"
 )
 
-type systemFilesMap map[string]*SystemFiles
+type systemFilesMap map[string]*models.SystemFiles
+
+var (
+	persistenceFile = "mapRepo.json"
+	usePersistence  = false
+)
 
 /*
 MapRepository is the implementation of a repository that stores files and systems in memory in a map.
@@ -33,12 +41,21 @@ type MapRepository struct {
 }
 
 func newMapRepository() *MapRepository {
-	return &MapRepository{
+	result := &MapRepository{
 		systemFiles: make(systemFilesMap, 0),
 		mutex:       sync.RWMutex{},
 	}
+
+	if f, err := ioutil.ReadFile(persistenceFile); usePersistence && err == nil {
+		utils.Unmarshal(f, &result.systemFiles)
+	}
+
+	return result
 }
 
+/*
+StoreSystem stores system information
+*/
 func (repo *MapRepository) StoreSystem(name string, system *golook.System) bool {
 	repo.mutex.Lock()
 	defer repo.mutex.Unlock()
@@ -48,37 +65,49 @@ func (repo *MapRepository) StoreSystem(name string, system *golook.System) bool 
 		sys.System = system
 		return true
 	}
+
+	persist(repo)
+
 	return false
 }
 
-func (repo *MapRepository) UpdateFiles(name string, files map[string]*File) bool {
+/*
+UpdateFiles creates or updates a file entry in the map.
+*/
+func (repo *MapRepository) UpdateFiles(name string, files map[string]*models.File) bool {
 	repo.mutex.Lock()
 	defer repo.mutex.Unlock()
 
 	sys := repo.getOrCreateSystem(name)
 	if sys.Files == nil {
-		sys.Files = make(map[string]*File, 0)
+		sys.Files = make(map[string]*models.File, 0)
 	}
 	for _, file := range files {
-		if file.Meta.State == Created {
+		if file.Meta.State == models.Created {
 			sys.Files[file.Name] = file
 		} else {
 			delete(sys.Files, file.Name)
 		}
 	}
+
+	persist(repo)
+
 	return true
 
 }
-func (repo *MapRepository) getOrCreateSystem(name string) *SystemFiles {
+func (repo *MapRepository) getOrCreateSystem(name string) *models.SystemFiles {
 
 	sys, ok := (repo.systemFiles)[name]
 	if !ok {
-		sys = &SystemFiles{}
+		sys = &models.SystemFiles{}
 		(repo.systemFiles)[name] = sys
 	}
 	return sys
 }
 
+/*
+GetSystems returns all systems for which files can be stored.
+*/
 func (repo *MapRepository) GetSystems() map[string]*golook.System {
 	sys := map[string]*golook.System{}
 	for id, s := range repo.systemFiles {
@@ -87,6 +116,9 @@ func (repo *MapRepository) GetSystems() map[string]*golook.System {
 	return sys
 }
 
+/*
+GetSystem returns a system with a given name. If it is not found, ok=false is returned.
+*/
 func (repo *MapRepository) GetSystem(systemName string) (sys *golook.System, ok bool) {
 	repo.mutex.RLock()
 	defer repo.mutex.RUnlock()
@@ -98,6 +130,10 @@ func (repo *MapRepository) GetSystem(systemName string) (sys *golook.System, ok 
 	return sys, found
 }
 
+/*
+DelSystem removes files and system information from the map. The system which is to be deleted is identified by the systemName.
+The method returns the deleted system.
+*/
 func (repo *MapRepository) DelSystem(systemName string) (result *golook.System) {
 	repo.mutex.Lock()
 	defer repo.mutex.Unlock()
@@ -107,39 +143,51 @@ func (repo *MapRepository) DelSystem(systemName string) (result *golook.System) 
 	}
 
 	delete(repo.systemFiles, systemName)
+
+	persist(repo)
+
 	return result
 }
 
 /*
 GetFiles returns all files stored for a system with systemName. Returns an empty map if the system cannot bee found.
 */
-func (repo *MapRepository) GetFiles(systemName string) map[string]*File {
+func (repo *MapRepository) GetFiles(systemName string) map[string]*models.File {
 	repo.mutex.RLock()
 	defer repo.mutex.RUnlock()
 
 	if sys, found := (repo.systemFiles)[systemName]; found {
 		return sys.Files
 	}
-	return map[string]*File{}
+	return map[string]*models.File{}
 }
 
-//TODO refactor
-func (repo *MapRepository) FindSystemAndFiles(findString string) map[string][]*File {
+/*
+FindSystemAndFiles returns all known systems adn files that match 'findString'
+*/
+func (repo *MapRepository) FindSystemAndFiles(findString string) map[string][]*models.File {
 	repo.mutex.RLock()
 	defer repo.mutex.RUnlock()
 
-	result := make(map[string][]*File, 0)
+	result := make(map[string][]*models.File, 0)
 	for sid, system := range repo.systemFiles {
 		logrus.Info("MapRepository: search for system %s", system)
 		for _, file := range system.Files {
 			logrus.Info("MapRepository: compare %s vs %", file.Name, findString)
 			if strings.Contains(file.Name, findString) {
 				if _, ok := result[sid]; !ok {
-					result[sid] = make([]*File, 0)
+					result[sid] = make([]*models.File, 0)
 				}
 				result[sid] = append(result[sid], file)
 			}
 		}
 	}
 	return result
+}
+
+func persist(repo *MapRepository) error {
+	if usePersistence == true {
+		return ioutil.WriteFile(persistenceFile, utils.MarshalBD(repo.systemFiles), os.ModePerm)
+	}
+	return nil
 }

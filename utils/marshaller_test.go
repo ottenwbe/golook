@@ -53,6 +53,14 @@ var _ = Describe("Marshalling a message", func() {
 		Expect(result).To(Equal("{}"))
 	})
 
+	It("should return an empty json representation'{}', when using the MarshalBD variant.", func() {
+		c := make(chan bool)
+
+		result := MarshalBD(c)
+
+		Expect(string(result)).To(Equal("{}"))
+	})
+
 	It("should return an error when channels or other unsupported types are used.", func() {
 		c := make(chan bool)
 

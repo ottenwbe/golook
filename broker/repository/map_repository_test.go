@@ -20,6 +20,7 @@ import (
 	"github.com/ottenwbe/golook/broker/models"
 	golook "github.com/ottenwbe/golook/broker/runtime/core"
 	"github.com/sirupsen/logrus"
+	"os"
 )
 
 var _ = Describe("The repository implemented with maps", func() {
@@ -29,7 +30,13 @@ var _ = Describe("The repository implemented with maps", func() {
 	)
 
 	BeforeEach(func() {
+		usePersistence = true
 		repo = newMapRepository()
+	})
+
+	AfterEach(func() {
+		usePersistence = false
+		os.RemoveAll(persistenceFile)
 	})
 
 	It("does not accept nil systems", func() {
@@ -51,6 +58,18 @@ var _ = Describe("The repository implemented with maps", func() {
 		sys, ok := repo.GetSystem(sys.Name)
 		Expect(sys).ToNot(BeNil())
 		Expect(ok).To(BeTrue())
+	})
+
+	It("can be read from disk", func() {
+		f := newTestFile()
+		sys := golook.NewSystem()
+		sysName := sys.Name
+		repo.StoreSystem(sysName, sys)
+		repo.UpdateFiles(sysName, map[string]*models.File{f.Name: f})
+
+		repo2 := newMapRepository()
+
+		Expect(repo2.systemFiles).To(HaveKey(sysName))
 	})
 
 	It("allows to delete a stored System", func() {

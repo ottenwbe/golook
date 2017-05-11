@@ -14,25 +14,31 @@
 
 package repositories
 
+/*
+RepositoryType represents the repository type
+*/
 type RepositoryType int
 
 const ( // iota is reset to 0
-	NO_REPOSITORY  RepositoryType = iota // == 0
-	MAP_REPOSITORY RepositoryType = iota // == 1
+	noRepository  RepositoryType = iota // == 0
+	mapRepository RepositoryType = iota // == 1
 )
 
 var (
 	// value is injected through configuration (see configuration.go)
-	repositoryType RepositoryType = MAP_REPOSITORY
+	repositoryType = mapRepository
 )
 
+/*
+NewRepository is the factory function for repositories.
+*/
 func NewRepository() Repository {
 	var repo Repository
 
 	switch repositoryType {
-	case NO_REPOSITORY:
+	case noRepository:
 		repo = nil
-	case MAP_REPOSITORY:
+	case mapRepository:
 		repo = newMapRepository()
 	default:
 		repo = nil
@@ -41,9 +47,15 @@ func NewRepository() Repository {
 	return repo
 }
 
-// BEWARE: will panic if the GoLookRepository is not a MapRepository
+/*
+AccessMapRepository casts the GoLookRepository to a map repository; if it is a map repository. Otherwise, the function will panic.
+BEWARE: Function will panic if the GoLookRepository is not a MapRepository.
+*/
 func AccessMapRepository() *MapRepository {
 	return GoLookRepository.(*MapRepository)
 }
 
-var GoLookRepository Repository = NewRepository()
+/*
+GoLookRepository the global repository
+*/
+var GoLookRepository = NewRepository()
