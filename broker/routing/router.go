@@ -21,7 +21,7 @@ import (
 )
 
 /*
-Router describes
+Router describes a generic router interface
 */
 type Router interface {
 	com.MessageHandler
@@ -33,11 +33,17 @@ type Router interface {
 	Name() string
 }
 
+/*
+Handler is the type of all request and merge handlers
+*/
 type Handler struct {
 	requestHandler func(params models.EncapsulatedValues) interface{}
 	mergeCallback  func(raw1 models.EncapsulatedValues, raw2 models.EncapsulatedValues) interface{}
 }
 
+/*
+NewHandler is the factory method for 'Handler's
+*/
 func NewHandler(requestHandler func(params models.EncapsulatedValues) interface{}, mergeCallack func(raw1 models.EncapsulatedValues, raw2 models.EncapsulatedValues) interface{}) *Handler {
 	return &Handler{
 		requestHandler: requestHandler,
@@ -45,8 +51,14 @@ func NewHandler(requestHandler func(params models.EncapsulatedValues) interface{
 	}
 }
 
+/*
+HandlerTable is the alias for a map of handlers
+*/
 type HandlerTable map[string]*Handler
 
+/*
+RouteTable is the base for routing tables
+*/
 type RouteTable interface {
 	peers() map[Key]com.RPCClient
 	get(key Key) (com.RPCClient, bool)

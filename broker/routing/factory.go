@@ -20,11 +20,12 @@ import (
 )
 
 /*
-RouterType ...
+RouterType represents the type of a router
 */
 type RouterType string
 
 const (
+	/*BroadcastRouter represent the type of the default broadcast router*/
 	BroadcastRouter RouterType = "broadcast"
 )
 

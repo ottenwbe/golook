@@ -37,7 +37,7 @@ type TestParams struct {
 var _ = Describe("The rpc client", func() {
 
 	const (
-		EXPECTED_RESPONSE_CONTENT = "1-2-3"
+		expectedResponseContent = "1-2-3"
 	)
 
 	var (
@@ -63,13 +63,13 @@ var _ = Describe("The rpc client", func() {
 			// put request and body to channel for the client to investigate them
 			requestChan <- string(data)
 
-			b, _ := json.Marshal(EXPECTED_RESPONSE_CONTENT)
+			b, _ := json.Marshal(expectedResponseContent)
 			fmt.Fprintf(w, `{"jsonrpc":"2.0","result":%s,"id":0}`, string(b))
 		}))
 
-		testClient = &JsonRpcClientStub{
-			serverUrl: httpServer.URL,
-			c:         jsonrpc.NewJsonRPCClient(fmt.Sprintf("%s/rpc", httpServer.URL)),
+		testClient = &JSONRPCClientStub{
+			serverAddress: httpServer.URL,
+			c:             jsonrpc.NewJsonRPCClient(fmt.Sprintf("%s/rpc", httpServer.URL)),
 		}
 	})
 
@@ -78,7 +78,7 @@ var _ = Describe("The rpc client", func() {
 	})
 
 	It("should be created by a factory function which assembles a valid URL.", func() {
-		client := newJsonRPCClient("1.2.3.4", 5678)
+		client := newJSONRPCClient("1.2.3.4", 5678)
 		Expect(client).ToNot(BeNil())
 		Expect(client.URL()).To(Equal("http://1.2.3.4:5678"))
 	})
@@ -96,7 +96,7 @@ var _ = Describe("The rpc client", func() {
 		// get the msg which has been received by the server
 		res := <-requestChan
 		Expect(res).To(ContainSubstring(string(expectedContent)))
-		Expect(expectedString).To(Equal(EXPECTED_RESPONSE_CONTENT))
+		Expect(expectedString).To(Equal(expectedResponseContent))
 	})
 
 	It("should return an error when an invalid type is to be transferred as content, e.g. a channel", func() {

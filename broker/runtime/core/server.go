@@ -44,7 +44,7 @@ type (
 type ServerType string
 
 const (
-	ServerHttp ServerType = "http"
+	ServerHTTP ServerType = "http"
 )
 
 var (
@@ -53,7 +53,7 @@ var (
 
 func NewServer(address string, serverType ServerType) (server Server) {
 	switch serverType {
-	case ServerHttp:
+	case ServerHTTP:
 		server = &HTTPSever{
 			server:  nil,
 			router:  mux.NewRouter().StrictSlash(true),

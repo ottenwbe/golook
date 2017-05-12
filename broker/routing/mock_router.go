@@ -15,59 +15,94 @@
 package routing
 
 import (
-	. "github.com/ottenwbe/golook/broker/models"
-	. "github.com/ottenwbe/golook/utils"
+	"github.com/ottenwbe/golook/broker/models"
+	"github.com/ottenwbe/golook/utils"
 )
 
+/*
+MockRouter implements a mock of the router interface
+*/
 type MockRouter struct {
 	Visited       int
 	VisitedMethod string
 }
 
-func (lr *MockRouter) DelPeer(key Key) {
-	lr.Visited += 1
+/*
+DelPeer increments the Visited counter
+*/
+func (lr *MockRouter) DelPeer(_ Key) {
+	lr.Visited++
 }
 
-func (lr *MockRouter) NewPeer(key Key, url string) {
-	lr.Visited += 1
+/*
+NewPeer increments the Visited counter
+*/
+func (lr *MockRouter) NewPeer(_ Key, _ string) {
+	lr.Visited++
 }
 
-func (lr *MockRouter) BroadCast(method string, params interface{}) EncapsulatedValues {
-	lr.Visited += 1
+/*
+BroadCast increments the Visited counter
+*/
+func (lr *MockRouter) BroadCast(method string, params interface{}) models.EncapsulatedValues {
+	lr.Visited++
 	lr.VisitedMethod = method
 	return nil
 }
 
+/*
+Route increments the Visited counter
+*/
 func (lr *MockRouter) Route(key Key, method string, params interface{}) interface{} {
-	lr.Visited += 1
+	lr.Visited++
 	lr.VisitedMethod = method
 	return nil
 }
 
-func (lr *MockRouter) Handle(method string, params EncapsulatedValues) interface{} {
-	lr.Visited += 1
+/*
+Handle increments the Visited counter
+*/
+func (lr *MockRouter) Handle(method string, params models.EncapsulatedValues) interface{} {
+	lr.Visited++
 	lr.VisitedMethod = method
 	return nil
 }
 
+/*
+AddHandler increments the Visited counter
+*/
 func (lr *MockRouter) AddHandler(name string, handler *Handler) {
-	lr.Visited += 1
+	lr.Visited++
 	lr.VisitedMethod = name
 }
 
+/*
+Name returns a generic name: 'mock'
+*/
 func (lr *MockRouter) Name() string {
 	return "mock"
 }
 
+/*
+NewMockedRouter is a factory for the MockRouter
+*/
 func NewMockedRouter() Router {
 	return &MockRouter{}
 }
 
+/*
+AccessMockedRouter is an accessor for a router r to the actual MockRouter.
+Will panic if r is not a MockRouter.
+*/
 func AccessMockedRouter(r Router) *MockRouter {
 	return r.(*MockRouter)
 }
 
+/*
+RunWithMockedRouter executes a function f in a block where the given router is hidden  by a MockRouter during the execution.
+The router that needs to be hidden has to be given as 'ptrOrig'.
+*/
 func RunWithMockedRouter(ptrOrig interface{}, f func()) {
 	mockedRouter := NewMockedRouter()
-	Mock(ptrOrig, &mockedRouter, f)
+	utils.Mock(ptrOrig, &mockedRouter, f)
 }

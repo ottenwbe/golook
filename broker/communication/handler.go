@@ -21,16 +21,17 @@ import (
 )
 
 type (
+	/*MessageHandler is the interface that needs to be implemented to receive messages from the communication layer.*/
 	MessageHandler interface {
 		Handle(method string, params models.EncapsulatedValues) interface{}
 	}
 
-	DispatcherBinding struct {
+	dispatcherBinding struct {
 		handler  MessageHandler
 		receiver RPCServer
 	}
 
-	DispatcherBindings map[string]DispatcherBinding
+	dispatcherBindings map[string]dispatcherBinding
 )
 
 /*
@@ -39,7 +40,7 @@ In turn, server components (e.g., the 'json_rpc_server') can delegate the job of
 */
 var MessageDispatcher = newMessageDispatcher()
 
-func (dispatcherBindings *DispatcherBindings) handleMessage(router string, message models.EncapsulatedValues) (interface{}, error) {
+func (dispatcherBindings *dispatcherBindings) handleMessage(router string, message models.EncapsulatedValues) (interface{}, error) {
 	if reg, ok := (*dispatcherBindings)[router]; ok && reg.handler != nil {
 		return reg.handler.Handle(router, message), nil
 	}
@@ -52,16 +53,16 @@ RegisterHandler takes (message) handler with a given name, (expected) request ty
 The registered handlers are called when messages for a given 'name' arrive.
 Note: When a handler is registered you have to remove the handler again with 'RemoveHandler' to ensure that no messages is dispatched to the handler.
 */
-func (dispatcherBindings *DispatcherBindings) RegisterHandler(name string, handler MessageHandler, requestType interface{}, responseType interface{}) {
+func (dispatcherBindings *dispatcherBindings) RegisterHandler(name string, handler MessageHandler, requestType interface{}, responseType interface{}) {
 	receiver := newRPCServer(name)
-	(*dispatcherBindings)[name] = DispatcherBinding{handler, receiver}
+	(*dispatcherBindings)[name] = dispatcherBinding{handler, receiver}
 	receiver.Associate(name, requestType, responseType)
 }
 
 /*
 RemoveHandler ensures that a given handler no longer receives messages.
 */
-func (dispatcherBindings *DispatcherBindings) RemoveHandler(name string) {
+func (dispatcherBindings *dispatcherBindings) RemoveHandler(name string) {
 	if e, ok := (*dispatcherBindings)[name]; ok {
 		delete(*(dispatcherBindings), name)
 		e.receiver.Finalize()
@@ -69,14 +70,14 @@ func (dispatcherBindings *DispatcherBindings) RemoveHandler(name string) {
 }
 
 /*
-HasHandler checks if a handler with a given 'name' is managed by the collection of DispatcherBindings 'r'
+HasHandler checks if a handler with a given 'name' is managed by the collection of dispatcherBindings 'r'
 */
-func (dispatcherBindings *DispatcherBindings) HasHandler(name string) bool {
+func (dispatcherBindings *dispatcherBindings) HasHandler(name string) bool {
 	_, ok := (*dispatcherBindings)[name]
 	return ok
 }
 
-func newMessageDispatcher() *DispatcherBindings {
-	tmp := make(DispatcherBindings)
+func newMessageDispatcher() *dispatcherBindings {
+	tmp := make(dispatcherBindings)
 	return &tmp
 }

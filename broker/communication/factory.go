@@ -16,6 +16,7 @@ package communication
 
 const (
 	jsonRPC = "jsonrpc"
+	/*MockRPC represents the name of the configuration where mocked RPC clients are created*/
 	MockRPC = "mockrpc"
 )
 
@@ -30,7 +31,7 @@ var (
 )
 
 func newRPCServer(associatedHandler string) RPCServer {
-	return &JsonRPCServerStub{handler: associatedHandler}
+	return &JSONRPCServerStub{handler: associatedHandler}
 }
 
 /*
@@ -41,7 +42,7 @@ func NewRPCClient(url string) RPCClient {
 	case MockRPC:
 		return newMockClient()
 	default:
-		return newJsonRPCClient(url, port)
+		return newJSONRPCClient(url, port)
 	}
 
 }

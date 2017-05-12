@@ -14,6 +14,8 @@
 
 package routing
 
+//TODO: expire keys
+
 import "sync"
 
 type duplicateFilter map[int]bool
@@ -35,12 +37,12 @@ func (m *duplicateMap) watchForDuplicatesFrom(system string) {
 }
 
 func (m *duplicateMap) isDuplicate(source Source) bool {
-	ok := m.filters[source.System][source.Id]
+	ok := m.filters[source.System][source.ID]
 	return ok
 }
 
 func (m *duplicateMap) add(source Source) {
-	m.filters[source.System][source.Id] = true
+	m.filters[source.System][source.ID] = true
 }
 
 /*

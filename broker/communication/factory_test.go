@@ -29,7 +29,7 @@ var _ = Describe("The communication factory", func() {
 	It("can build json rpc clients; when 'jsonRPC' is configured.", func() {
 		ClientType = jsonRPC
 		client := NewRPCClient("1.2.3.4")
-		Expect(reflect.TypeOf(client).String()).To(Equal(reflect.TypeOf(&JsonRpcClientStub{}).String()))
+		Expect(reflect.TypeOf(client).String()).To(Equal(reflect.TypeOf(&JSONRPCClientStub{}).String()))
 	})
 
 	It("can build mock rpc clients, when 'MockRPC' is configured.", func() {

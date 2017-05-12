@@ -12,34 +12,35 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-package communication
+package routing
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"reflect"
+	"github.com/satori/go.uuid"
 )
 
-var _ = Describe("The mock client", func() {
-
-	It("provides a builder function.", func() {
-		m := newMockClient()
-		Expect(m).ToNot(BeNil())
-		Expect(reflect.TypeOf(m).String()).To(Equal(reflect.TypeOf(&MockClient{}).String()))
+var _ = Describe("The (routing) key", func() {
+	It("should have a unique nil value.", func() {
+		key := NilKey()
+		Expect(key.id).To(Equal(uuid.Nil))
 	})
 
-	It("should record the name of the latest call() and the number of calls.", func() {
-		m := &MockClient{}
-		m.Call("test", nil)
-		Expect(m.Name).To(Equal("test"))
-		Expect(m.VisitedCall).To(Equal(1))
+	It("should create unique keys based on a name.", func() {
+		key1 := NewKey("test")
+		key2 := NewKey("test")
+		Expect(key1).To(Equal(key2))
 	})
 
-	It("should record the number of calls to URL().", func() {
-		m := &MockClient{}
-		m.URL()
-		m.URL()
-		Expect(m.VisitedURL).To(Equal(2))
+	It("should create unique keys based on a name.", func() {
+		key1 := NewKeyN(uuid.Nil, "test")
+		key2 := NewKeyN(uuid.Nil, "test")
+		Expect(key1).To(Equal(key2))
 	})
 
+	It("should not alter the uuid when created with a uuid.", func() {
+		testUUID := uuid.NewV4()
+		key1 := NewKeyU(testUUID)
+		Expect(key1.id).To(Equal(testUUID))
+	})
 })

@@ -24,9 +24,9 @@ import (
 
 var _ = Describe("The server", func() {
 
-	Context("Glob", func() {
+	Context("global", func() {
 		It("can get or create servers.", func() {
-			s := NewServer(":8987", ServerHttp)
+			s := NewServer(":8987", ServerHTTP)
 			Expect(s).ToNot(BeNil())
 			Expect(servers).To(ContainElement(s))
 		})

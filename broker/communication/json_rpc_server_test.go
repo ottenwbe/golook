@@ -32,7 +32,7 @@ var _ = Describe("The rpc params", func() {
 		if err != nil {
 			Fail("Error while preparig a test")
 		}
-		jsonRPCParams := JsonRPCParams{
+		jsonRPCParams := JSONRPCParams{
 			params: json.RawMessage(b),
 		}
 
@@ -51,7 +51,7 @@ var _ = Describe("The rpc params", func() {
 		if err != nil {
 			Fail("Error while preparig a test")
 		}
-		jsonRPCParams := JsonRPCParams{
+		jsonRPCParams := JSONRPCParams{
 			params: json.RawMessage(b),
 		}
 
@@ -67,7 +67,7 @@ var _ = Describe("The rpc server", func() {
 
 	It("can dispatch a message to a corresponding handler, when said handler exists", func() {
 		testMessage := []TestServerParams{{A: 1, B: "2"}}
-		rpcServer := &JsonRPCServerStub{"test", true}
+		rpcServer := &JSONRPCServerStub{"test", true}
 		correspondingHandler := &testHandler{}
 
 		MessageDispatcher.RegisterHandler("test", correspondingHandler, TestServerParams{}, TestServerParams{})
@@ -83,7 +83,7 @@ var _ = Describe("The rpc server", func() {
 
 	It("retuns an error when the method is finalized.", func() {
 		testMessage := []TestServerParams{{A: 1, B: "2"}}
-		rpcServer := &JsonRPCServerStub{"test", true}
+		rpcServer := &JSONRPCServerStub{"test", true}
 		correspondingHandler := &testHandler{}
 
 		MessageDispatcher.RegisterHandler("test", correspondingHandler, TestServerParams{}, TestServerParams{})
@@ -100,7 +100,7 @@ var _ = Describe("The rpc server", func() {
 
 	It("associates handler functions that are called.", func() {
 		testMessage := []TestServerParams{{A: 1, B: "2"}}
-		rpcServer := &JsonRPCServerStub{"test", true}
+		rpcServer := &JSONRPCServerStub{"test", true}
 		correspondingHandler := &testHandler{}
 
 		MessageDispatcher.RegisterHandler("test", correspondingHandler, TestServerParams{}, TestServerParams{})

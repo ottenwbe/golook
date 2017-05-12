@@ -43,7 +43,7 @@ func NewSystem() *System {
 		Name: getName(),
 		OS:   getOS(),
 		IP:   getIP(),
-		UUID: getUuid(),
+		UUID: getUUID(),
 	}
 }
 
@@ -59,7 +59,7 @@ func DecodeSystem(sysReader io.Reader) (System, error) {
 	return sys, err
 }
 
-func getUuid() string {
+func getUUID() string {
 	return uuid.NewV5(uuid.NamespaceURL, getIP()).String()
 }
 

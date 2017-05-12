@@ -39,5 +39,5 @@ type testJob struct {
 }
 
 func (t *testJob) Run() {
-	t.runCounter += 1
+	t.runCounter++
 }

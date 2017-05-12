@@ -47,7 +47,7 @@ var _ = Describe("The system model", func() {
 		})
 
 		It("has a uuid be assigned", func() {
-			Expect(getUuid()).ToNot(Equal(""))
+			Expect(getUUID()).ToNot(Equal(""))
 		})
 
 		It("can be assigned the correct os", func() {

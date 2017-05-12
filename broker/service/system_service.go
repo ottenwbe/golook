@@ -94,7 +94,7 @@ func (SystemService) storeSystem(system *golook.System) {
 
 func (s SystemService) reportSystem() {
 	var report = peerSystemReport{
-		Uuid:       golook.GolookSystem.UUID,
+		UUID:       golook.GolookSystem.UUID,
 		System:     GetSystems(),
 		IsDeletion: false,
 	}
@@ -151,7 +151,7 @@ func processSystemReport(systemReport peerSystemReport) peerSystemReport {
 }
 
 func handleDelSystem(systemReport peerSystemReport) {
-	s := repo.GoLookRepository.DelSystem(systemReport.Uuid)
+	s := repo.GoLookRepository.DelSystem(systemReport.UUID)
 	delSystemCallbacks.call(s.UUID, s)
 }
 
@@ -160,7 +160,7 @@ func handleAddSystem(systemReport peerSystemReport) {
 	var firstTimeReport bool = false
 
 	for _, s := range systemReport.System {
-		_, foundSystem := repo.GoLookRepository.GetSystem(systemReport.Uuid)
+		_, foundSystem := repo.GoLookRepository.GetSystem(systemReport.UUID)
 		firstTimeReport = firstTimeReport || foundSystem
 		repo.GoLookRepository.StoreSystem(s.UUID, s)
 	}
@@ -168,12 +168,12 @@ func handleAddSystem(systemReport peerSystemReport) {
 	systemServiceLogger().
 		Debugf("Handle #%d systems from %s and %d callbacks.",
 			len(systemReport.System),
-			systemReport.Uuid,
+			systemReport.UUID,
 			len(changedSystemCallbacks))
 
-	changedSystemCallbacks.call(systemReport.Uuid, systemReport.System)
+	changedSystemCallbacks.call(systemReport.UUID, systemReport.System)
 	if !firstTimeReport {
-		newSystemCallbacks.call(systemReport.Uuid, systemReport.System)
+		newSystemCallbacks.call(systemReport.UUID, systemReport.System)
 	}
 }
 
@@ -186,7 +186,7 @@ func (s SystemService) merge(raw1 models.EncapsulatedValues, raw2 models.Encapsu
 	err2 := raw2.Unmarshal(&systems2)
 
 	if err1 != nil {
-		systems1.Uuid = systems2.Uuid
+		systems1.UUID = systems2.UUID
 		systems1.System = make(map[string]*golook.System)
 	}
 

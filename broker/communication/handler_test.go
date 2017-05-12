@@ -23,38 +23,38 @@ import (
 var _ = Describe("The router callback registrar", func() {
 
 	It("stores routers that have been registered", func() {
-		const TEST_NAME = "test1"
-		MessageDispatcher.RegisterHandler(TEST_NAME, &testRouteLayerClient{}, testMsg{}, testResponse{})
+		const testName = "test1"
+		MessageDispatcher.RegisterHandler(testName, &testRouteLayerClient{}, testMsg{}, testResponse{})
 		Expect(*MessageDispatcher).ToNot(BeNil())
-		Expect((*MessageDispatcher)[TEST_NAME]).ToNot(BeNil())
+		Expect((*MessageDispatcher)[testName]).ToNot(BeNil())
 	})
 
 	It("allows to query for stored routers", func() {
-		const TEST_NAME = "testQuery"
-		MessageDispatcher.RegisterHandler(TEST_NAME, &testRouteLayerClient{}, testMsg{}, testResponse{})
-		Expect(MessageDispatcher.HasHandler(TEST_NAME)).To(BeTrue())
+		const testName = "testQuery"
+		MessageDispatcher.RegisterHandler(testName, &testRouteLayerClient{}, testMsg{}, testResponse{})
+		Expect(MessageDispatcher.HasHandler(testName)).To(BeTrue())
 	})
 
 	It("calls the router when tasked to do so", func() {
 		const (
-			MSG_CONTENT = "msg"
-			TEST_NAME   = "test"
+			msgContent = "msg"
+			testName   = "test"
 		)
 		t := &testRouteLayerClient{}
-		MessageDispatcher.RegisterHandler(TEST_NAME, t, testMsg{}, testResponse{})
+		MessageDispatcher.RegisterHandler(testName, t, testMsg{}, testResponse{})
 
-		res, err := MessageDispatcher.handleMessage(TEST_NAME, &testMsgConv{MSG_CONTENT})
+		res, err := MessageDispatcher.handleMessage(testName, &testMsgConv{msgContent})
 
 		Expect(err).To(BeNil())
-		Expect(t.message).To(Equal(MSG_CONTENT))
-		Expect(res.(string)).To(Equal(TEST_NAME))
+		Expect(t.message).To(Equal(msgContent))
+		Expect(res.(string)).To(Equal(testName))
 	})
 
 	It("rejects messages, i.e., returns nil, if a handler is not registered", func() {
-		const TEST_NAME = "should_not_exist_test"
-		MessageDispatcher.RegisterHandler(TEST_NAME, nil, testMsg{}, testResponse{})
+		const testName = "should_not_exist_test"
+		MessageDispatcher.RegisterHandler(testName, nil, testMsg{}, testResponse{})
 
-		res, err := MessageDispatcher.handleMessage(TEST_NAME, &testMsgConv{"msg"})
+		res, err := MessageDispatcher.handleMessage(testName, &testMsgConv{"msg"})
 
 		Expect(err).ToNot(BeNil())
 		Expect(res).To(BeNil())

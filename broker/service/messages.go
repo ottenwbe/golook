@@ -25,7 +25,7 @@ type peerFileReport struct {
 }
 
 type peerSystemReport struct {
-	Uuid       string                    `json:"uuid"`
+	UUID       string                    `json:"uuid"`
 	System     map[string]*golook.System `json:"systems"`
 	IsDeletion bool                      `json:"deletion,omitempty"`
 }

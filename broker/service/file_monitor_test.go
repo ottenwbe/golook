@@ -28,7 +28,7 @@ type testReporter struct {
 }
 
 func (t *testReporter) reportHandler(file string) {
-	t.monitorReports += 1
+	t.monitorReports++
 }
 
 var _ = Describe("The file monitor", func() {
@@ -59,7 +59,7 @@ var _ = Describe("The file monitor", func() {
 
 	Context("monitoring", func() {
 
-		const TEST_FILE = "test.txt"
+		const testFile = "test.txt"
 
 		It("is triggered by adding and removing a file", func() {
 
@@ -67,12 +67,12 @@ var _ = Describe("The file monitor", func() {
 			currentDirectory, _ := filepath.Abs(".")
 			fm.Monitor(currentDirectory)
 
-			_, err := os.Create(TEST_FILE) // For read access.
+			_, err := os.Create(testFile) // For read access.
 			if err != nil {
 				logrus.Fatal(err)
 			}
 
-			err = os.Remove(TEST_FILE) // For read access.
+			err = os.Remove(testFile) // For read access.
 			if err != nil {
 				logrus.Fatal(err)
 			}

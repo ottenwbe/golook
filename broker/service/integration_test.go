@@ -176,7 +176,7 @@ var _ = Describe("The service layer's", func() {
 
 				result := systemService.broadcastSystem(
 					peerSystemReport{
-						Uuid: golook.GolookSystem.UUID,
+						UUID: golook.GolookSystem.UUID,
 						System: map[string]*golook.System{
 							golook.GolookSystem.UUID: golook.GolookSystem,
 						},

@@ -27,7 +27,7 @@ type BroadCastRouter struct {
 	name          string
 	routeTable    RouteTable
 	routeHandlers HandlerTable
-	reqId         int
+	requestID     int
 	duplicateMap  *duplicateMap
 }
 
@@ -36,7 +36,7 @@ func newBroadcastRouter(name string) Router {
 		routeTable:    newDefaultRouteTable(),
 		routeHandlers: HandlerTable{},
 		name:          name,
-		reqId:         0,
+		requestID:     0,
 		duplicateMap:  newDuplicateMap(),
 	}
 }
@@ -46,15 +46,15 @@ BroadCast a message
 */
 func (router *BroadCastRouter) BroadCast(method string, message interface{}) models.EncapsulatedValues {
 
-	m, err := NewRequestMessage(NilKey(), router.nextRequestId(), method, message)
+	m, err := NewRequestMessage(NilKey(), router.nextRequestID(), method, message)
 	if err != nil {
 		routerLogger(router, method).WithError(err).Error("Cannot create Request Message.")
 		return nil
 	}
 
 	routerLogger(router, method).
-		WithField("request_id", router.reqId).
-		WithField("msg_id", m.Src.Id).
+		WithField("request_id", router.requestID).
+		WithField("msg_id", m.Src.ID).
 		Info("New request message will be sent!")
 
 	// disseminate message to all peers
@@ -67,9 +67,9 @@ func (router *BroadCastRouter) BroadCast(method string, message interface{}) mod
 	return response.Params
 }
 
-func (router *BroadCastRouter) nextRequestId() int {
-	result := router.reqId
-	router.reqId++
+func (router *BroadCastRouter) nextRequestID() int {
+	result := router.requestID
+	router.requestID++
 	return result
 }
 
@@ -83,14 +83,14 @@ func (router *BroadCastRouter) disseminate(m *RequestMessage) *ResponseMessage {
 	// send message to all registered peerClients---concurrently
 	for _, client := range router.routeTable.peers() {
 		go router.send(client, m, responseChannel)
-		sendCounter += 1
+		sendCounter++
 	}
 
 	var result, newMsg *ResponseMessage
 	// wait until all client requests responded
 	for responseCounter < sendCounter {
 		newMsg = <-responseChannel
-		responseCounter += 1
+		responseCounter++
 
 		result = router.merge(result, newMsg, m.Method)
 	}
@@ -153,7 +153,7 @@ func (router *BroadCastRouter) Handle(routerName string, msg models.Encapsulated
 
 	// ignore duplicates to ensure an at least once semantic
 	if router.duplicateMap.CheckForDuplicates(request.Src) {
-		routerLoggerS(router).WithField("src", request.Src.Id).Info("Dropped duplicate.")
+		routerLoggerS(router).WithField("src", request.Src.ID).Info("Dropped duplicate.")
 		return nil
 	}
 
@@ -202,9 +202,10 @@ func (router *BroadCastRouter) deliver(method string, params models.Encapsulated
 	if handler, ok := router.routeHandlers[method]; ok {
 		routerLogger(router, method).Info("Deliver message to handler.")
 		return handler.requestHandler(params)
-	} else {
-		routerLogger(router, method).Error("Handler not found.")
 	}
+
+	routerLogger(router, method).Error("Handler not found.")
+
 	return nil
 }
 

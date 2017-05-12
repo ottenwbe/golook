@@ -23,17 +23,23 @@ import (
 	golook "github.com/ottenwbe/golook/broker/runtime/core"
 )
 
+/*
+ApplyCommunicationConfiguration applies the configuration of the communication layer
+*/
 func ApplyCommunicationConfiguration() {
 
 	ClientType = viper.GetString("communication.client.type")
 	port = viper.GetInt("communication.jsonrpc.client.port")
 
 	serverType = viper.GetString("communication.server.type")
-	HttpRPCServer = golook.NewServer(viper.GetString("communication.jsonrpc.server.address"), golook.ServerHttp)
-	HttpRPCServer.(*golook.HTTPSever).RegisterFunction("/rpc", jsonRPCServer.HandlerFunc, http.MethodGet, http.MethodPost)
-	HttpRPCServer.(*golook.HTTPSever).RegisterFunction("/rpc/debug", jsonRPCServer.DebugHandlerFunc, http.MethodGet, http.MethodPost)
+	HTTPRPCServer = golook.NewServer(viper.GetString("communication.jsonrpc.server.address"), golook.ServerHTTP)
+	HTTPRPCServer.(*golook.HTTPSever).RegisterFunction("/rpc", jsonRPCServer.HandlerFunc, http.MethodGet, http.MethodPost)
+	HTTPRPCServer.(*golook.HTTPSever).RegisterFunction("/rpc/debug", jsonRPCServer.DebugHandlerFunc, http.MethodGet, http.MethodPost)
 }
 
+/*
+InitCommunicationConfiguration initializes the configuration of the communication layer
+*/
 func InitCommunicationConfiguration() {
 
 	viper.SetDefault("communication.client.type", jsonRPC)

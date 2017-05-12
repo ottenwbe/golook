@@ -21,7 +21,7 @@ import (
 )
 
 /*
-FileMonitor
+FileMonitor ... TODO
 */
 type FileMonitor struct {
 	watcher  *fsnotify.Watcher
@@ -57,7 +57,7 @@ func (fm *FileMonitor) Close() {
 cMonitor implements a handler which reacts to file system events on behalf of the file monitor fm
 */
 func cMonitor(fm *FileMonitor) {
-	var stop bool = false
+	var stop = false
 	for !stop {
 		select {
 		case event := <-fm.watcher.Events:

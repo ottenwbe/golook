@@ -52,7 +52,7 @@ const (
 ApplyConfiguration applies the configuration
 */
 func ApplyConfiguration() {
-	HTTPServer = golook.NewServer(viper.GetString("api.server.address"), golook.ServerHttp)
+	HTTPServer = golook.NewServer(viper.GetString("api.server.address"), golook.ServerHTTP)
 
 	HTTPServer.(*golook.HTTPSever).RegisterFunction(FileEndpoint, putFile, http.MethodPut)
 	HTTPServer.(*golook.HTTPSever).RegisterFunction(QueryEndpoint, getFiles, http.MethodGet)

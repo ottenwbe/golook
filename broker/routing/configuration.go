@@ -23,11 +23,17 @@ const (
 	peers = "routing.peers"
 )
 
+/*
+ApplyConfiguration applies the configuration of the routing layer
+*/
 func ApplyConfiguration() {
 	log.Info("Configure routing layer")
 	defaultPeers = viper.GetStringSlice(peers)
 }
 
+/*
+InitConfiguration initializes the configuration of the routing layer
+*/
 func InitConfiguration() {
 	viper.SetDefault(peers, []string{""})
 }

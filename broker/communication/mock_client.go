@@ -22,7 +22,7 @@ MockClient also records the calls to the individual functions of the interface.
 */
 type MockClient struct {
 	VisitedCall int
-	VisitedUrl  int
+	VisitedURL  int
 	Name        string
 }
 
@@ -31,10 +31,10 @@ func newMockClient() RPCClient {
 }
 
 /*
-URL always returns "test" and ensures that the counter 'VisitedUrl' is increased.
+URL always returns "test" and ensures that the counter 'VisitedURL' is increased.
 */
 func (client *MockClient) URL() string {
-	client.VisitedUrl++
+	client.VisitedURL++
 	return "test"
 }
 

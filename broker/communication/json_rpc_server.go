@@ -24,32 +24,29 @@ import (
 )
 
 type (
-	/*
-		JsonRPCServerStub implements the server stub for a particular handler function. The handler function is called when a valid message is received from a client.
-	*/
-	JsonRPCServerStub struct {
+	/*JSONRPCServerStub implements the server stub for a particular handler function. The handler function is called when a valid message is received from a client.*/
+	JSONRPCServerStub struct {
 		handler string
 		active  bool
 	}
 
-	JsonRPCParams struct {
+	/*JSONRPCParams implements the interface EncapsulatedValues.*/
+	JSONRPCParams struct {
 		params json.RawMessage
 	}
 )
 
 var (
-	/*
-	   HttpRPCServer is the http server for accepting json rpc messages
-	*/
-	HttpRPCServer golook.Server
+	/*HTTPRPCServer is the http server for accepting json rpc messages*/
+	HTTPRPCServer golook.Server
 )
 
-var _ (jsonrpc.Handler) = (*JsonRPCServerStub)(nil)
+var _ (jsonrpc.Handler) = (*JSONRPCServerStub)(nil)
 
 /*
 ServeJSONRPC handles json rpc messages which arrive for registered handlers
 */
-func (rpc *JsonRPCServerStub) ServeJSONRPC(_ context.Context, params *json.RawMessage) (interface{}, *jsonrpc.Error) {
+func (rpc *JSONRPCServerStub) ServeJSONRPC(_ context.Context, params *json.RawMessage) (interface{}, *jsonrpc.Error) {
 
 	// if the interface is not active, return an error
 	if !rpc.active {
@@ -58,7 +55,7 @@ func (rpc *JsonRPCServerStub) ServeJSONRPC(_ context.Context, params *json.RawMe
 
 	jsonRPCLogger().Debug("Received RPC message: %s", string(*params))
 
-	p := &JsonRPCParams{params: *params}
+	p := &JSONRPCParams{params: *params}
 
 	response, err := MessageDispatcher.handleMessage(rpc.handler, p)
 	if err != nil {
@@ -68,18 +65,28 @@ func (rpc *JsonRPCServerStub) ServeJSONRPC(_ context.Context, params *json.RawMe
 	return response, nil
 
 }
-func (rpc *JsonRPCServerStub) Associate(handlerName string, request interface{}, response interface{}) {
+
+/*
+Associate a handler with a json rpc server
+*/
+func (rpc *JSONRPCServerStub) Associate(handlerName string, request interface{}, response interface{}) {
 	rpc.handler = handlerName
 	rpc.active = true
 	jsonrpc.RegisterMethod(handlerName, rpc, request, response)
 }
 
-func (rpc *JsonRPCServerStub) Finalize() {
+/*
+Finalize ensures that a server stub does not forward messages to a handler
+*/
+func (rpc *JSONRPCServerStub) Finalize() {
 	//Unfortunately jsonrpc has no method for removing a registered function, therefore we only mark it as deleted
 	rpc.active = false
 }
 
-func (p *JsonRPCParams) Unmarshal(v interface{}) error {
+/*
+Unmarshal has to be called by the receiver of the parameter in order to unmarshal the params.
+*/
+func (p *JSONRPCParams) Unmarshal(v interface{}) error {
 
 	var interfaceParams []json.RawMessage
 	if err := jsonrpc.Unmarshal(&p.params, &interfaceParams); err != nil {

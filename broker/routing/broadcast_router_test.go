@@ -70,11 +70,11 @@ type mockPeer struct {
 }
 
 func (p *mockPeer) Call(index string, message interface{}) (models.EncapsulatedValues, error) {
-	p.visitedCall += 1
+	p.visitedCall++
 	p.request = message.(*RequestMessage)
 	return nil, nil
 }
 
-func (mockPeer) Url() string {
+func (mockPeer) URL() string {
 	return "test"
 }

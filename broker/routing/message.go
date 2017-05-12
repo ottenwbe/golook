@@ -21,18 +21,22 @@ import (
 )
 
 type (
+	/*Source represents the source of a message. This source has an id which is typically incremented and a system name*/
 	Source struct {
-		Id     int    `json:"id"`
+		ID     int    `json:"id"`
 		System string `json:"system"`
 		//TODO key instead of system
 	}
 
+	/*Destination represents the destination in form of a key.*/
 	Destination struct {
 		Key Key `json:"key"`
 	}
 
+	/*Params definition*/
 	Params string
 
+	/*RequestMessage represents the generic request from a peer to the next*/
 	RequestMessage struct {
 		Src    Source      `json:"source"`
 		Dst    Destination `json:"destination"`
@@ -40,6 +44,7 @@ type (
 		Params Params      `json:"params"`
 	}
 
+	/*ResponseMessage represents the generic response to a given request message. The corresponding request can be identified by the RequestSrc field.*/
 	ResponseMessage struct {
 		RequestSrc  Source `json:"receiver_source"`
 		ResponseSrc Source `json:"response_source"`
@@ -47,7 +52,10 @@ type (
 	}
 )
 
-func NewRequestMessage(key Key, reqId int, method string, params interface{}) (*RequestMessage, error) {
+/*
+NewRequestMessage is the factory function for request messages
+*/
+func NewRequestMessage(key Key, reqID int, method string, params interface{}) (*RequestMessage, error) {
 	p, err := utils.MarshalS(params)
 	if err != nil {
 		return nil, err
@@ -56,10 +64,13 @@ func NewRequestMessage(key Key, reqId int, method string, params interface{}) (*
 		Method: method,
 		Params: Params(p),
 		Dst:    Destination{Key: key},
-		Src:    Source{Id: reqId, System: golook.GolookSystem.UUID},
+		Src:    Source{ID: reqID, System: golook.GolookSystem.UUID},
 	}, nil
 }
 
+/*
+NewResponseMessage is the factory function for response messages
+*/
 func NewResponseMessage(src Source, params interface{}) (*ResponseMessage, error) {
 	p, err := utils.MarshalS(params)
 	if err != nil {
@@ -67,11 +78,14 @@ func NewResponseMessage(src Source, params interface{}) (*ResponseMessage, error
 	}
 	return &ResponseMessage{
 		RequestSrc:  src,
-		ResponseSrc: Source{Id: 0, System: golook.GolookSystem.UUID},
+		ResponseSrc: Source{ID: 0, System: golook.GolookSystem.UUID},
 		Params:      Params(p),
 	}, nil
 }
 
+/*
+Unmarshal a parameter.
+*/
 func (p Params) Unmarshal(v interface{}) error {
 	log.Debugf("Unmarshalling: %s", string(p))
 	err := utils.Unmarshal(string(p), v)
