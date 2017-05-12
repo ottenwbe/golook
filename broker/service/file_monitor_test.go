@@ -74,7 +74,7 @@ var _ = Describe("The file monitor", func() {
 
 			err = os.Remove(testFile) // For read access.
 			if err != nil {
-				logrus.Fatal(err)
+				logrus.Error(err)
 			}
 
 			// wait for both events, or wait for 1 second to ensure that the test eventually stops
