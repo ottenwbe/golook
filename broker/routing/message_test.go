@@ -17,7 +17,21 @@ package routing
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/ottenwbe/golook/utils"
 )
+
+var _ = Describe("The params", func() {
+	It("can be unmarshalled from json.", func() {
+		var expectedResult = "test message"
+
+		m := Params(utils.MarshalSD(&expectedResult))
+
+		var result string
+		m.Unmarshal(&result)
+
+		Expect(result).To(Equal(expectedResult))
+	})
+})
 
 var _ = Describe("The encapsulated message", func() {
 	It("should comprise a method name and the content after its creation", func() {

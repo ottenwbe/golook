@@ -23,11 +23,17 @@ ApplyConfiguration applies the configuration for all sub-components of the repos
 */
 func ApplyConfiguration() {
 	repositoryType = RepositoryType(viper.GetInt("repository.typeId"))
+
+	defaultMapRepositoryPersistenceFile = viper.GetString("repository.mapRepository.persistenceFile")
+	defaultMapRepositoryUsePersistence = viper.GetBool("repository.mapRepository.persistence")
 }
 
 /*
 InitConfiguration initializes the configuration for all sub-components of the repository.
 */
 func InitConfiguration() {
-	viper.SetDefault("repository.typeId", mapRepository)
+	viper.SetDefault("repository.typeId", int(mapRepository))
+
+	viper.SetDefault("repository.mapRepository.persistence", false)
+	viper.SetDefault("repository.mapRepository.persistenceFile", "mapRepository.json")
 }

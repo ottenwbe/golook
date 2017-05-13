@@ -10,12 +10,14 @@ install:
   - go get -v -t ./...
   - go get github.com/onsi/ginkgo/ginkgo
   - go get github.com/onsi/gomega
+  - go get github.com/golang/lint
   - export PATH=$PATH:$HOME/gopath/bin
   - sudo docker pull golang:1.8.1
   - sudo docker build --rm=true --file=test/integration/Dockerfile --tag=golook:latest .
 
 script:
   - for d in $(go list ./... | grep -v vendor); do go vet $d; done
+  - for d in $(go list ./... | grep -v vendor); do golint $d; done
   - test/integration/run_integration_tests.sh
 
 after_success:

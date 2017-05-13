@@ -14,17 +14,26 @@
 
 package core
 
+/*
+General information about this application
+*/
 const (
 	GolookName = "golook"
 	Version    = "v0.1.0-dev"
 )
 
+/*
+AppInfo describes an application, i.e., its version and name
+*/
 type AppInfo struct {
 	App     string  `json:"app"`
 	Version string  `json:"version"`
 	System  *System `json:"system"`
 }
 
+/*
+NewAppInfo is the factory method for AppInfo
+*/
 func NewAppInfo() *AppInfo {
 	return &AppInfo{
 		App:     GolookName,

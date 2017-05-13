@@ -41,7 +41,7 @@ var _ = Describe("The file monitor", func() {
 	BeforeEach(func() {
 		tr = &testReporter{}
 		fm = &FileMonitor{
-			reporter: tr.reportHandler,
+			Reporter: tr.reportHandler,
 		}
 		fm.Open()
 	})

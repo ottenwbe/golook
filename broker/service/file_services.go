@@ -19,20 +19,32 @@ import (
 	"github.com/ottenwbe/golook/broker/routing"
 )
 
+/*
+FileServiceType describes the file service.
+*/
 type FileServiceType string
 
+/*
+Valid FileServiceTypes
+*/
 const (
 	MockFileServices FileServiceType = "mock"
 	BroadcastFiles   FileServiceType = "fileBoroadcast"
 	BroadcastQueries FileServiceType = "queryBroadcast"
 )
 
+/*
+OpenFileServices opens a file service of the given type. The default is BroadcastFiles.
+*/
 func OpenFileServices(fileServiceType FileServiceType) FileServices {
 	fileServices := newFileServices(fileServiceType)
 	fileServices.open()
 	return fileServices
 }
 
+/*
+CloseFileServices a given file service
+*/
 func CloseFileServices(fileServices FileServices) {
 	if fileServices != nil {
 		fileServices.close()
@@ -50,11 +62,14 @@ func newFileServices(fileServiceType FileServiceType) FileServices {
 	}
 }
 
+/*
+FileServices is the base interface for all file services
+*/
 type FileServices interface {
 	open()
 	close()
 	Query(searchString string) (interface{}, error)
-	Report(fileReport *models.FileReport) (map[string]*models.File, error)
+	Report(fileReport *models.FileReport) (map[string]map[string]*models.File, error)
 }
 
 type compoundFileServices struct {
@@ -86,11 +101,17 @@ func (s *scenarioBroadcastQueries) close() {
 	s.r.close()
 }
 
+/*
+Query the file service for a specific file
+*/
 func (s *compoundFileServices) Query(searchString string) (interface{}, error) {
 	return s.QueryService.query(searchString)
 }
 
-func (s *compoundFileServices) Report(fileReport *models.FileReport) (map[string]*models.File, error) {
+/*
+Report a file/folder to the file service
+*/
+func (s *compoundFileServices) Report(fileReport *models.FileReport) (map[string]map[string]*models.File, error) {
 	return s.ReportService.report(fileReport)
 }
 
@@ -116,14 +137,24 @@ func (s *scenarioMock) close() {
 
 //TODO: defensive prog.
 
+/*
+AccessMockedQueryService returns an encapsulated MockQueryService, iff services is a MockFileService.
+*/
 func AccessMockedQueryService(services FileServices) *MockQueryService {
-	mockScenario := services.(*scenarioMock)
-	mockService := mockScenario.QueryService.(*MockQueryService)
-	return mockService
+	if mockScenario, ok := services.(*scenarioMock); ok {
+		mockService := mockScenario.QueryService.(*MockQueryService)
+		return mockService
+	}
+	return nil
 }
 
+/*
+AccessMockedReportService returns an encapsulated MockReportService, iff services is a MockFileService.
+*/
 func AccessMockedReportService(services FileServices) *MockReportService {
-	mockScenario := services.(*scenarioMock)
-	mockService := mockScenario.ReportService.(*MockReportService)
-	return mockService
+	if mockScenario, ok := services.(*scenarioMock); ok {
+		mockService := mockScenario.ReportService.(*MockReportService)
+		return mockService
+	}
+	return nil
 }

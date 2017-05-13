@@ -26,6 +26,7 @@ import (
 )
 
 type (
+	/*Server describes the generic interface for all server*/
 	Server interface {
 		StartServer(wg *sync.WaitGroup)
 		Stop()
@@ -33,6 +34,7 @@ type (
 		Name() string
 		IsRunning() bool
 	}
+	/*HTTPSever implements a http server*/
 	HTTPSever struct {
 		Address  string
 		server   *http.Server
@@ -41,8 +43,14 @@ type (
 	}
 )
 
+/*
+ServerType is an enum of valid server types
+*/
 type ServerType string
 
+/*
+Constants that implement the enum for ServerType
+*/
 const (
 	ServerHTTP ServerType = "http"
 )
@@ -51,6 +59,9 @@ var (
 	servers = []Server{}
 )
 
+/*
+NewServer is the factory function for servers
+*/
 func NewServer(address string, serverType ServerType) (server Server) {
 	switch serverType {
 	case ServerHTTP:
@@ -70,14 +81,23 @@ func NewServer(address string, serverType ServerType) (server Server) {
 	return server
 }
 
+/*
+Name returns the address of the http server
+*/
 func (s *HTTPSever) Name() string {
 	return s.Address
 }
 
+/*
+IsRunning gives an indication if the http server is running
+*/
 func (s *HTTPSever) IsRunning() bool {
 	return s.server != nil
 }
 
+/*
+StartServer starts the http server and then blocks until Stop is called.
+*/
 func (s *HTTPSever) StartServer(wg *sync.WaitGroup) {
 	if wg == nil || s.router == nil || s.Address == "" {
 		log.Error("Http server cannot be started. Please ensure that all parameters are set: Address and router. Moreover, ensure that a wg is provided during startup.")
@@ -98,8 +118,13 @@ func (s *HTTPSever) StartServer(wg *sync.WaitGroup) {
 	log.Error(s.server.Serve(s.listener))
 }
 
+/*
+Stop the http server
+*/
 func (s *HTTPSever) Stop() {
-	s.listener.Close()
+	if s.listener != nil {
+		s.listener.Close()
+	}
 	s.server = nil
 }
 
@@ -116,6 +141,9 @@ func (s *HTTPSever) RegisterFunction(path string, f func(http.ResponseWriter, *h
 
 }
 
+/*
+Info returns basic information about the service, i.e., the endpoints, its address etc.
+*/
 func (s *HTTPSever) Info() map[string]interface{} {
 	info := map[string]interface{}{}
 
@@ -156,7 +184,7 @@ func (s *HTTPSever) RegisteredEndpoints() []string {
 	return result
 }
 
-/**
+/*
 RunServer starts all server and waits for them to return, i.e. they gracefully shut down.
 */
 func RunServer() {
@@ -171,14 +199,17 @@ func RunServer() {
 	wg.Wait()
 }
 
+/*
+StopServer stops all registered servers
+*/
 func StopServer() {
 	for _, server := range servers {
 		go server.Stop()
 	}
 }
 
-/**
-GetServer returns a list of registered servers
+/*
+ServerState returns a list of registered servers and their sate, i.e., if they ar running or not.
 */
 func ServerState() map[string]bool {
 	result := map[string]bool{}

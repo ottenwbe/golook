@@ -29,8 +29,8 @@ Individual file states with the following semantic:
 - Removed = the file does not exist in the fs
 */
 const (
-	Created FileState = iota
-	Removed FileState = iota
+	Created FileState = iota // == 1
+	Removed FileState = iota // == 2
 )
 
 /*
@@ -51,5 +51,5 @@ type File struct {
 FileMeta describes meta information about a file
 */
 type FileMeta struct {
-	State FileState `json:"state"`
+	State FileState `json:"state" repo:"state"`
 }

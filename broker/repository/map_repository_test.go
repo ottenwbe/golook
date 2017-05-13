@@ -19,8 +19,10 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/ottenwbe/golook/broker/models"
 	golook "github.com/ottenwbe/golook/broker/runtime/core"
+	"github.com/ottenwbe/golook/utils"
 	"github.com/sirupsen/logrus"
 	"os"
+	"path/filepath"
 )
 
 var _ = Describe("The repository implemented with maps", func() {
@@ -30,13 +32,12 @@ var _ = Describe("The repository implemented with maps", func() {
 	)
 
 	BeforeEach(func() {
-		usePersistence = true
 		repo = newMapRepository()
+		repo.usePersistence = true
 	})
 
 	AfterEach(func() {
-		usePersistence = false
-		os.RemoveAll(persistenceFile)
+		os.RemoveAll(repo.persistenceFile)
 	})
 
 	It("does not accept nil systems", func() {
@@ -63,13 +64,15 @@ var _ = Describe("The repository implemented with maps", func() {
 	It("can be read from disk", func() {
 		f := newTestFile()
 		sys := golook.NewSystem()
-		sysName := sys.Name
-		repo.StoreSystem(sysName, sys)
-		repo.UpdateFiles(sysName, map[string]*models.File{f.Name: f})
+		sysUUID := sys.UUID
+		repo.StoreSystem(sysUUID, sys)
+		repo.UpdateFiles(sysUUID, makeTestFolder(f))
 
-		repo2 := newMapRepository()
-
-		Expect(repo2.systemFiles).To(HaveKey(sysName))
+		var persist = true
+		utils.Mock(&defaultMapRepositoryUsePersistence, &persist, func() {
+			repo2 := newMapRepository()
+			Expect(repo2.systemFiles).To(HaveKey(sysUUID))
+		})
 	})
 
 	It("allows to delete a stored System", func() {
@@ -84,7 +87,7 @@ var _ = Describe("The repository implemented with maps", func() {
 	})
 
 	It("accepts files if no valid System is stored and creates an entry for that system", func() {
-		stored := repo.UpdateFiles("unknown", map[string]*models.File{})
+		stored := repo.UpdateFiles("unknown", map[string]map[string]*models.File{})
 		_, found := (repo.systemFiles)["unknown"]
 		Expect(stored).To(BeTrue())
 		Expect(found).To(BeTrue())
@@ -96,7 +99,7 @@ var _ = Describe("The repository implemented with maps", func() {
 		sysName := sys.Name
 		repo.StoreSystem(sysName, sys)
 
-		Expect(repo.UpdateFiles(sysName, map[string]*models.File{f.ShortName: f})).To(BeTrue())
+		Expect(repo.UpdateFiles(sysName, makeTestFolder(f))).To(BeTrue())
 	})
 
 	It("should find files that have been stored", func() {
@@ -105,7 +108,7 @@ var _ = Describe("The repository implemented with maps", func() {
 		sysName := sys.Name
 
 		repo.StoreSystem(sysName, sys)
-		repo.UpdateFiles(sysName, map[string]*models.File{f.Name: f})
+		repo.UpdateFiles(sysName, makeTestFolder(f))
 
 		res := repo.FindSystemAndFiles(f.ShortName)
 		Expect(len(res)).To(Equal(1))
@@ -117,7 +120,11 @@ var _ = Describe("The repository implemented with maps", func() {
 func newTestFile() *models.File {
 	f, err := models.NewFile("map_repository_test.go")
 	if err != nil {
-		logrus.WithField("file", "map_repository_test.go").Panic("File could not be created in test")
+		logrus.WithField("file", "map_repository_test.go").Panic("Files could not be created in test")
 	}
 	return f
+}
+
+func makeTestFolder(f *models.File) map[string]map[string]*models.File {
+	return map[string]map[string]*models.File{filepath.Dir(f.Name): {f.Name: f}}
 }

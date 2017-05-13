@@ -56,6 +56,6 @@ func AccessMapRepository() *MapRepository {
 }
 
 /*
-GoLookRepository the global repository
+GoLookRepository the global repository, e.g., to buffer files and systems
 */
 var GoLookRepository = NewRepository()

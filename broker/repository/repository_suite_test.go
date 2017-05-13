@@ -16,10 +16,21 @@ package repositories
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
 	"testing"
 )
 
-func TestClients(t *testing.T) {
+/*
+TestRepositories tells 'ginkgo' to run the tests of the repository package
+*/
+func TestRepositories(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Repository Test Suite")
 }
+
+/*
+BeforeSuite ensures that the log level is Debug for testing
+*/
+var _ = BeforeSuite(func() {
+	log.SetLevel(log.DebugLevel)
+})

@@ -1,4 +1,4 @@
-//Copyright 2016-2017 Beate Ottenwälder
+//Copyright 2016-2017 Beate OttenwäldersysUUID
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
 //you may not use this file except in compliance with the License.
@@ -20,14 +20,14 @@ import (
 )
 
 /*
-Repository interface for all repositories
+Repository is the interface for all implementations of repositories that store files and system information
 */
 type Repository interface {
-	StoreSystem(systemName string, system *golook.System) bool
-	GetSystem(systemName string) (*golook.System, bool)
+	StoreSystem(sysUUID string, system *golook.System) bool
+	GetSystem(sysUUID string) (*golook.System, bool)
 	GetSystems() map[string]*golook.System
-	DelSystem(systemName string) *golook.System
-	UpdateFiles(systemName string, files map[string]*models.File) bool
+	DelSystem(sysUUID string) *golook.System
+	UpdateFiles(sysUUID string, files map[string]map[string]*models.File) bool
 	FindSystemAndFiles(findString string) map[string][]*models.File
-	GetFiles(systemName string) map[string]*models.File
+	GetFiles(sysUUID string) map[string]map[string]*models.File
 }

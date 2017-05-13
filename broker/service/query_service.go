@@ -36,9 +36,7 @@ type (
 	broadcastQueryService struct {
 		router *router
 	}
-	/*
-		MockQueryService implements a mock interface for queries
-	*/
+	/*MockQueryService implements a mock interface for queries*/
 	MockQueryService struct {
 		SearchString string
 	}

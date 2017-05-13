@@ -21,6 +21,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 )
 
 func broadcastLocalFiles(broadCastRouter *router) {
@@ -28,7 +29,7 @@ func broadcastLocalFiles(broadCastRouter *router) {
 	broadcastFiles(files, broadCastRouter)
 }
 
-func broadcastFiles(files map[string]*models.File, broadCastRouter *router) {
+func broadcastFiles(files map[string]map[string]*models.File, broadCastRouter *router) {
 	peerFileReport := &peerFileReport{Files: files, System: golook.GolookSystem.UUID}
 	broadCastRouter.BroadCast(fileReport, peerFileReport)
 }
@@ -45,10 +46,10 @@ func reportFileChangesLocal(filePath string) {
 	localFileReport(filePath, false)
 }
 
-func localFileReport(filePath string, _ bool) map[string]*models.File {
+func localFileReport(filePath string, _ bool) map[string]map[string]*models.File {
 
 	var (
-		files = map[string]*models.File{}
+		files = map[string]map[string]*models.File{}
 		err   error
 	)
 
@@ -64,9 +65,10 @@ func localFileReport(filePath string, _ bool) map[string]*models.File {
 			log.WithError(err).Error("Ignoring file report.")
 			return files
 		}
+		files[file.Name][file.Name] = file
+	} else {
+		files[filepath.Dir(filePath)] = map[string]*models.File{file.Name: file}
 	}
-
-	files[file.Name] = file
 
 	repositories.GoLookRepository.UpdateFiles(golook.GolookSystem.UUID, files)
 
@@ -74,22 +76,24 @@ func localFileReport(filePath string, _ bool) map[string]*models.File {
 }
 
 //filesInFolder generates a map with all files in the folder
-func filesInFolder(folderPath string) (map[string]*models.File, error) {
+func filesInFolder(folderPath string) (map[string]map[string]*models.File, error) {
 
 	var (
 		files  []os.FileInfo
-		report = map[string]*models.File{}
+		report = map[string]map[string]*models.File{folderPath: {}}
 		err    error
 	)
 
 	files, err = ioutil.ReadDir(folderPath)
-	if err != nil {
+	if err != nil && !os.IsNotExist(err) {
 		// return when errors like missing folder permissions disallow file report
 		return report, err
 	}
 
-	for idx := range files {
-		report = appendFile(files[idx], report)
+	for _, file := range files {
+		if !file.IsDir() {
+			report[folderPath] = appendFile(file, report[folderPath])
+		}
 	}
 	return report, err
 }

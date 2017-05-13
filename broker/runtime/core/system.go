@@ -15,10 +15,8 @@
 package core
 
 import (
-	"encoding/json"
 	"github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
-	"io"
 	"net"
 	"os"
 	"runtime"
@@ -35,9 +33,13 @@ type System struct {
 }
 
 var (
-	GolookSystem *System = NewSystem()
+	/*GolookSystem is a reference to the information about the system on which this app is running*/
+	GolookSystem = NewSystem()
 )
 
+/*
+NewSystem is the factory function for System and returns by default all information about the system on which this golook app is running
+*/
 func NewSystem() *System {
 	return &System{
 		Name: getName(),
@@ -45,18 +47,6 @@ func NewSystem() *System {
 		IP:   getIP(),
 		UUID: getUUID(),
 	}
-}
-
-func DecodeSystems(reader io.Reader) ([]*System, error) {
-	systems := make([]*System, 0)
-	err := json.NewDecoder(reader).Decode(&systems)
-	return systems, err
-}
-
-func DecodeSystem(sysReader io.Reader) (System, error) {
-	var sys System
-	err := json.NewDecoder(sysReader).Decode(&sys)
-	return sys, err
 }
 
 func getUUID() string {

@@ -20,8 +20,8 @@ import (
 )
 
 type peerFileReport struct {
-	Files  map[string]*models.File `json:"files"`
-	System string                  `json:"system"`
+	Files  map[string]map[string]*models.File `json:"files"`
+	System string                             `json:"system"`
 }
 
 type peerSystemReport struct {

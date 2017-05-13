@@ -97,7 +97,7 @@ var _ = Describe("The report handler", func() {
 		storedSys := golook.GolookSystem
 		GoLookRepository.StoreSystem(golook.GolookSystem.UUID, storedSys)
 		f, _ := models.NewFile("report_handler_test.go")
-		m, _ := utils.MarshalS(peerFileReport{Files: map[string]*models.File{f.Name: f}, System: golook.GolookSystem.UUID})
+		m, _ := utils.MarshalS(peerFileReport{Files: map[string]map[string]*models.File{filepath.Dir(f.Name): {f.Name: f}}, System: golook.GolookSystem.UUID})
 		fReport := routing.Params(m)
 		handleFileReport(fReport)
 		_, ok := AccessMapRepository().GetSystem(golook.GolookSystem.UUID)

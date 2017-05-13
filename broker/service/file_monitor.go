@@ -21,15 +21,19 @@ import (
 )
 
 /*
-FileMonitor ... TODO
+FileMonitor monitors files/folders and reports any change in the file system regarding those files/folders.
+For reporting a Reporter callback has to be registered with the FileMonitor.
 */
 type FileMonitor struct {
 	watcher  *fsnotify.Watcher
 	once     sync.Once
 	done     chan bool
-	reporter func(string)
+	Reporter func(string)
 }
 
+/*
+Open implements
+*/
 func (fm *FileMonitor) Open() {
 	fm.once.Do(func() {
 		var err error
@@ -43,6 +47,9 @@ func (fm *FileMonitor) Open() {
 	})
 }
 
+/*
+Close ensures that files are no longer monitored.
+*/
 func (fm *FileMonitor) Close() {
 	if fm.done != nil {
 		fm.done <- true
@@ -63,10 +70,10 @@ func cMonitor(fm *FileMonitor) {
 		case event := <-fm.watcher.Events:
 			if event.Name != "" {
 				log.Infof("Event %s triggered report", event.String())
-				if fm.reporter != nil {
-					fm.reporter(event.Name)
+				if fm.Reporter != nil {
+					fm.Reporter(event.Name)
 				} else {
-					log.Error("Not reporting monitored file change; reporter is nil!")
+					log.Error("Not reporting monitored file change; Reporter is nil!")
 				}
 			}
 		case err := <-fm.watcher.Errors:
@@ -85,6 +92,9 @@ func (fm *FileMonitor) Monitor(file string) {
 	fm.watcher.Add(file)
 }
 
+/*
+RemoveMonitored removes paths to files or folders with the FileMonitor. Changes are no longer reported.
+*/
 func (fm *FileMonitor) RemoveMonitored(file string) {
 	fm.watcher.Remove(file)
 }

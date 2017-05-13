@@ -28,30 +28,20 @@ const (
 )
 
 type (
-	/*
-		SystemService stores system information in the local registry and disseminates system information to peers.
-	*/
+	/*SystemService stores system information in the local registry and disseminates system information to peers.*/
 	SystemService struct {
 		router *router
 	}
-	/*
-		SystemCallback is the base type for functions that are called by the system service.
-	*/
+	/*SystemCallback is the base type for functions that are called by the system service.*/
 	SystemCallback func(uuid string, system map[string]*golook.System)
 
-	/*
-		SingleSystemCallback is the base type for functions that are called by the system service.
-	*/
+	/*SingleSystemCallback is the base type for functions that are called by the system service.*/
 	SingleSystemCallback func(uuid string, system *golook.System)
 
-	/*
-		SystemCallbacks is the base type for an index/map of functions that implement a 'SystemCallback'
-	*/
+	/*SystemCallbacks is the base type for an index/map of functions that implement a 'SystemCallback'*/
 	SystemCallbacks map[string]SystemCallback
 
-	/*
-		SingleSystemCallbacks is the base type for an index/map of functions that implement a 'SingleSystemCallback'
-	*/
+	/*SingleSystemCallbacks is the base type for an index/map of functions that implement a 'SingleSystemCallback'*/
 	SingleSystemCallbacks map[string]SingleSystemCallback
 )
 
@@ -157,7 +147,7 @@ func handleDelSystem(systemReport peerSystemReport) {
 
 func handleAddSystem(systemReport peerSystemReport) {
 
-	var firstTimeReport bool = false
+	var firstTimeReport = false
 
 	for _, s := range systemReport.System {
 		_, foundSystem := repo.GoLookRepository.GetSystem(systemReport.UUID)
