@@ -30,12 +30,12 @@ func broadcastLocalFiles(broadCastRouter *router) {
 }
 
 func broadcastFiles(files map[string]map[string]*models.File, broadCastRouter *router) {
-	peerFileReport := &peerFileReport{Files: files, System: golook.GolookSystem.UUID}
+	peerFileReport := &peerFileReport{Files: files, SystemUUID: golook.GolookSystem.UUID}
 	broadCastRouter.BroadCast(fileReport, peerFileReport)
 }
 
 func reportFileChanges(filePath string, broadCastRouter *router) {
-	files := localFileReport(filePath, false)
+	files := localFileReport(filePath)
 	broadcastFiles(files, broadCastRouter)
 }
 
@@ -43,10 +43,37 @@ func reportFileChanges(filePath string, broadCastRouter *router) {
 reportFileChangesLocal is a wrapper around localFileReport
 */
 func reportFileChangesLocal(filePath string) {
-	localFileReport(filePath, false)
+	localFileReport(filePath)
 }
 
-func localFileReport(filePath string, _ bool) map[string]map[string]*models.File {
+func foreignFileReport(systemUUID string, files map[string]map[string]*models.File) {
+	repositories.GoLookRepository.UpdateFiles(systemUUID, files, false)
+}
+
+func deleteLocalFiles(filePath string) map[string]map[string]*models.File {
+
+	var (
+		files = map[string]map[string]*models.File{}
+		err   error
+	)
+
+	file, err := models.NewFile(filePath)
+	if err != nil {
+		log.WithError(err).Error("Ignoring file report.")
+		return files
+	}
+
+	//Mark file as removed
+	file.Meta.State = models.Removed
+
+	files[filepath.Dir(filePath)] = map[string]*models.File{file.Name: file}
+
+	repositories.GoLookRepository.UpdateFiles(golook.GolookSystem.UUID, files, true)
+
+	return files
+}
+
+func localFileReport(filePath string) map[string]map[string]*models.File {
 
 	var (
 		files = map[string]map[string]*models.File{}
@@ -60,17 +87,21 @@ func localFileReport(filePath string, _ bool) map[string]map[string]*models.File
 	}
 
 	if file.Directory {
-		files, err = filesInFolder(file.Name)
+		filesInFolder, err := filesInFolder(file.Name)
 		if err != nil {
 			log.WithError(err).Error("Ignoring file report.")
 			return files
 		}
-		files[file.Name][file.Name] = file
-	} else {
-		files[filepath.Dir(filePath)] = map[string]*models.File{file.Name: file}
+		repositories.GoLookRepository.UpdateFiles(golook.GolookSystem.UUID, filesInFolder, false)
+
+		// The folder is treated as special file for now. Therefore we do not break here.
+		// This allows us to use the same mechanisms as for a file when handling it at the peers.
+		// files[file.Name] = map[string]*models.File{file.Name: file}
 	}
 
-	repositories.GoLookRepository.UpdateFiles(golook.GolookSystem.UUID, files)
+	files[filepath.Dir(filePath)] = map[string]*models.File{file.Name: file}
+
+	repositories.GoLookRepository.UpdateFiles(golook.GolookSystem.UUID, files, true)
 
 	return files
 }

@@ -25,61 +25,63 @@ MockRouter implements a mock of the router interface
 type MockRouter struct {
 	Visited       int
 	VisitedMethod string
+	PeerName      string
 }
 
 /*
 DelPeer increments the Visited counter
 */
-func (lr *MockRouter) DelPeer(_ Key) {
-	lr.Visited++
+func (mockRouter *MockRouter) DelPeer(_ Key) {
+	mockRouter.Visited++
 }
 
 /*
 NewPeer increments the Visited counter
 */
-func (lr *MockRouter) NewPeer(_ Key, _ string) {
-	lr.Visited++
+func (mockRouter *MockRouter) NewPeer(_ Key, peerName string) {
+	mockRouter.PeerName = peerName
+	mockRouter.Visited++
 }
 
 /*
 BroadCast increments the Visited counter
 */
-func (lr *MockRouter) BroadCast(method string, params interface{}) models.EncapsulatedValues {
-	lr.Visited++
-	lr.VisitedMethod = method
+func (mockRouter *MockRouter) BroadCast(method string, params interface{}) models.EncapsulatedValues {
+	mockRouter.Visited++
+	mockRouter.VisitedMethod = method
 	return nil
 }
 
 /*
 Route increments the Visited counter
 */
-func (lr *MockRouter) Route(key Key, method string, params interface{}) interface{} {
-	lr.Visited++
-	lr.VisitedMethod = method
+func (mockRouter *MockRouter) Route(key Key, method string, params interface{}) interface{} {
+	mockRouter.Visited++
+	mockRouter.VisitedMethod = method
 	return nil
 }
 
 /*
 Handle increments the Visited counter
 */
-func (lr *MockRouter) Handle(method string, params models.EncapsulatedValues) interface{} {
-	lr.Visited++
-	lr.VisitedMethod = method
+func (mockRouter *MockRouter) Handle(method string, params models.EncapsulatedValues) interface{} {
+	mockRouter.Visited++
+	mockRouter.VisitedMethod = method
 	return nil
 }
 
 /*
 AddHandler increments the Visited counter
 */
-func (lr *MockRouter) AddHandler(name string, handler *Handler) {
-	lr.Visited++
-	lr.VisitedMethod = name
+func (mockRouter *MockRouter) AddHandler(name string, handler *Handler) {
+	mockRouter.Visited++
+	mockRouter.VisitedMethod = name
 }
 
 /*
 Name returns a generic name: 'mock'
 */
-func (lr *MockRouter) Name() string {
+func (mockRouter *MockRouter) Name() string {
 	return "mock"
 }
 

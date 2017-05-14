@@ -52,7 +52,7 @@ var _ = Describe("The system service", func() {
 
 	It("handles valid system reports, stores the system.", func() {
 
-		report := peerSystemReport{UUID: sysUUID, System: map[string]*golook.System{golook.GolookSystem.UUID: golook.GolookSystem}, IsDeletion: false}
+		report := peerSystemReport{SystemUUID: sysUUID, System: map[string]*golook.System{golook.GolookSystem.UUID: golook.GolookSystem}, IsDeletion: false}
 
 		result := s.handleSystemReport(testEncapsulatedSystemReport{report: &report})
 
@@ -64,9 +64,9 @@ var _ = Describe("The system service", func() {
 
 	It("handles valid system reports that delete systems. As a result, it removes the system, and returns a valid peer response.", func() {
 
-		addReport := peerSystemReport{UUID: sysUUID, System: map[string]*golook.System{golook.GolookSystem.UUID: golook.GolookSystem}, IsDeletion: false}
+		addReport := peerSystemReport{SystemUUID: sysUUID, System: map[string]*golook.System{golook.GolookSystem.UUID: golook.GolookSystem}, IsDeletion: false}
 		s.handleSystemReport(testEncapsulatedSystemReport{report: &addReport})
-		delReport := peerSystemReport{UUID: sysUUID, System: map[string]*golook.System{golook.GolookSystem.UUID: golook.GolookSystem}, IsDeletion: true}
+		delReport := peerSystemReport{SystemUUID: sysUUID, System: map[string]*golook.System{golook.GolookSystem.UUID: golook.GolookSystem}, IsDeletion: true}
 		result := s.handleSystemReport(testEncapsulatedSystemReport{report: &delReport})
 
 		_, systemInRepo := repo.GoLookRepository.GetSystem(sysUUID)

@@ -15,13 +15,17 @@
 package routing
 
 import (
-	"testing"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"reflect"
 )
 
-func TestRouting(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Routing Test Suite")
-}
+var _ = Describe("The handler", func() {
+	Context("creation", func() {
+		It("returns ", func() {
+			handler := NewHandler(nil, nil)
+			Expect(reflect.TypeOf(handler).String()).To(Equal(reflect.TypeOf(&Handler{}).String()))
+		})
+	})
+
+})

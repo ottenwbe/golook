@@ -163,7 +163,7 @@ func (router *BroadCastRouter) Handle(routerName string, msg models.Encapsulated
 	responseParams := router.deliver(request.Method, request.Params)
 	response = newResponse(responseParams, &request)
 
-	// treat every message as BroadcastRouter, therefore:
+	// treat every message as BroadcastRouterType, therefore:
 	// forward message to all other peerClients
 	broadcastResponse := router.disseminate(&request)
 

@@ -23,6 +23,10 @@ import (
 )
 
 const (
+	fileQuery = "file query"
+)
+
+const (
 	mockQueries  = "mock"
 	localQueries = "local"
 	bCastQueries = "broadcast"
@@ -94,10 +98,6 @@ func (mock *MockQueryService) query(searchString string) (interface{}, error) {
 	mock.SearchString = searchString
 	return "{}", nil
 }
-
-const (
-	fileQuery = "file query"
-)
 
 func mergeFileQuery(v1 models.EncapsulatedValues, v2 models.EncapsulatedValues) interface{} {
 

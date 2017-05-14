@@ -16,6 +16,7 @@ package service
 
 import (
 	"github.com/fsnotify/fsnotify"
+	"github.com/ottenwbe/golook/broker/models"
 	log "github.com/sirupsen/logrus"
 	"sync"
 )
@@ -34,17 +35,27 @@ type FileMonitor struct {
 /*
 Open implements
 */
-func (fm *FileMonitor) Open() {
+func (fm *FileMonitor) Open(monitoredFiles map[string]map[string]*models.File) {
 	fm.once.Do(func() {
 		var err error
 		fm.watcher, err = fsnotify.NewWatcher()
 		if err != nil {
-			log.WithError(err).Fatal("Cannot start file monitor")
+			log.WithError(err).Fatal("Cannot start file monitor.")
 		}
 
 		fm.done = make(chan bool)
 		go cMonitor(fm)
 	})
+
+	if monitoredFiles != nil {
+		for _, folders := range monitoredFiles {
+			for _, file := range folders {
+				fm.Monitor(file.Name)
+			}
+		}
+	} else {
+		log.Warn("No initial set of files to be monitored.")
+	}
 }
 
 /*
@@ -88,13 +99,23 @@ func cMonitor(fm *FileMonitor) {
 Monitor registers paths to files or folders with the FileMonitor. The FileMonitor can then report changes to the fies,
 respectively files in the folders.
 */
-func (fm *FileMonitor) Monitor(file string) {
-	fm.watcher.Add(file)
+func (fm *FileMonitor) Monitor(file string) bool {
+	err := fm.watcher.Add(file)
+	if err != nil {
+		log.WithField("file", file).WithError(err).Error("Will not monitor file or folder for changes.")
+		return false
+	}
+	return true
 }
 
 /*
 RemoveMonitored removes paths to files or folders with the FileMonitor. Changes are no longer reported.
 */
-func (fm *FileMonitor) RemoveMonitored(file string) {
-	fm.watcher.Remove(file)
+func (fm *FileMonitor) RemoveMonitored(file string) bool {
+	err := fm.watcher.Remove(file)
+	if err != nil {
+		log.WithField("file", file).WithError(err).Error("Cannot stop monitoring file or folder.")
+		return false
+	}
+	return true
 }

@@ -18,6 +18,8 @@ package routing
 
 import "sync"
 
+var maxDuplicateMapLen = 100
+
 type duplicateFilter map[int]bool
 type duplicateMap struct {
 	filters      map[string]duplicateFilter
@@ -46,6 +48,20 @@ func (m *duplicateMap) add(source Source) {
 }
 
 /*
+prune removes entries from the duplicate map.
+This implementation is very simple and restricts the history of potential duplicates by length.
+In turn, this does not ensure that each and every duplicate is detected.
+*/
+func (m *duplicateMap) prune(source Source) {
+	if len(m.filters[source.System]) >= maxDuplicateMapLen {
+		for k := range m.filters[source.System] {
+			delete(m.filters[source.System], k)
+			break
+		}
+	}
+}
+
+/*
 CheckForDuplicates returns false if called multiple times the same (id and system-uuid) of a source. Otherwise it will return true.
 */
 func (m *duplicateMap) CheckForDuplicates(source Source) bool {
@@ -53,6 +69,7 @@ func (m *duplicateMap) CheckForDuplicates(source Source) bool {
 	defer m.duplicateMtx.Unlock()
 
 	m.watchForDuplicatesFrom(source.System)
+	m.prune(source)
 	result := m.isDuplicate(source)
 	m.add(source)
 

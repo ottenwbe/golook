@@ -59,7 +59,7 @@ func (*viperConfiguration) GetConfiguration() map[string]map[string]interface{} 
 ApplyServiceConfiguration applies the service layer's configuration
 */
 func ApplyServiceConfiguration() {
-	golook.Schedule(viper.GetString("service.informer.specification"), *newSystemService())
+	golook.Schedule(viper.GetString("service.informer.specification"), newSystemService())
 	OpenFileServices(FileServiceType(viper.GetString("service.type")))
 }
 

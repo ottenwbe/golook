@@ -27,7 +27,8 @@ type Repository interface {
 	GetSystem(sysUUID string) (*golook.System, bool)
 	GetSystems() map[string]*golook.System
 	DelSystem(sysUUID string) *golook.System
-	UpdateFiles(sysUUID string, files map[string]map[string]*models.File) bool
+	UpdateFiles(sysUUID string, files map[string]map[string]*models.File, monitor bool) bool
 	FindSystemAndFiles(findString string) map[string][]*models.File
 	GetFiles(sysUUID string) map[string]map[string]*models.File
+	GetMonitoredFiles() map[string]map[string]*models.File
 }

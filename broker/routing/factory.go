@@ -25,8 +25,9 @@ RouterType represents the type of a router
 type RouterType string
 
 const (
-	/*BroadcastRouter represent the type of the default broadcast router*/
-	BroadcastRouter RouterType = "broadcast"
+	/*BroadcastRouterType represent the type of the default broadcast router*/
+	BroadcastRouterType RouterType = "broadcast"
+	MockRouterType      RouterType = "mock"
 )
 
 var (
@@ -40,7 +41,9 @@ Note, however, that a new router cannot receive messages, yet. To this end, the 
 func NewRouter(name string, routerType RouterType) (result Router) {
 
 	switch routerType {
-	case BroadcastRouter:
+	case MockRouterType:
+		result = NewMockedRouter()
+	case BroadcastRouterType:
 		result = newBroadcastRouter(name)
 	default:
 		log.WithField("type", routerType).Error("Cannot instantiate new router for unknown type.")

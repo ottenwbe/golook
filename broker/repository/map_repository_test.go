@@ -41,7 +41,7 @@ var _ = Describe("The repository implemented with maps", func() {
 	})
 
 	It("does not accept nil systems", func() {
-		Expect(repo.StoreSystem("sys", nil)).To(BeFalse())
+		Expect(repo.StoreSystem("systemFile", nil)).To(BeFalse())
 	})
 
 	It("stores valid systems", func() {
@@ -66,7 +66,7 @@ var _ = Describe("The repository implemented with maps", func() {
 		sys := golook.NewSystem()
 		sysUUID := sys.UUID
 		repo.StoreSystem(sysUUID, sys)
-		repo.UpdateFiles(sysUUID, makeTestFolder(f))
+		repo.UpdateFiles(sysUUID, makeTestFolder(f), false)
 
 		var persist = true
 		utils.Mock(&defaultMapRepositoryUsePersistence, &persist, func() {
@@ -87,7 +87,7 @@ var _ = Describe("The repository implemented with maps", func() {
 	})
 
 	It("accepts files if no valid System is stored and creates an entry for that system", func() {
-		stored := repo.UpdateFiles("unknown", map[string]map[string]*models.File{})
+		stored := repo.UpdateFiles("unknown", map[string]map[string]*models.File{}, false)
 		_, found := (repo.systemFiles)["unknown"]
 		Expect(stored).To(BeTrue())
 		Expect(found).To(BeTrue())
@@ -99,7 +99,7 @@ var _ = Describe("The repository implemented with maps", func() {
 		sysName := sys.Name
 		repo.StoreSystem(sysName, sys)
 
-		Expect(repo.UpdateFiles(sysName, makeTestFolder(f))).To(BeTrue())
+		Expect(repo.UpdateFiles(sysName, makeTestFolder(f), false)).To(BeTrue())
 	})
 
 	It("should find files that have been stored", func() {
@@ -108,7 +108,7 @@ var _ = Describe("The repository implemented with maps", func() {
 		sysName := sys.Name
 
 		repo.StoreSystem(sysName, sys)
-		repo.UpdateFiles(sysName, makeTestFolder(f))
+		repo.UpdateFiles(sysName, makeTestFolder(f), false)
 
 		res := repo.FindSystemAndFiles(f.ShortName)
 		Expect(len(res)).To(Equal(1))

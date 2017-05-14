@@ -53,3 +53,20 @@ var _ = Describe("The encapsulated message", func() {
 		Expect(s).To(Equal("msg"))
 	})
 })
+
+var _ = Describe("The response message", func() {
+	It("should set created", func() {
+		expectedParams := utils.MarshalSD("testParams")
+
+		m, err := NewResponseMessage(Source{ID: 123}, "testParams")
+
+		Expect(err).To(BeNil())
+		Expect(m.RequestSrc.ID).To(Equal(123))
+		Expect(m.Params).To(Equal(Params(expectedParams)))
+	})
+
+	It("should return an error when the params cannot be marshalled.", func() {
+		_, err := NewResponseMessage(Source{ID: 123}, make(chan bool))
+		Expect(err).ToNot(BeNil())
+	})
+})

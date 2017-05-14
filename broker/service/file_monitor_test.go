@@ -17,7 +17,8 @@ package service
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/sirupsen/logrus"
+	"github.com/ottenwbe/golook/broker/models"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
 	"time"
@@ -33,6 +34,11 @@ func (t *testReporter) reportHandler(file string) {
 
 var _ = Describe("The file monitor", func() {
 
+	const (
+		testFile  = "test.txt"
+		testFile2 = "test2.txt"
+	)
+
 	var (
 		fm *FileMonitor
 		tr *testReporter
@@ -43,7 +49,7 @@ var _ = Describe("The file monitor", func() {
 		fm = &FileMonitor{
 			Reporter: tr.reportHandler,
 		}
-		fm.Open()
+		fm.Open(map[string]map[string]*models.File{})
 	})
 
 	AfterEach(func() {
@@ -51,44 +57,124 @@ var _ = Describe("The file monitor", func() {
 		fm = nil
 	})
 
-	Context("initialization", func() {
-		It("is running after the initialization", func() {
-			Expect(fm.watcher).ToNot(BeNil())
-		})
+	It("is triggered by adding and removing a file in a monitored folder.", func() {
+
+		// Monitor the current directory for changes
+		currentDirectory, err := filepath.Abs(".")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fm.Monitor(currentDirectory)
+
+		f, err := os.Create(testFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
+
+		err = os.Remove(testFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// wait for both events, or wait for 1 second to ensure that the test eventually stops
+		numEvents := 0
+		stopTime := time.Now().Add(time.Second)
+		for numEvents < 1 && time.Now().Before(stopTime) {
+			numEvents = tr.monitorReports
+		}
+
+		Expect(fm.watcher).ToNot(BeNil())
+		// Due to timings, the test might be flaky and miss the create event
+		// Therefore, only check for at least one event that
+		Expect(numEvents >= 1).To(BeTrue())
+
 	})
 
-	Context("monitoring", func() {
+	It("is triggered by adding and removing a file, if it is monitored.", func() {
+		f, err := os.Create(testFile2)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
+		defer os.Remove(testFile2)
 
-		const testFile = "test.txt"
+		fm.Monitor(testFile2)
 
-		It("is triggered by adding and removing a file", func() {
+		time.Sleep(time.Millisecond * 100)
 
-			// Monitor the current directory for changes
-			currentDirectory, _ := filepath.Abs(".")
-			fm.Monitor(currentDirectory)
+		f.WriteString("test write")
 
-			_, err := os.Create(testFile) // For read access.
-			if err != nil {
-				logrus.Fatal(err)
-			}
+		// wait for the write event, or wait for 1 second to ensure that the test stops eventually
+		numEvents := 0
+		stopTime := time.Now().Add(time.Second)
+		for numEvents < 1 && time.Now().Before(stopTime) {
+			numEvents = tr.monitorReports
+		}
 
-			err = os.Remove(testFile) // For read access.
-			if err != nil {
-				logrus.Fatal(err)
-			}
+		Expect(numEvents).To(BeNumerically(">", 0))
 
-			// wait for both events, or wait for 1 second to ensure that the test eventually stops
-			numEvents := 0
-			elapsed := time.Now().Second()
-			for numEvents < 1 && time.Now().Second()-elapsed < 1 {
-				numEvents = tr.monitorReports
-			}
-
-			Expect(fm.watcher).ToNot(BeNil())
-			// Due to timings, the test might be flaky and miss the create event
-			// Therefore, only check for at least one event that
-			Expect(numEvents >= 1).To(BeTrue())
-
-		})
 	})
+})
+
+var _ = Describe("The file monitor's initialization", func() {
+
+	const testFile = "test-init.txt"
+
+	var (
+		fm *FileMonitor
+		tr *testReporter
+	)
+
+	BeforeEach(func() {
+		tr = &testReporter{}
+		fm = &FileMonitor{
+			Reporter: tr.reportHandler,
+		}
+	})
+
+	AfterEach(func() {
+	})
+
+	It("ensures that a file watcher is created after the initialization", func() {
+		fm.Open(map[string]map[string]*models.File{})
+		defer fm.Close()
+
+		Expect(fm.watcher).ToNot(BeNil())
+	})
+
+	It("ensures that a file watcher is created after the initializon, even if the defaults for monitored files are nil.", func() {
+		fm.Open(nil)
+		defer fm.Close()
+
+		Expect(fm.watcher).ToNot(BeNil())
+	})
+
+	It("monitors files that are given as default.", func() {
+
+		f, err := os.Create(testFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
+		defer os.Remove(testFile)
+
+		monitoredFile, _ := models.NewFile(testFile)
+
+		fm.Open(map[string]map[string]*models.File{".": {monitoredFile.Name: monitoredFile}})
+		defer fm.Close()
+
+		f.WriteString("test write")
+
+		// wait for the write event, or wait for 1 second to ensure that the test stops eventually
+		numEvents := 0
+		stopTime := time.Now().Add(time.Second)
+		for numEvents < 1 && time.Now().Before(stopTime) {
+			numEvents = tr.monitorReports
+		}
+
+		Expect(numEvents).To(BeNumerically(">", 0))
+	})
+
 })

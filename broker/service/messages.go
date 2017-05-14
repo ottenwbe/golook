@@ -20,14 +20,15 @@ import (
 )
 
 type peerFileReport struct {
-	Files  map[string]map[string]*models.File `json:"files"`
-	System string                             `json:"system"`
+	Files      map[string]map[string]*models.File `json:"files"`
+	SystemUUID string                             `json:"system"`
 }
 
 type peerSystemReport struct {
-	UUID       string                    `json:"uuid"`
+	SystemUUID string                    `json:"uuid"`
 	System     map[string]*golook.System `json:"systems"`
 	IsDeletion bool                      `json:"deletion,omitempty"`
+	Force      bool                      `json:"force,omitempty"`
 }
 
 type peerFileQuery struct {

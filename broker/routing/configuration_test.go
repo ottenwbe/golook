@@ -15,13 +15,25 @@
 package routing
 
 import (
-	"testing"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/spf13/viper"
 )
 
-func TestRouting(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Routing Test Suite")
-}
+var _ = Describe("The configuration of the routing layer", func() {
+
+	It("initializes ALL expected default values.", func() {
+		InitConfiguration()
+
+		Expect(viper.GetStringSlice(peers)).To(Equal([]string{""}))
+		Expect(viper.GetInt(duplicateLength)).To(Equal(100))
+	})
+
+	It("applies ALL expected default values.", func() {
+		InitConfiguration()
+		ApplyConfiguration()
+
+		Expect(defaultPeers).To(Equal([]string{""}))
+		Expect(maxDuplicateMapLen).To(Equal(100))
+	})
+})

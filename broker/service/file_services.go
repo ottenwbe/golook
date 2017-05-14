@@ -91,7 +91,7 @@ type scenarioMock struct {
 }
 
 func (s *scenarioBroadcastQueries) open() {
-	s.r = newRouter("broadcast_queries", routing.BroadcastRouter)
+	s.r = newRouter("broadcast_queries", routing.BroadcastRouterType)
 	s.ReportService = newReportService(localReport, s.r)
 	s.QueryService = newQueryService(bCastQueries, s.r)
 }
@@ -116,7 +116,7 @@ func (s *compoundFileServices) Report(fileReport *models.FileReport) (map[string
 }
 
 func (s *scenarioBroadcastFiles) open() {
-	s.r = newRouter("broadcast_files", routing.BroadcastRouter)
+	s.r = newRouter("broadcast_files", routing.BroadcastRouterType)
 	s.ReportService = newReportService(bCastReport, s.r)
 	s.QueryService = newQueryService(localQueries, s.r)
 }
