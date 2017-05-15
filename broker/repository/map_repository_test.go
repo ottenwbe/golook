@@ -1,7 +1,7 @@
 //Copyright 2016-2017 Beate Ottenwälder
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
+//you may not use this File except in compliance with the License.
 //You may obtain a copy of the License at
 //
 //http://www.apache.org/licenses/LICENSE-2.0
@@ -120,7 +120,7 @@ var _ = Describe("The repository implemented with maps", func() {
 func newTestFile() *models.File {
 	f, err := models.NewFile("map_repository_test.go")
 	if err != nil {
-		logrus.WithField("file", "map_repository_test.go").Panic("Files could not be created in test")
+		logrus.WithField("File", "map_repository_test.go").Panic("Files could not be created in test")
 	}
 	return f
 }

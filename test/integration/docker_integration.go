@@ -12,7 +12,10 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-// based on https://divan.github.io/posts/integration_testing/
+/*
+The docker integration allows us to start N docker images with a running golook broker, e.g., for testing.
+It is based on https://divan.github.io/posts/integration_testing/
+*/
 
 package integration
 

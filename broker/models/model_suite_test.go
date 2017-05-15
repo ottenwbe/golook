@@ -17,10 +17,21 @@ package models
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
 	"testing"
 )
 
+/*
+TestModels tells 'ginkgo' to run the tests of the model package
+*/
 func TestModels(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Model Test Suite")
 }
+
+/*
+BeforeSuite ensures that the log level is Debug for testing
+*/
+var _ = BeforeSuite(func() {
+	log.SetLevel(log.DebugLevel)
+})

@@ -116,6 +116,31 @@ var _ = Describe("The file monitor", func() {
 		Expect(numEvents).To(BeNumerically(">", 0))
 
 	})
+
+	It("is  not triggered when removing a previously monitored file from the file monitor.", func() {
+		f, err := os.Create(testFile2)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fm.Monitor(testFile2)
+		fm.RemoveMonitored(testFile2)
+
+		time.Sleep(time.Millisecond * 100)
+
+		f.Close()
+		os.Remove(testFile2)
+
+		// wait for the write event, or wait for 1 second to ensure that the test stops eventually
+		numEvents := 0
+		stopTime := time.Now().Add(time.Millisecond * 100)
+		for numEvents < 1 && time.Now().Before(stopTime) {
+			numEvents = tr.monitorReports
+		}
+
+		Expect(numEvents).To(Equal(0))
+
+	})
 })
 
 var _ = Describe("The file monitor's initialization", func() {

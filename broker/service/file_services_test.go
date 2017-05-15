@@ -48,7 +48,7 @@ var _ = Describe("The file services", func() {
 	})
 
 	It("calls the report service for reports.", func() {
-		var expectedFileReport = &models.FileReport{".", false}
+		var expectedFileReport = &models.FileReport{Path: ".", Delete: false}
 
 		fileServices := OpenFileServices(MockFileServices)
 		defer CloseFileServices(fileServices)

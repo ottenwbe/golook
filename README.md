@@ -1,24 +1,25 @@
-# golook
+# golook broker
 
-# The whole project is WIP---Work in Progress. More info is coming soon 
+# The whole project is in an early alpha stage. Not recommended for production. 
 
 [![Build Status](https://travis-ci.org/ottenwbe/golook.svg?branch=development)](https://travis-ci.org/ottenwbe/golook)
 [![codecov](https://codecov.io/gh/ottenwbe/golook/branch/master/graph/badge.svg)](https://codecov.io/gh/ottenwbe/golook)
 
-Golook is a middleware that allows users to search for files in a distributed system, i.e., your LAN.
-To this end, the application can act as a client and server, a servant.
-Clients report to and query from a server files and folders.
-Servers cache the reports of multiple clients and can therefore answer queries about the location of files.
- 
-
-## Background ##
 
 If you are like me, you have multiple machines connected in your local network, i.e., laptops, servers, nas, raspberry pi etc.
-Many of the files on these machines are versioned in a (git) repository, tracked by a configuration management system, or are backed up. 
-However, from time to time I wonder where a specific file is, e.g., 'where did I download the latest Linux Image?'.
-At this point, I recalled the distributed file search algorithms, i.e., Chord, Tapestry, and Can.
+Many a files on these machines are versioned in a (git) repository, tracked by a configuration management system, or are backed up. 
+However, from time to time I wonder where a specific file is, e.g., 'where did I edit my new profile picture?'.
+At one point, I recalled the distributed file search algorithms I studied at university, i.e., Chord and Can.
 
-So I decided to implement a simple distributed file search. And as a benefit I have the opportunity to learn go.   
+So I decided to implement a very simple distributed file search application based on broadcasts, denoted _golook_. And as a benefit I have the opportunity to learn go.
+
+Golook is a middleware that allows users to search for files in a distributed system, i.e., your LAN.
+To this end, Golook spans an overlay over all nodes in the distributed system. This allows all nodes to send messages to and receive messages from each other.
+Golook acts as a client and server, a broker.
+Clients report to and query from other brokers files and folders.
+Servers cache the reports of multiple clients and can therefore answer queries about the location of files.
+ 
+   
 
 ## Install ##
 
@@ -36,7 +37,7 @@ Moreover `$GOPATH/bin` is in your `PATH`.
     golook --help
     ```
 
-### Interactions ###
+### Usage ###
 
 There are basically two ways to interact with golook: the golook-cli and the golook (broker) api
 
@@ -46,15 +47,24 @@ For details see [golook cli](https://github.com/ottenwbe/golook-cli).
 
 ### Golook Broker API ###
 
+","/v1/file/{file}","/v1/config","/api","/log","/v1/system","/info"
+
 | Path  | Method  | Purpose  |   
 |---|---|---|
 | /info  | "GET" | Returns information like the current version of the golook broker  |   
-| /file/{file} |  "GET" |  Get all systems that host a specific file |  
-| /file |  "PUT" | The broker should report a file |
-| /folder |  "PUT" | The broker should report all files in a folder  |
+| /api  | "GET" | Returns all API endpoints  |
+| /v1/config  | "GET" | Returns the current configuration of the golook |
+| /v1/system  | "GET" | Returns information about the runtime environment |
+| /v1/file/{file} |  "GET" |  Get all systems that host a specific file |  
+| /v1/file |  "PUT" | The broker should report a file or folder |
 
 
 ## Development ##
+
+Details:
+* [Architecture](doc/Architecture.md)
+
+### Prerequisites ###
 
 For development the following dependencies are needed. 
 
@@ -69,7 +79,7 @@ For development the following dependencies are needed.
 
 ### Structure ###
 
-    ├── broker              // main source node for the broker
+    ├── broker              // main node for the broker's sources 
     │   ├── api             // http api of the golook broker (e.g., towards the golook cli)
     │   ├── communication   // communication substrate (e.g., json rpc communication)
     │   ├── models          // common models for all layers

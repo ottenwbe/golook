@@ -1,7 +1,7 @@
 //Copyright 2016-2017 Beate Ottenwälder
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
+//you may not use this File except in compliance with the License.
 //You may obtain a copy of the License at
 //
 //http://www.apache.org/licenses/LICENSE-2.0
@@ -42,11 +42,11 @@ type (
 	systemFilesMap map[string]*systemFiles
 
 	storedFile struct {
-		file    *models.File `json:"file"`
+		File    *models.File `json:"File"`
 		Monitor bool         `json:"monitor"`
 	}
 
-	/*storedFolders represents the file as it is stored in a map_repository*/
+	/*storedFolders represents the File as it is stored in a map_repository*/
 	storedFolders struct {
 		Files map[string]*storedFile `json:"files"`
 	}
@@ -98,7 +98,7 @@ func (repo *MapRepository) StoreSystem(sysUUID string, system *golook.System) bo
 }
 
 /*
-UpdateFiles creates or updates a file entry in the map repository.
+UpdateFiles creates or updates a File entry in the map repository.
 */
 func (repo *MapRepository) UpdateFiles(sysUUID string, files map[string]map[string]*models.File, monitor bool) bool {
 	repo.mutex.Lock()
@@ -190,7 +190,7 @@ func (repo *MapRepository) GetFiles(sysUUID string) map[string]map[string]*model
 		for folderName, folder := range sys.StoredFolders {
 			result[folderName] = map[string]*models.File{}
 			for fileName, storedFile := range folder.Files {
-				result[folderName][fileName] = storedFile.file
+				result[folderName][fileName] = storedFile.File
 			}
 		}
 	}
@@ -212,7 +212,7 @@ func (repo *MapRepository) GetMonitoredFiles() map[string]map[string]*models.Fil
 			result[folderName] = map[string]*models.File{}
 			for fileName, storedFile := range folder.Files {
 				if storedFile.Monitor {
-					result[folderName][fileName] = storedFile.file
+					result[folderName][fileName] = storedFile.File
 				}
 			}
 		}
@@ -238,12 +238,12 @@ func (repo *MapRepository) FindSystemAndFiles(searchString string) map[string][]
 
 func (repo *MapRepository) loadFromDisk() {
 	if repo != nil && repo.usePersistence {
-		// load persisted file information from disk
+		// load persisted File information from disk
 		if f, err := ioutil.ReadFile(defaultMapRepositoryPersistenceFile); err == nil {
 			systemFile := repo.getOrCreateSystem(golook.GolookSystem.UUID)
 			err := utils.Unmarshal(f, &systemFile.StoredFolders)
 			if err != nil {
-				log.Error("Files cannot be loaded from file.")
+				log.Error("Files cannot be loaded from File.")
 			}
 		}
 	}
@@ -267,12 +267,12 @@ func (repo *MapRepository) persist() error {
 func (systemFile *systemFiles) findFiles(searchString string, result map[string][]*models.File, systemName string) map[string][]*models.File {
 	for _, folder := range systemFile.StoredFolders {
 		for _, file := range folder.Files {
-			log.Debug("MapRepository: compare %s vs %", file.file.Name, searchString)
-			if strings.Contains(file.file.Name, searchString) {
+			log.Debug("MapRepository: compare %s vs %", file.File.Name, searchString)
+			if strings.Contains(file.File.Name, searchString) {
 				if _, found := result[systemName]; !found {
 					result[systemName] = make([]*models.File, 0)
 				}
-				result[systemName] = append(result[systemName], file.file)
+				result[systemName] = append(result[systemName], file.File)
 			}
 		}
 	}
@@ -285,7 +285,7 @@ func (systemFile *systemFiles) handleFiles(folder map[string]*models.File, folde
 			if s, found := systemFile.StoredFolders[folderName].Files[file.Name]; !found {
 				systemFile.StoredFolders[folderName].Files[file.Name] = &storedFile{file, monitor}
 			} else {
-				s.file = file
+				s.File = file
 			}
 		} else {
 			if file.Directory {

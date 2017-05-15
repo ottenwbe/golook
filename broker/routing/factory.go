@@ -27,7 +27,8 @@ type RouterType string
 const (
 	/*BroadcastRouterType represent the type of the default broadcast router*/
 	BroadcastRouterType RouterType = "broadcast"
-	MockRouterType      RouterType = "mock"
+	/*MockRouterType represent the type of the mocked router*/
+	MockRouterType RouterType = "mock"
 )
 
 var (
