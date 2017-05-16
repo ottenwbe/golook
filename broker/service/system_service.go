@@ -28,30 +28,21 @@ const (
 )
 
 type (
-	/*
-		SystemService stores system information in the local registry and disseminates system information to peers.
-	*/
+	/*SystemService stores system information in the local registry and disseminates system information to peers.*/
 	SystemService struct {
-		router *router
+		router           *router
+		firstRunExecuted bool
 	}
-	/*
-		SystemCallback is the base type for functions that are called by the system service.
-	*/
+	/*SystemCallback is the base type for functions that are called by the system service.*/
 	SystemCallback func(uuid string, system map[string]*golook.System)
 
-	/*
-		SingleSystemCallback is the base type for functions that are called by the system service.
-	*/
+	/*SingleSystemCallback is the base type for functions that are called by the system service.*/
 	SingleSystemCallback func(uuid string, system *golook.System)
 
-	/*
-		SystemCallbacks is the base type for an index/map of functions that implement a 'SystemCallback'
-	*/
+	/*SystemCallbacks is the base type for an index/map of functions that implement a 'SystemCallback'*/
 	SystemCallbacks map[string]SystemCallback
 
-	/*
-		SingleSystemCallbacks is the base type for an index/map of functions that implement a 'SingleSystemCallback'
-	*/
+	/*SingleSystemCallbacks is the base type for an index/map of functions that implement a 'SingleSystemCallback'*/
 	SingleSystemCallbacks map[string]SingleSystemCallback
 )
 
@@ -62,8 +53,10 @@ var (
 )
 
 func newSystemService() *SystemService {
-	s := &SystemService{}
-	s.router = newRouter("broadcast_system", routing.BroadcastRouter)
+	s := &SystemService{
+		router:           newRouter("broadcast_system", routing.BroadcastRouterType),
+		firstRunExecuted: false,
+	}
 	s.router.AddHandler(
 		systemReport,
 		routing.NewHandler(s.handleSystemReport, s.merge),
@@ -71,20 +64,20 @@ func newSystemService() *SystemService {
 	return s
 }
 
-func (s SystemService) close() {
+func (s *SystemService) close() {
 	s.router.close()
 }
 
 /*
 Run can be triggered to store and report the system's information.
 */
-func (s SystemService) Run() {
+func (s *SystemService) Run() {
 	s.storeSystem(golook.GolookSystem)
 	s.reportSystem()
 
 }
 
-func (SystemService) storeSystem(system *golook.System) {
+func (*SystemService) storeSystem(system *golook.System) {
 	if system == nil {
 		systemServiceLogger().Error("Ignoring nil system. This might result in your system not being reported.")
 	} else {
@@ -92,13 +85,16 @@ func (SystemService) storeSystem(system *golook.System) {
 	}
 }
 
-func (s SystemService) reportSystem() {
+func (s *SystemService) reportSystem() {
 	var report = peerSystemReport{
-		UUID:       golook.GolookSystem.UUID,
+		SystemUUID: golook.GolookSystem.UUID,
 		System:     GetSystems(),
 		IsDeletion: false,
+		Force:      s.firstRunExecuted,
 	}
+
 	response := s.broadcastSystem(report)
+
 	systemServiceLogger().Debug(utils.MarshalSD(response))
 	if response != nil {
 		var systems peerSystemReport
@@ -106,6 +102,7 @@ func (s SystemService) reportSystem() {
 		if err != nil {
 			systemServiceLogger().WithError(err).Error("Cannot unmarshal system!")
 		} else {
+			s.firstRunExecuted = true
 			handleAddSystem(systems)
 		}
 	} else {
@@ -113,7 +110,7 @@ func (s SystemService) reportSystem() {
 	}
 }
 
-func (s SystemService) broadcastSystem(report peerSystemReport) models.EncapsulatedValues {
+func (s *SystemService) broadcastSystem(report peerSystemReport) models.EncapsulatedValues {
 	if s.router != nil {
 		return s.router.BroadCast(systemReport, report)
 	}
@@ -121,10 +118,8 @@ func (s SystemService) broadcastSystem(report peerSystemReport) models.Encapsula
 	return nil
 }
 
-func (s SystemService) handleSystemReport(params models.EncapsulatedValues) interface{} {
-	var (
-		systemReport peerSystemReport
-	)
+func (s *SystemService) handleSystemReport(params models.EncapsulatedValues) interface{} {
+	var systemReport peerSystemReport
 
 	if params == nil {
 		systemServiceLogger().Error("Cannot handle 'nil' system report.")
@@ -146,21 +141,21 @@ func processSystemReport(systemReport peerSystemReport) peerSystemReport {
 		handleAddSystem(systemReport)
 	}
 
-	result := peerSystemReport{golook.GolookSystem.UUID, repo.GoLookRepository.GetSystems(), false}
+	result := peerSystemReport{golook.GolookSystem.UUID, repo.GoLookRepository.GetSystems(), false, false}
 	return result
 }
 
 func handleDelSystem(systemReport peerSystemReport) {
-	s := repo.GoLookRepository.DelSystem(systemReport.UUID)
+	s := repo.GoLookRepository.DelSystem(systemReport.SystemUUID)
 	delSystemCallbacks.call(s.UUID, s)
 }
 
 func handleAddSystem(systemReport peerSystemReport) {
 
-	var firstTimeReport bool = false
+	var firstTimeReport = systemReport.Force
 
 	for _, s := range systemReport.System {
-		_, foundSystem := repo.GoLookRepository.GetSystem(systemReport.UUID)
+		_, foundSystem := repo.GoLookRepository.GetSystem(systemReport.SystemUUID)
 		firstTimeReport = firstTimeReport || foundSystem
 		repo.GoLookRepository.StoreSystem(s.UUID, s)
 	}
@@ -168,37 +163,37 @@ func handleAddSystem(systemReport peerSystemReport) {
 	systemServiceLogger().
 		Debugf("Handle #%d systems from %s and %d callbacks.",
 			len(systemReport.System),
-			systemReport.UUID,
+			systemReport.SystemUUID,
 			len(changedSystemCallbacks))
 
-	changedSystemCallbacks.call(systemReport.UUID, systemReport.System)
+	changedSystemCallbacks.call(systemReport.SystemUUID, systemReport.System)
 	if !firstTimeReport {
-		newSystemCallbacks.call(systemReport.UUID, systemReport.System)
+		newSystemCallbacks.call(systemReport.SystemUUID, systemReport.System)
 	}
 }
 
-func (s SystemService) merge(raw1 models.EncapsulatedValues, raw2 models.EncapsulatedValues) interface{} {
+func (s *SystemService) merge(rawSystemReport1 models.EncapsulatedValues, rawSystemReport2 models.EncapsulatedValues) interface{} {
 
-	var systems1 peerSystemReport
-	err1 := raw1.Unmarshal(&systems1)
+	var systemReport1 peerSystemReport
+	err1 := rawSystemReport1.Unmarshal(&systemReport1)
 
-	var systems2 peerSystemReport
-	err2 := raw2.Unmarshal(&systems2)
+	var systemReport2 peerSystemReport
+	err2 := rawSystemReport2.Unmarshal(&systemReport2)
 
 	if err1 != nil {
-		systems1.UUID = systems2.UUID
-		systems1.System = make(map[string]*golook.System)
+		systemReport1.SystemUUID = systemReport2.SystemUUID
+		systemReport1.System = make(map[string]*golook.System)
 	}
 
 	if err2 != nil {
-		systems2.System = make(map[string]*golook.System)
+		systemReport2.System = make(map[string]*golook.System)
 	}
 
-	for k, v := range systems2.System {
-		systems1.System[k] = v
+	for k, v := range systemReport2.System {
+		systemReport1.System[k] = v
 	}
 
-	return systems1
+	return systemReport1
 }
 
 /*

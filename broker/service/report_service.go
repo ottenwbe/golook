@@ -17,7 +17,7 @@ package service
 import (
 	"errors"
 	"github.com/ottenwbe/golook/broker/models"
-	repo "github.com/ottenwbe/golook/broker/repository"
+	"github.com/ottenwbe/golook/broker/repository"
 	"github.com/ottenwbe/golook/broker/routing"
 	golook "github.com/ottenwbe/golook/broker/runtime/core"
 	"github.com/satori/go.uuid"
@@ -37,7 +37,7 @@ const (
 type (
 	//reportService
 	reportService interface {
-		report(fileReport *models.FileReport) (map[string]*models.File, error)
+		report(fileReport *models.FileReport) (map[string]map[string]*models.File, error)
 		close()
 	}
 	//monitoredReportService is the base for all report services which monitor file changes
@@ -48,15 +48,13 @@ type (
 	broadcastReportService struct {
 		monitoredReportService
 		router           *router
-		systemCallbackId string
+		systemCallbackID string
 	}
 	//localReportService broadcasts files to all peers
 	localReportService struct {
 		monitoredReportService
 	}
-	/*
-		MockReportService implements a mock version of the report service, e.g., for testing.
-	*/
+	/*MockReportService implements a mock version of the report service, e.g., for testing.*/
 	MockReportService struct {
 		FileReport *models.FileReport
 	}
@@ -81,15 +79,15 @@ func newBroadcastReportService(router *router) reportService {
 	}
 
 	rs.fileMonitor = &FileMonitor{}
-	rs.fileMonitor.reporter =
+	rs.fileMonitor.Reporter =
 		func(filePath string) {
 			reportFileChanges(filePath, rs.router)
 		}
-	rs.fileMonitor.Open()
+	rs.fileMonitor.Open(repositories.GoLookRepository.GetMonitoredFiles())
 
-	rs.systemCallbackId = uuid.NewV4().String()
+	rs.systemCallbackID = uuid.NewV4().String()
 	newSystemCallbacks.Add(
-		rs.systemCallbackId,
+		rs.systemCallbackID,
 		func(_ string, _ map[string]*golook.System) {
 			broadcastLocalFiles(rs.router)
 		},
@@ -109,22 +107,25 @@ func (rs *broadcastReportService) close() {
 	if rs.fileMonitor != nil {
 		rs.fileMonitor.Close()
 	}
-	newSystemCallbacks.Delete(rs.systemCallbackId)
+	newSystemCallbacks.Delete(rs.systemCallbackID)
 }
 
-func (rs *broadcastReportService) report(fileReport *models.FileReport) (map[string]*models.File, error) {
+func (rs *broadcastReportService) report(fileReport *models.FileReport) (map[string]map[string]*models.File, error) {
+
+	var files = map[string]map[string]*models.File{}
 
 	if fileReport == nil {
 		logFileReport().Error("Ignoring empty file report.")
-		return map[string]*models.File{}, errors.New("Ignoring empty file report")
+		return map[string]map[string]*models.File{}, errors.New("Ignoring empty file report")
 	}
 
-	files := localFileReport(fileReport.Path, fileReport.Delete)
-	broadcastFiles(files, rs.router)
-
 	if fileReport.Delete {
+		files = deleteLocalFiles(fileReport.Path)
+		broadcastFiles(files, rs.router)
 		rs.fileMonitor.RemoveMonitored(fileReport.Path)
 	} else {
+		files = localFileReport(fileReport.Path)
+		broadcastFiles(files, rs.router)
 		rs.fileMonitor.Monitor(fileReport.Path)
 	}
 
@@ -135,8 +136,8 @@ func newLocalReportService(router *router) reportService {
 	rs := &localReportService{}
 
 	rs.fileMonitor = &FileMonitor{}
-	rs.fileMonitor.reporter = reportFileChangesLocal
-	rs.fileMonitor.Open()
+	rs.fileMonitor.Reporter = reportFileChangesLocal
+	rs.fileMonitor.Open(repositories.GoLookRepository.GetMonitoredFiles())
 
 	router.AddHandler(fileReport,
 		routing.NewHandler(
@@ -152,29 +153,31 @@ func (rs *localReportService) close() {
 	rs.fileMonitor.Close()
 }
 
-func (rs *localReportService) report(fileReport *models.FileReport) (map[string]*models.File, error) {
+func (rs *localReportService) report(fileReport *models.FileReport) (map[string]map[string]*models.File, error) {
+
+	var files = map[string]map[string]*models.File{}
 
 	if fileReport == nil {
 		logFileReport().Error("Ignoring empty file report.")
-		return map[string]*models.File{}, errors.New("Ignoring empty file report")
+		return map[string]map[string]*models.File{}, errors.New("Ignoring empty file report")
 	}
-
-	// initial report
-	files := localFileReport(fileReport.Path, fileReport.Delete)
 
 	// continuous report
 	if fileReport.Delete {
+		files = deleteLocalFiles(fileReport.Path)
 		rs.fileMonitor.RemoveMonitored(fileReport.Path)
 	} else {
+		// initial report
+		files = localFileReport(fileReport.Path)
 		rs.fileMonitor.Monitor(fileReport.Path)
 	}
 
 	return files, nil
 }
 
-func (mock *MockReportService) report(fileReport *models.FileReport) (map[string]*models.File, error) {
+func (mock *MockReportService) report(fileReport *models.FileReport) (map[string]map[string]*models.File, error) {
 	mock.FileReport = fileReport
-	return map[string]*models.File{}, nil
+	return map[string]map[string]*models.File{}, nil
 }
 
 func (mock *MockReportService) close() {
@@ -199,8 +202,8 @@ func handleFileReport(params models.EncapsulatedValues) interface{} {
 }
 
 func processFileReport(fileMessage *peerFileReport) (response fileQueryData) {
-	logFileReport().Debug("Update file for: %s", fileMessage.System)
-	repo.GoLookRepository.UpdateFiles(fileMessage.System, fileMessage.Files)
+	logFileReport().Debug("Update file for: %s", fileMessage.SystemUUID)
+	foreignFileReport(fileMessage.SystemUUID, fileMessage.Files)
 	return fileQueryData{}
 }
 

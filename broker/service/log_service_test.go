@@ -18,18 +18,26 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"io"
 	"io/ioutil"
 )
 
 var _ = Describe("The log services", func() {
 	It("can read a log file from disk and write it to an io.Writer.", func() {
-		LogService := GetLogService()
-		log.Info("Test log entry")
+		logService := GetLogService()
+		logService.Init()
+		logService.Apply()
+		defer logService.Init()
+		defer logService.Apply()
+
+		expectedLogEntry := "Test log entry"
+
+		log.Info(expectedLogEntry)
 
 		r, w := io.Pipe()
 		go func() {
-			LogService.RewriteLog(w)
+			logService.RewriteLog(w)
 			w.Close()
 		}()
 
@@ -38,6 +46,17 @@ var _ = Describe("The log services", func() {
 			log.Fatal("Cannot read from log file in test.")
 		}
 
-		Expect(string(b)).ToNot(Equal("Test log entry"))
+		Expect(string(b)).To(ContainSubstring(expectedLogEntry))
+	})
+
+	It("goes back to a default configuration if invalid values are set.", func() {
+		logService := GetLogService()
+		viper.SetDefault("log.level", "")
+		viper.SetDefault("log.file", "")
+		logService.Apply()
+		defer logService.Init()
+		defer logService.Apply()
+
+		Expect(log.GetLevel()).To(Equal(log.InfoLevel))
 	})
 })

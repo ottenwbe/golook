@@ -37,6 +37,9 @@ func NewConfigurationService() ConfigurationService {
 	return &viperConfiguration{}
 }
 
+/*
+GetConfiguration returns a map with all configuration parameters
+*/
 func (*viperConfiguration) GetConfiguration() map[string]map[string]interface{} {
 
 	var (
@@ -52,11 +55,17 @@ func (*viperConfiguration) GetConfiguration() map[string]map[string]interface{} 
 	return configurations
 }
 
+/*
+ApplyServiceConfiguration applies the service layer's configuration
+*/
 func ApplyServiceConfiguration() {
-	golook.Schedule(viper.GetString("service.informer.specification"), *newSystemService())
+	golook.Schedule(viper.GetString("service.informer.specification"), newSystemService())
 	OpenFileServices(FileServiceType(viper.GetString("service.type")))
 }
 
+/*
+InitServiceConfiguration initializes the service layer's configuration
+*/
 func InitServiceConfiguration() {
 	viper.SetDefault("service.type", string(BroadcastFiles))
 	viper.SetDefault("service.informer.specification", "@every 5m0s")

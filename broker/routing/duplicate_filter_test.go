@@ -32,6 +32,7 @@ var _ = Describe("The duplicate filter", func() {
 		Expect(d.CheckForDuplicates(source1)).To(BeFalse())
 		Expect(d.CheckForDuplicates(source2)).To(BeTrue())
 	})
+
 	It("ignores duplicated ids from different systems", func() {
 
 		d := newDuplicateMap()
@@ -42,4 +43,20 @@ var _ = Describe("The duplicate filter", func() {
 		Expect(d.CheckForDuplicates(source1)).To(BeFalse())
 		Expect(d.CheckForDuplicates(source2)).To(BeFalse())
 	})
+
+	It("prunes the duplicate filters to ensure that it does not grow beyond a maximum length.", func() {
+
+		d := newDuplicateMap()
+		saveMaxLen := maxDuplicateMapLen
+		maxDuplicateMapLen = 2
+
+		for i := 1; i < 2*maxDuplicateMapLen; i++ {
+			d.CheckForDuplicates(Source{i, golook.GolookSystem.UUID})
+		}
+
+		Expect(len(d.filters[golook.GolookSystem.UUID])).To(Equal(maxDuplicateMapLen))
+
+		maxDuplicateMapLen = saveMaxLen
+	})
+
 })

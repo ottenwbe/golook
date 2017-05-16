@@ -17,6 +17,7 @@ package service
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/ottenwbe/golook/broker/models"
 	"reflect"
 )
 
@@ -33,5 +34,27 @@ var _ = Describe("The file services", func() {
 		defer CloseFileServices(fileServices)
 		Expect(fileServices).ToNot(BeNil())
 		Expect(reflect.TypeOf(fileServices).String()).ToNot(Equal(reflect.TypeOf(scenarioBroadcastQueries{}).String()))
+	})
+
+	It("calls the query service for queries.", func() {
+		const expectedQuery = "query some file"
+
+		fileServices := OpenFileServices(MockFileServices)
+		defer CloseFileServices(fileServices)
+
+		fileServices.Query(expectedQuery)
+
+		Expect(AccessMockedQueryService(fileServices).SearchString).To(Equal(expectedQuery))
+	})
+
+	It("calls the report service for reports.", func() {
+		var expectedFileReport = &models.FileReport{Path: ".", Delete: false}
+
+		fileServices := OpenFileServices(MockFileServices)
+		defer CloseFileServices(fileServices)
+
+		fileServices.Report(expectedFileReport)
+
+		Expect(AccessMockedReportService(fileServices).FileReport).To(Equal(expectedFileReport))
 	})
 })

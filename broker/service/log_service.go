@@ -23,6 +23,9 @@ import (
 	"os"
 )
 
+/*
+LogService interface for all log implementations. It basically is a facade that allows us to transparently change the log service.
+*/
 type LogService interface {
 	RewriteLog(writer io.Writer) error
 	//Init the configuration
@@ -76,6 +79,9 @@ func (logs *viperLogService) RewriteLog(writer io.Writer) error {
 	return nil
 }
 
+/*
+Apply the log configuration
+*/
 func (logs *viperLogService) Apply() {
 	lvl, err := log.ParseLevel(viper.GetString("log.level"))
 	if err != nil {
@@ -97,6 +103,9 @@ func (logs *viperLogService) Apply() {
 	log.SetOutput(file)
 }
 
+/*
+Init initializes the log configuration
+*/
 func (logs *viperLogService) Init() {
 	viper.SetDefault("log.level", "info")
 	viper.SetDefault("log.file", defaultLogFileName)

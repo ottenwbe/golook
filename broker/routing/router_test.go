@@ -12,16 +12,20 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-package models
+package routing
 
 import (
-	golook "github.com/ottenwbe/golook/broker/runtime/core"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"reflect"
 )
 
-/*
-SystemFiles is a wrapper around files and systems in a common data structure
-*/
-type SystemFiles struct {
-	System *golook.System   `json:"system"`
-	Files  map[string]*File `json:"files"`
-}
+var _ = Describe("The handler", func() {
+	Context("creation", func() {
+		It("returns ", func() {
+			handler := NewHandler(nil, nil)
+			Expect(reflect.TypeOf(handler).String()).To(Equal(reflect.TypeOf(&Handler{}).String()))
+		})
+	})
+
+})

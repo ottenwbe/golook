@@ -15,13 +15,23 @@
 package routing
 
 import (
-	"testing"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
+	"testing"
 )
 
+/*
+TestRouting tells 'ginkgo' to run the tests of the routing package
+*/
 func TestRouting(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Router Test Suite")
+	RunSpecs(t, "Routing Test Suite")
 }
+
+/*
+BeforeSuite ensures that the log level is Debug for testing
+*/
+var _ = BeforeSuite(func() {
+	log.SetLevel(log.DebugLevel)
+})

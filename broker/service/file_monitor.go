@@ -16,33 +16,51 @@ package service
 
 import (
 	"github.com/fsnotify/fsnotify"
+	"github.com/ottenwbe/golook/broker/models"
 	log "github.com/sirupsen/logrus"
 	"sync"
 )
 
 /*
-FileMonitor ... TODO
+FileMonitor monitors files/folders and reports any change in the file system regarding those files/folders.
+For reporting a Reporter callback has to be registered with the FileMonitor.
 */
 type FileMonitor struct {
 	watcher  *fsnotify.Watcher
 	once     sync.Once
 	done     chan bool
-	reporter func(string)
+	Reporter func(string)
 }
 
-func (fm *FileMonitor) Open() {
+/*
+Open implements
+*/
+func (fm *FileMonitor) Open(monitoredFiles map[string]map[string]*models.File) {
 	fm.once.Do(func() {
 		var err error
 		fm.watcher, err = fsnotify.NewWatcher()
 		if err != nil {
-			log.WithError(err).Fatal("Cannot start file monitor")
+			log.WithError(err).Fatal("Cannot start file monitor.")
 		}
 
 		fm.done = make(chan bool)
 		go cMonitor(fm)
 	})
+
+	if monitoredFiles != nil {
+		for _, folders := range monitoredFiles {
+			for _, file := range folders {
+				fm.Monitor(file.Name)
+			}
+		}
+	} else {
+		log.Warn("No initial set of files to be monitored.")
+	}
 }
 
+/*
+Close ensures that files are no longer monitored.
+*/
 func (fm *FileMonitor) Close() {
 	if fm.done != nil {
 		fm.done <- true
@@ -63,10 +81,10 @@ func cMonitor(fm *FileMonitor) {
 		case event := <-fm.watcher.Events:
 			if event.Name != "" {
 				log.Infof("Event %s triggered report", event.String())
-				if fm.reporter != nil {
-					fm.reporter(event.Name)
+				if fm.Reporter != nil {
+					fm.Reporter(event.Name)
 				} else {
-					log.Error("Not reporting monitored file change; reporter is nil!")
+					log.Error("Not reporting monitored file change; Reporter is nil!")
 				}
 			}
 		case err := <-fm.watcher.Errors:
@@ -81,10 +99,23 @@ func cMonitor(fm *FileMonitor) {
 Monitor registers paths to files or folders with the FileMonitor. The FileMonitor can then report changes to the fies,
 respectively files in the folders.
 */
-func (fm *FileMonitor) Monitor(file string) {
-	fm.watcher.Add(file)
+func (fm *FileMonitor) Monitor(file string) bool {
+	err := fm.watcher.Add(file)
+	if err != nil {
+		log.WithField("file", file).WithError(err).Error("Will not monitor file or folder for changes.")
+		return false
+	}
+	return true
 }
 
-func (fm *FileMonitor) RemoveMonitored(file string) {
-	fm.watcher.Remove(file)
+/*
+RemoveMonitored removes paths to files or folders with the FileMonitor. Changes are no longer reported.
+*/
+func (fm *FileMonitor) RemoveMonitored(file string) bool {
+	err := fm.watcher.Remove(file)
+	if err != nil {
+		log.WithField("file", file).WithError(err).Error("Cannot stop monitoring file or folder.")
+		return false
+	}
+	return true
 }

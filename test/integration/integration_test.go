@@ -27,10 +27,10 @@ import (
 	"net/http"
 )
 
-var _ = Describe("The golook server's", func() {
+var _ = Describe("The docker images", func() {
 
-	Context("http api", func() {
-		It("allows clients to query the application's /info endpoint from a server running in a docker Container", func() {
+	Context("RunPeerInDocker", func() {
+		It("allows clients to query the golook container which is running in a docker image.", func() {
 			RunPeerInDocker(func(client *docker.Client, container *docker.Container) {
 
 				appInfo := &golook.AppInfo{}
@@ -51,6 +51,40 @@ var _ = Describe("The golook server's", func() {
 				Expect(appInfo).ToNot(BeNil())
 				Expect(appInfo.Version).To(Equal(compareInfo.Version))
 				Expect(appInfo.System.IP).To(Equal(container.NetworkSettings.IPAddress))
+			})
+		})
+	})
+
+	Context("RunPeersInDocker", func() {
+		It("allows clients to query the golook container which is running in a docker image.", func() {
+			numContainer := 2
+			RunPeersInDocker(numContainer, func(client []*DockerizedGolook) {
+
+				Expect(len(client)).To(Equal(numContainer))
+
+				for i := 0; i < numContainer; i++ {
+
+					container := client[i].Container
+
+					appInfo := &golook.AppInfo{}
+					compareInfo := golook.NewAppInfo()
+					//containerInfo := GetContainerInfo(Client, Container)
+
+					// make test request
+					r, errGet := http.Get("http://" + container.NetworkSettings.IPAddress + ":8383" + api.InfoEndpoint)
+					Expect(errGet).To(BeNil())
+
+					// get the result
+					b, errRead := ioutil.ReadAll(r.Body)
+					Expect(errRead).To(BeNil())
+					errMarshal := json.Unmarshal(b, appInfo)
+					Expect(errMarshal).To(BeNil())
+
+					// verify that the result is correct
+					Expect(appInfo).ToNot(BeNil())
+					Expect(appInfo.Version).To(Equal(compareInfo.Version))
+					Expect(appInfo.System.IP).To(Equal(container.NetworkSettings.IPAddress))
+				}
 			})
 		})
 	})

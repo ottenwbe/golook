@@ -12,7 +12,10 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-// based on https://divan.github.io/posts/integration_testing/
+/*
+The docker integration allows us to start N docker images with a running golook broker, e.g., for testing.
+It is based on https://divan.github.io/posts/integration_testing/
+*/
 
 package integration
 
@@ -65,11 +68,17 @@ func RunPeersInDocker(numPeers int, f func(client []*DockerizedGolook)) {
 	f(dockerizedGolooks)
 }
 
+/*
+DockerizedGolook is a representation of a golook app running in a docker container
+*/
 type DockerizedGolook struct {
 	Client    *docker.Client
 	Container *docker.Container
 }
 
+/*
+Init the docker container running the golook app
+*/
 func (d *DockerizedGolook) Init() {
 	var err error
 
@@ -81,6 +90,9 @@ func (d *DockerizedGolook) Init() {
 
 }
 
+/*
+Start the docker container running the golook app
+*/
 func (d *DockerizedGolook) Start() {
 	var err error
 	err = d.Client.StartContainer(d.Container.ID, &docker.HostConfig{})
@@ -93,6 +105,9 @@ func (d *DockerizedGolook) Start() {
 
 }
 
+/*
+Stop the docker container running the golook app
+*/
 func (d *DockerizedGolook) Stop() {
 	if d.Client != nil {
 		if err := d.Client.RemoveContainer(docker.RemoveContainerOptions{
@@ -120,6 +135,9 @@ func createOptions(containerName string) docker.CreateContainerOptions {
 	return opts
 }
 
+/*
+GetContainerInfo returns container information
+*/
 func GetContainerInfo(client *docker.Client, container *docker.Container) (information *docker.Container, err error) {
 	// wait for Container to wake up
 	err = waitForDocker(client, container.ID, 5*time.Second)

@@ -58,7 +58,7 @@ func (router *BroadCastRouter) BroadCast(method string, message interface{}) mod
 		Info("New request message will be sent!")
 
 	// disseminate message to all peers
-	response := router.disseminate(m)
+	response := router.handle(m)
 	if response == nil {
 		routerLogger(router, method).Error("Response was nil.")
 		return nil
@@ -151,26 +151,36 @@ func (router *BroadCastRouter) Handle(routerName string, msg models.Encapsulated
 		return nil
 	}
 
+	response = router.handle(&request)
+
+	if response != nil {
+		return *response
+	} //else
+	return ResponseMessage{}
+}
+
+func (router *BroadCastRouter) handle(request *RequestMessage) (response *ResponseMessage) {
+
 	// ignore duplicates to ensure an at least once semantic
 	if router.duplicateMap.CheckForDuplicates(request.Src) {
 		routerLoggerS(router).WithField("src", request.Src.ID).Info("Dropped duplicate.")
 		return nil
 	}
 
-	routerLoggerS(router).Infof("No duplicate for: %s", routerName)
+	routerLoggerS(router).Infof("No duplicate for: %s", router.Name())
 
 	// callback to upper layer
 	responseParams := router.deliver(request.Method, request.Params)
-	response = newResponse(responseParams, &request)
+	response = newResponse(responseParams, request)
 
-	// treat every message as BroadcastRouter, therefore:
+	// treat every message as BroadcastRouterType, therefore:
 	// forward message to all other peerClients
-	broadcastResponse := router.disseminate(&request)
+	broadcastResponse := router.disseminate(request)
 
 	// chooseResponse one result
 	response = router.merge(response, broadcastResponse, request.Method)
 
-	return *response
+	return response
 }
 
 /*

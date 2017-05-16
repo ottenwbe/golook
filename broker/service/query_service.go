@@ -23,6 +23,10 @@ import (
 )
 
 const (
+	fileQuery = "file query"
+)
+
+const (
 	mockQueries  = "mock"
 	localQueries = "local"
 	bCastQueries = "broadcast"
@@ -36,9 +40,7 @@ type (
 	broadcastQueryService struct {
 		router *router
 	}
-	/*
-		MockQueryService implements a mock interface for queries
-	*/
+	/*MockQueryService implements a mock interface for queries*/
 	MockQueryService struct {
 		SearchString string
 	}
@@ -96,10 +98,6 @@ func (mock *MockQueryService) query(searchString string) (interface{}, error) {
 	mock.SearchString = searchString
 	return "{}", nil
 }
-
-const (
-	fileQuery = "file query"
-)
 
 func mergeFileQuery(v1 models.EncapsulatedValues, v2 models.EncapsulatedValues) interface{} {
 

@@ -23,14 +23,14 @@ import (
 
 var _ = Describe("The router factory", func() {
 	It("creates a new router and registeres it", func() {
-		r := NewRouter("test", BroadcastRouter)
+		r := NewRouter("test", BroadcastRouterType)
 
 		Expect(r).ToNot(BeNil())
 		Expect(reflect.TypeOf(r)).To(Equal(reflect.TypeOf(&BroadCastRouter{})))
 	})
 
 	It("registers a created router with the communication layer", func() {
-		r := NewRouter("test", BroadcastRouter)
+		r := NewRouter("test", BroadcastRouterType)
 
 		ActivateRouter(r)
 		defer DeactivateRouter(r)
@@ -38,12 +38,26 @@ var _ = Describe("The router factory", func() {
 		Expect(communication.MessageDispatcher.HasHandler("test")).To(BeTrue())
 	})
 
+	It("adds default peers.", func() {
+		const expectedPeer = "1.1.1.1"
+		defaultPeers = []string{expectedPeer}
+		r := NewRouter("test", MockRouterType)
+		Expect(AccessMockedRouter(r).PeerName).To(Equal(expectedPeer))
+		defaultPeers = []string{}
+	})
+
 	It("deregisters am registered router from the communication layer", func() {
-		r := NewRouter("test", BroadcastRouter)
+		r := NewRouter("test", BroadcastRouterType)
 		ActivateRouter(r)
 
 		DeactivateRouter(r)
 
 		Expect(communication.MessageDispatcher.HasHandler("test")).ToNot(BeTrue())
 	})
+
+	It("returns nil if the router type is not known.", func() {
+		r := NewRouter("test", "testRouter")
+		Expect(r).To(BeNil())
+	})
+
 })

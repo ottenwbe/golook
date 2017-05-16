@@ -1,7 +1,7 @@
 //Copyright 2016-2017 Beate Ottenwälder
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
+//you may not use this File except in compliance with the License.
 //You may obtain a copy of the License at
 //
 //http://www.apache.org/licenses/LICENSE-2.0
@@ -56,6 +56,6 @@ func AccessMapRepository() *MapRepository {
 }
 
 /*
-GoLookRepository the global repository
+GoLookRepository the global repository, e.g., to buffer files and systems
 */
 var GoLookRepository = NewRepository()

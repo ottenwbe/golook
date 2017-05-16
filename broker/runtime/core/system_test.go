@@ -15,13 +15,12 @@
 package core
 
 import (
-	"encoding/json"
-	"io"
-	"runtime"
-
+	//"encoding/json"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	log "github.com/sirupsen/logrus"
+	"io"
+	"runtime"
+	//log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -55,7 +54,7 @@ var _ = Describe("The system model", func() {
 		})
 	})
 
-	Context("System conversion", func() {
+	/*Context("System conversion", func() {
 		It("can be marshalled and unmarshalled", func() {
 			go PipeWriteSystem(pipeWriter)
 			go PipeReadSystem(pipeReader, chanbools)
@@ -69,7 +68,7 @@ var _ = Describe("The system model", func() {
 			result := <-chanbools
 			Expect(result).To(BeTrue())
 		})
-	})
+	})*/
 })
 
 func newTestSystem(sysName string) *System {
@@ -82,6 +81,7 @@ func newTestSystem(sysName string) *System {
 	return s
 }
 
+/*
 func PipeWriteSystems(pipeWriter *io.PipeWriter) {
 	b, _ := json.Marshal([]*System{
 		newTestSystem(testSysName),
@@ -115,3 +115,4 @@ func PipeReadSystem(pipeReader *io.PipeReader, c chan bool) {
 	}
 	c <- false
 }
+*/

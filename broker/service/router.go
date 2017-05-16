@@ -46,6 +46,9 @@ func (r *router) handleDelSystem(uuid string, system *golook.System) {
 
 func (r *router) handleNewSystem(uuid string, systems map[string]*golook.System) {
 	for _, s := range systems {
-		r.NewPeer(routing.NewKey(s.UUID), s.IP)
+		// avoid self references
+		if s.UUID != golook.GolookSystem.UUID {
+			r.NewPeer(routing.NewKey(s.UUID), s.IP)
+		}
 	}
 }

@@ -19,10 +19,12 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/ottenwbe/golook/broker/communication"
 	"github.com/ottenwbe/golook/broker/models"
+	"github.com/ottenwbe/golook/utils"
+	"github.com/sirupsen/logrus"
 	"reflect"
 )
 
-var _ = Describe("The flood router", func() {
+var _ = Describe("The broadcast router", func() {
 
 	BeforeEach(func() {
 		communication.ClientType = communication.MockRPC
@@ -62,7 +64,38 @@ var _ = Describe("The flood router", func() {
 			Expect(peer.(*communication.MockClient).Name).To(Equal("test"))
 		}
 	})
+
+	It("routes messages to corresponding handlers.", func() {
+
+		const testHandlerName = "testHandler"
+		r := newBroadcastRouter("test")
+		testMsgHandler := &testHandler{}
+
+		r.AddHandler(testHandlerName, &Handler{testMsgHandler.testMsgHandle, testMsgHandler.testMerge})
+
+		testRequestMessage, _ := NewRequestMessage(NilKey(), 0, testHandlerName, "test")
+		r.Handle(testHandlerName, Params(utils.MarshalSD(testRequestMessage)))
+
+		Expect(testMsgHandler.message).To(Equal("test"))
+
+	})
 })
+
+type testHandler struct {
+	message string
+}
+
+func (t *testHandler) testMsgHandle(params models.EncapsulatedValues) interface{} {
+	err := params.Unmarshal(&t.message)
+	if err != nil {
+		logrus.Fatal("Error handling message")
+	}
+	return nil
+}
+
+func (t *testHandler) testMerge(raw1 models.EncapsulatedValues, raw2 models.EncapsulatedValues) interface{} {
+	return nil
+}
 
 type mockPeer struct {
 	visitedCall int

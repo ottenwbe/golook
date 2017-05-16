@@ -20,15 +20,17 @@ import (
 )
 
 const (
-	peers = "routing.peers"
+	peers           = "routing.peers"
+	duplicateLength = "routing.duplicateMap.length"
 )
 
 /*
 ApplyConfiguration applies the configuration of the routing layer
 */
 func ApplyConfiguration() {
-	log.Info("Configure routing layer")
+	log.Debug("Configure routing layer")
 	defaultPeers = viper.GetStringSlice(peers)
+	maxDuplicateMapLen = viper.GetInt(duplicateLength)
 }
 
 /*
@@ -36,4 +38,5 @@ InitConfiguration initializes the configuration of the routing layer
 */
 func InitConfiguration() {
 	viper.SetDefault(peers, []string{""})
+	viper.SetDefault(duplicateLength, 100)
 }

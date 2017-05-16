@@ -12,32 +12,28 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-package core
+package routing
 
-/*
-General information about this application
-*/
-const (
-	GolookName = "golook"
-	Version    = "v0.1.0-dev"
+import (
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"github.com/spf13/viper"
 )
 
-/*
-AppInfo describes an application, i.e., its version and name
-*/
-type AppInfo struct {
-	App     string  `json:"app"`
-	Version string  `json:"version"`
-	System  *System `json:"system"`
-}
+var _ = Describe("The configuration of the routing layer", func() {
 
-/*
-NewAppInfo is the factory method for AppInfo
-*/
-func NewAppInfo() *AppInfo {
-	return &AppInfo{
-		App:     GolookName,
-		Version: Version,
-		System:  NewSystem(),
-	}
-}
+	It("initializes ALL expected default values.", func() {
+		InitConfiguration()
+
+		Expect(viper.GetStringSlice(peers)).To(Equal([]string{""}))
+		Expect(viper.GetInt(duplicateLength)).To(Equal(100))
+	})
+
+	It("applies ALL expected default values.", func() {
+		InitConfiguration()
+		ApplyConfiguration()
+
+		Expect(defaultPeers).To(Equal([]string{""}))
+		Expect(maxDuplicateMapLen).To(Equal(100))
+	})
+})

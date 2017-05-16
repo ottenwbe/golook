@@ -1,10 +1,10 @@
 default: install
 
-# release
+# build and install a release version of golook
 release:
 	@go install -ldflags "-s -w"
 
-# install
+# build and install a version of golook
 install:
 	@go install
 
@@ -27,12 +27,12 @@ lint:
 		golint $${d};  \
 	done
 
-# create a docker image, i.e., for integration tests
+# create a docker image that runs a golook broker, i.e., for integration tests
 docker:
 	@docker pull golang:1.8.1
 	@docker build --rm=true --file=test/integration/Dockerfile --tag=golook:latest .
 
-integration: fmt vet docker
+integration: fmt vet lint docker
 	@test/integration/run_integration_tests.sh
 
 .PHONY: \
