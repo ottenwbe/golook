@@ -1,6 +1,10 @@
 # golook broker
 
-# The whole project is in an early alpha stage. Not recommended for production. 
+## Disclaimer 
+
+The whole project is in an early alpha stage and not recommended for production.
+
+## Introduction 
 
 [![Build Status](https://travis-ci.org/ottenwbe/golook.svg?branch=development)](https://travis-ci.org/ottenwbe/golook)
 [![codecov](https://codecov.io/gh/ottenwbe/golook/branch/master/graph/badge.svg)](https://codecov.io/gh/ottenwbe/golook)
@@ -9,7 +13,7 @@
 If you are like me, you have multiple machines connected in your local network, i.e., laptops, servers, nas, raspberry pi etc.
 Many a files on these machines are versioned in a (git) repository, tracked by a configuration management system, or are backed up. 
 However, from time to time I wonder where a specific file is, e.g., 'where did I edit my new profile picture?'.
-At one point, I recalled the distributed file search algorithms I studied at university, i.e., Chord and Can.
+At one point, while looking for a file, I recalled the distributed file search algorithms I studied at university, i.e., Chord and Can.
 
 So I decided to implement a very simple distributed file search application based on broadcasts, denoted _golook_. And as a benefit I have the opportunity to learn go.
 
@@ -103,14 +107,20 @@ For development the following dependencies are needed.
 
 The execution of unit tests is simplified by a script:
 
-    test/unit/run_unit_tests.sh
+    make test
     
 or
     
-    make test
+    test/unit/run_unit_tests.sh
+    
 
 #### Integration tests ####
 
-Are executed by starting one or more peers in a docker and interacting with those peers. 
+Are executed by starting one or more peers in a docker and interacting with those peers.
+ 
+    make integraton
+    
+Or you can build the docker container manually and then start the tests.
 
+    docker build --rm=true --file=test/integration/Dockerfile --tag=golook:latest .    
     test/integration/run_integration_tests.sh
