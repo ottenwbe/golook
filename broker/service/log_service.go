@@ -72,7 +72,7 @@ func (logs *viperLogService) RewriteLog(writer io.Writer) error {
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			return errors.New("An unexpected error occurred while reading the log file.")
+			return errors.New("An unexpected error occurred while reading the log file")
 		}
 	}
 

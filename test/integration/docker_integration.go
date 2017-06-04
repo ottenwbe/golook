@@ -85,7 +85,7 @@ func (d *DockerizedGolook) Init() {
 	d.Client, err = docker.NewClientFromEnv()
 	failOnError(err, "Cannot connect to Docker daemon")
 
-	d.Container, err = d.Client.CreateContainer(createOptions("golook:latest"))
+	d.Container, err = d.Client.CreateContainer(createOptions("ottenwbe/golook:latest"))
 	failOnError(err, "Cannot create Docker Container; make sure docker daemon is started: %s")
 
 }
@@ -175,7 +175,7 @@ func waitForGolook(ip string, maxWait time.Duration) error {
 		}
 		time.Sleep(100 * time.Millisecond)
 	}
-	return errors.New("Golook is not starting up in Container.")
+	return errors.New("Golook is not starting up in Container")
 }
 
 func failOnError(err error, message string) error {

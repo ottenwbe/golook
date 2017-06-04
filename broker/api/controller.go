@@ -112,7 +112,7 @@ func getSystem(writer http.ResponseWriter, _ *http.Request) {
 func getConfiguration(writer http.ResponseWriter, _ *http.Request) {
 
 	if configurationService == nil {
-		returnAndLogError(writer, "ConfigurationService is nil.", errors.New("ConfigurationService is nil."), http.StatusInternalServerError)
+		returnAndLogError(writer, "ConfigurationService is nil.", errors.New("ConfigurationService is nil"), http.StatusInternalServerError)
 		return
 	}
 

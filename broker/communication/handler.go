@@ -45,7 +45,7 @@ func (dispatcherBindings *dispatcherBindings) handleMessage(router string, messa
 		return reg.handler.Handle(router, message), nil
 	}
 	log.Info("Method dropped before handing it over to handler. No handler registered.")
-	return nil, errors.New("Method dropped before handing it over to handler. No handler registered.")
+	return nil, errors.New("Method dropped before handing it over to handler. No handler registered")
 }
 
 /*

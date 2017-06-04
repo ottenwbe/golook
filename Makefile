@@ -30,7 +30,7 @@ lint:
 # create a docker image that runs a golook broker, i.e., for integration tests
 docker:
 	@docker pull golang:1.8.1
-	@docker build --rm=true --file=test/integration/Dockerfile --tag=golook:latest .
+	@docker build --rm=true --file=test/integration/Dockerfile --tag=ottenwbe/golook:latest .
 
 integration: fmt vet lint docker
 	@test/integration/run_integration_tests.sh

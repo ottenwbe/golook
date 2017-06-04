@@ -13,7 +13,7 @@ install:
   - go get -u github.com/golang/lint/golint
   - export PATH=$PATH:$HOME/gopath/bin
   - sudo docker pull golang:1.8.1
-  - sudo docker build --rm=true --file=test/integration/Dockerfile --tag=golook:latest .
+  - sudo docker build --rm=true --file=test/integration/Dockerfile --tag=ottenwbe/golook:latest .
 
 script:
   - for d in $(go list ./... | grep -v vendor); do go vet $d; done

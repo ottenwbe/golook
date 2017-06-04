@@ -13,7 +13,7 @@ The whole project is in an early alpha stage and not recommended for production.
 If you are like me, you have multiple machines connected in your local network, i.e., laptops, servers, nas, raspberry pi etc.
 Many a files on these machines are versioned in a (git) repository, tracked by a configuration management system, or are backed up. 
 However, from time to time I wonder where a specific file is, e.g., 'where did I edit my new profile picture?'.
-At one point, while looking for a file, I recalled the distributed file search algorithms I studied at university, i.e., Chord and Can.
+At one point, while looking for a file  , I recalled the distributed file search algorithms I studied at university, i.e., Chord and Can.
 
 So I decided to implement a very simple distributed file search application based on broadcasts, denoted _golook_. And as a benefit I have the opportunity to learn go.
 
@@ -51,13 +51,12 @@ For details see [golook cli](https://github.com/ottenwbe/golook-cli).
 
 ### Golook Broker API ###
 
-","/v1/file/{file}","/v1/config","/api","/log","/v1/system","/info"
-
 | Path  | Method  | Purpose  |   
 |---|---|---|
 | /info  | "GET" | Returns information like the current version of the golook broker  |   
 | /api  | "GET" | Returns all API endpoints  |
-| /v1/config  | "GET" | Returns the current configuration of the golook |
+| /log  | "GET" | Returns the complete log of the golook server  |
+| /v1/config  | "GET" | Returns the current configuration of the golook server |
 | /v1/system  | "GET" | Returns information about the runtime environment |
 | /v1/file/{file} |  "GET" |  Get all systems that host a specific file |  
 | /v1/file |  "PUT" | The broker should report a file or folder |
